@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+backend/venv/
+backend/env/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables
+.env
+.env.local
+
+# IDEs
+.vscode/
+.idea/
+
+# Large data files and archives
+*.zip
+*.tar.gz
+*.csv
+*.xlsx
+
+# Exclude specific files mentioned in git status
+digital-marketing-campaign-conversion-prediction-main.zip
+unzipped_data/

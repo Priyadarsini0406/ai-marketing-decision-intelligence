@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pandas
+numpy
+scikit-learn
+xgboost
+shap
+gymnasium
+stable-baselines3
+python-multipart
+pydantic
