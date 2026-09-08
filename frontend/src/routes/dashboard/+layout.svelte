@@ -1,7 +1,13 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
+    import { api, signOut, type User } from '$lib/api';
+    let user = $state<User | null>(null), error = $state('');
+    onMount(async () => { try { user = await api('/auth/me'); } catch(e) { error = (e as Error).message; } });
+    async function logout() { try { await signOut(); window.location.assign('/login'); } catch(e) { error = (e as Error).message; } }
 	let { children } = $props();
 </script>
 
+{#if user}
 <div class="flex h-screen bg-primary font-sans text-text-primary overflow-hidden">
 	<!-- Sidebar -->
 	<aside class="w-64 bg-card border-r border-white/5 flex flex-col z-20">
@@ -17,6 +23,7 @@
 			</a>
 		</div>
 		<nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            {#if user.role === 'admin'}<a href="/admin" class="block px-4 py-3 text-accent">Administration</a>{/if}
 			<a href="/dashboard" class="flex items-center px-4 py-3 bg-secondary rounded-lg text-white font-medium border border-accent/20 shadow-[0_0_15px_rgba(164,123,224,0.15)] transition-colors">
 				<svg xmlns="http://www.w3.org/-2000/svg" class="h-5 w-5 mr-3 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -55,7 +62,8 @@
 		<header class="h-20 border-b border-white/5 flex items-center px-8 justify-between bg-primary/80 backdrop-blur-md">
 			<h2 class="text-xl font-semibold text-white">Platform Dashboard</h2>
 			<div class="flex items-center space-x-4">
-				<span class="text-sm text-text-secondary">Welcome, Marketer</span>
+                <span class="text-sm text-text-secondary">Welcome, {user.name}</span>
+                <button onclick={logout}>Sign out</button>
 				<div class="h-10 w-10 rounded-full bg-cta text-black flex items-center justify-center font-bold shadow-[0_0_15px_rgba(242,166,43,0.4)]">M</div>
 			</div>
 		</header>
@@ -68,3 +76,4 @@
 		</div>
 	</main>
 </div>
+{:else}<p class="p-8" role="status">{error || 'Checking access…'} <a href="/login">Sign in</a></p>{/if}

@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
+    import { api, signIn } from '$lib/api';
+    let name = $state(''), email = $state(''), password = $state(''), role = $state('marketer'), error = $state(''), busy = $state(false);
+    async function submit(event: SubmitEvent) {
+        event.preventDefault(); busy = true; error = '';
+        try { await api('/auth/register', { method: 'POST', body: JSON.stringify({name, email, password, role}) }); await signIn(email, password); }
+        catch(e) { error = (e as Error).message; } finally { busy = false; }
+    }
 
 	let visible = $state(false);
 
@@ -34,12 +41,14 @@
 					<p class="text-text-secondary text-sm">Join the next generation of marketing intelligence.</p>
 				</div>
 
-				<form class="space-y-5" onsubmit={(e) => e.preventDefault()}>
+                {#if error}<p role="alert" class="text-red-400 mb-4">{error}</p>{/if}
+				<form class="space-y-5" onsubmit={submit}>
 					<div class="space-y-1">
 						<label for="name" class="text-sm font-medium text-text-secondary">Full Name</label>
 						<input 
 							type="text" 
 							id="name" 
+                            bind:value={name} required maxlength="100"
 							placeholder="Jane Doe"
 							class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
 						/>
@@ -50,6 +59,7 @@
 						<input 
 							type="email" 
 							id="email" 
+                            bind:value={email} required
 							placeholder="jane@company.com"
 							class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
 						/>
@@ -60,6 +70,7 @@
 						<input 
 							type="password" 
 							id="password" 
+                            bind:value={password} required minlength="12" maxlength="128"
 							placeholder="••••••••"
 							class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
 						/>
@@ -79,6 +90,7 @@
 							<label for="role" class="text-sm font-medium text-text-secondary">Role</label>
 							<select 
 								id="role"
+                                bind:value={role}
 								class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all appearance-none"
 							>
 								<option value="marketer">Marketer</option>
@@ -90,6 +102,7 @@
 
 					<button 
 						type="submit"
+                        disabled={busy}
 						class="w-full bg-cta hover:bg-cta/90 text-black font-bold text-lg rounded-xl px-4 py-3 mt-4 transition-all shadow-[0_0_15px_rgba(242,166,43,0.3)] hover:shadow-[0_0_25px_rgba(242,166,43,0.5)] transform hover:-translate-y-0.5"
 					>
 						Register

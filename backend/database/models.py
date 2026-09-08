@@ -6,6 +6,34 @@ import uuid
 def generate_uuid():
     return str(uuid.uuid4())
 
+class User(Base):
+    __tablename__ = "users"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String, nullable=False)
+    email = Column(String, unique=True, nullable=False, index=True)
+    password_hash = Column(String, nullable=False)
+    role = Column(String, nullable=False, default="marketer")
+    active = Column(Boolean, nullable=False, default=True)
+
+class LoginSession(Base):
+    __tablename__ = "login_sessions"
+    token_hash = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    expires_at = Column(Float, nullable=False)
+
+class Dataset(Base):
+    __tablename__ = "datasets"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String, nullable=False)
+    columns = Column(JSON, nullable=False)
+    rows = Column(JSON, nullable=False)
+    created_at = Column(Float, nullable=False)
+
+class SystemConfig(Base):
+    __tablename__ = "system_config"
+    id = Column(Integer, primary_key=True)
+    values = Column(JSON, nullable=False)
+
 class Lead(Base):
     __tablename__ = "leads"
 

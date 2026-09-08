@@ -1,6 +1,17 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
+    import { signIn } from '$lib/api';
+    let email = $state('');
+    let password = $state('');
+    let error = $state('');
+    let busy = $state(false);
+    async function submit(event: SubmitEvent) {
+        event.preventDefault(); busy = true; error = '';
+        try { await signIn(email, password); }
+        catch (e) { error = (e as Error).message; }
+        finally { busy = false; }
+    }
 
 	let visible = $state(false);
 
@@ -91,7 +102,9 @@
 					<p class="text-text-secondary text-sm">Access your marketing intelligence platform.</p>
 				</div>
 
-				<form class="flex flex-col gap-6 w-full" onsubmit={(e) => { e.preventDefault(); window.location.href = '/dashboard'; }}>
+                <a href="/admin/login" class="block text-center text-accent mb-5">Admin login</a>
+                {#if error}<p role="alert" class="text-red-400 mb-4">{error}</p>{/if}
+				<form class="flex flex-col gap-6 w-full" onsubmit={submit}>
 					<div class="flex flex-col gap-2 w-full">
 						<label for="email" class="text-sm font-medium text-text-secondary">Work Email</label>
 						<div class="relative w-full">
@@ -104,6 +117,7 @@
 							<input 
 								type="email" 
 								id="email" 
+                                bind:value={email}
 								placeholder="name@company.com"
 								required
 								class="w-full bg-black/50 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent/80 focus:border-transparent transition-all"
@@ -125,6 +139,7 @@
 							<input 
 								type="password" 
 								id="password" 
+                                bind:value={password}
 								placeholder="••••••••"
 								required
 								class="w-full bg-black/50 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent/80 focus:border-transparent transition-all"
@@ -134,6 +149,7 @@
 
 					<button 
 						type="submit"
+                        disabled={busy}
 						class="w-full bg-[#F2A62B] hover:bg-[#F2A62B]/90 text-[#0B0A0F] font-bold text-lg rounded-full py-3.5 mt-2 transition-all shadow-[0_0_20px_rgba(242,166,43,0.2)] hover:shadow-[0_0_30px_rgba(242,166,43,0.4)] flex items-center justify-center"
 					>
 						Sign In
