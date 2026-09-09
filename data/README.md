@@ -1,5 +1,9 @@
 # Training data
 
+An additional [UCI Bank Marketing dataset](bank_marketing/README.md) is included
+in `data/bank_marketing/`, with a full CSV and a smaller upload-ready sample.
+It has its own schema and is not an input to the current digital campaign trainer.
+
 `Digital_Marketing_Campaign_Dataset.csv` was copied from the user-provided
 `E:\digital-marketing-campaign-conversion-prediction-main` folder. It contains
 8,000 customer records with the binary `Conversion` target. The source folder

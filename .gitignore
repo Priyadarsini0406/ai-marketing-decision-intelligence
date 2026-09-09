@@ -29,6 +29,7 @@ venv.bak/
 *.zip
 *.tar.gz
 *.csv
+!data/bank_marketing/*.csv
 !frontend/tests/fixtures/*.csv
 *.xlsx
 

@@ -18,7 +18,15 @@ test('public links, registration, and all dashboard pages are connected', async 
     await page.getByRole('button', {name:'Register', exact:true}).click();
     await expect(page).toHaveURL('/dashboard');
     const nav = page.getByRole('navigation', {name:'Marketing dashboard'});
-    await nav.getByRole('link', {name:'Leads & Predictions'}).click();
+    await nav.getByRole('link', {name:'Upload datasets', exact:true}).click();
+    await expect(page).toHaveURL('/dashboard/datasets');
+    await page.getByLabel('Upload CSV').setInputFiles('tests/fixtures/browser-campaign.csv');
+    await page.getByRole('button', {name:'Upload dataset', exact:true}).click();
+    await expect(page.getByRole('status')).toContainText('Dataset uploaded successfully');
+    await page.getByLabel('Upload CSV').setInputFiles('tests/fixtures/invalid-campaign.csv');
+    await page.getByRole('button', {name:'Upload dataset', exact:true}).click();
+    await expect(page.getByRole('alert')).toContainText('unique');
+    await nav.getByRole('link', {name:'Lead Management'}).click();
     await expect(page.getByRole('cell', {name:'TEST-LEAD', exact:true})).toBeVisible();
     await page.getByLabel('Lead', {exact:false}).selectOption({label:'TEST-LEAD'});
     await page.getByRole('button', {name:'View prediction'}).click();

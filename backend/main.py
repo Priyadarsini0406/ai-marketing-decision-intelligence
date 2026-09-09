@@ -25,9 +25,13 @@ def read_root():
 
 from api import leads, analytics, budget
 from api import auth, admin
+from api import datasets
+from api import workspace
 
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(datasets.router)
+app.include_router(workspace.router)
 
 app.include_router(leads.router, dependencies=[Depends(auth.current_user)])
 app.include_router(analytics.router, dependencies=[Depends(auth.current_user)])

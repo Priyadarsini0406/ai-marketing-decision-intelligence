@@ -10,4 +10,4 @@
 <h1 class="text-3xl font-bold mb-3">Budget simulator</h1><p class="text-text-secondary mb-6">Review saved budget allocations, predicted conversions, and acquisition costs.</p>
 <button class="bg-secondary px-4 py-2 rounded-lg mb-6" onclick={load} disabled={busy}>{busy ? 'Loading…' : 'Refresh'}</button>
 {#if error}<p role="alert" class="text-red-400 mb-4">{error}</p>{/if}<DataTable {rows} empty="No budget simulations have been saved yet." />
-<p class="text-text-secondary mt-6">Creating new simulations requires a budget optimization service, which is not currently implemented.</p>
+<p class="text-text-secondary mt-6"><a class="text-accent" href="/dashboard/simulator">Create a what-if scenario ?</a></p>

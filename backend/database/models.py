@@ -21,6 +21,11 @@ class LoginSession(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     expires_at = Column(Float, nullable=False)
 
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+    user_id = Column(String, ForeignKey("users.id"), primary_key=True)
+    values = Column(JSON, nullable=False)
+
 class Dataset(Base):
     __tablename__ = "datasets"
     id = Column(String, primary_key=True, default=generate_uuid)

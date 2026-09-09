@@ -1,6 +1,7 @@
 import csv
 import io
 import time
+import zipfile
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
@@ -52,7 +53,24 @@ def datasets(db: Session = Depends(get_db)):
 async def upload_dataset(file: UploadFile = File(...), db: Session = Depends(get_db)):
     raw = await file.read(5 * 1024 * 1024 + 1)
     if len(raw) > 5 * 1024 * 1024:
-        raise HTTPException(413, "CSV must be no larger than 5 MB")
+        raise HTTPException(413, "Upload must be no larger than 5 MB")
+    if (file.filename or '').lower().endswith('.zip') or zipfile.is_zipfile(io.BytesIO(raw)):
+        try:
+            with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+                members = [member for member in archive.infolist()
+                           if not member.is_dir() and member.filename.lower().endswith('.csv')
+                           and not member.filename.startswith('__MACOSX/')]
+                if len(members) != 1:
+                    raise HTTPException(400, "ZIP must contain exactly one CSV file")
+                if members[0].file_size > 5 * 1024 * 1024:
+                    raise HTTPException(413, "CSV inside ZIP must be no larger than 5 MB")
+                # Read only the selected member into memory; never extract paths to disk.
+                with archive.open(members[0]) as stream:
+                    raw = stream.read(5 * 1024 * 1024 + 1)
+                if len(raw) > 5 * 1024 * 1024:
+                    raise HTTPException(413, "CSV inside ZIP must be no larger than 5 MB")
+        except (zipfile.BadZipFile, RuntimeError, NotImplementedError, EOFError, OSError) as exc:
+            raise HTTPException(400, "Cannot read ZIP. Upload a valid, unencrypted ZIP containing one CSV.") from exc
     try:
         reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig")), strict=True)
         columns = reader.fieldnames

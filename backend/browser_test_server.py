@@ -14,7 +14,7 @@ if __name__ == '__main__':
         Base.metadata.create_all(engine)
         with SessionLocal() as db:
             create_user(NewUser(name='Test Administrator', email='admin@example.com', password='BrowserTestPassword123!', role='admin'), db)
-            lead = Lead(customer_id='TEST-LEAD', campaign_channel='SEO', conversion=True)
+            lead = Lead(customer_id='TEST-LEAD', campaign_channel='SEO', campaign_type='Awareness', conversion=True, age=30, gender='Female', income=10000, ad_spend=100, click_through_rate=.1, conversion_rate=.1, website_visits=2, pages_per_visit=2, time_on_site=3, social_shares=1, email_opens=2, email_clicks=1, previous_purchases=1, loyalty_points=10)
             db.add(lead)
             db.flush()
             db.add(MLPrediction(lead_id=lead.id, conversion_probability=.85, segment_name='Test segment'))
