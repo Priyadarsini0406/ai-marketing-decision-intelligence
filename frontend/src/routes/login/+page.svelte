@@ -102,7 +102,6 @@
 					<p class="text-text-secondary text-sm">Access your marketing intelligence platform.</p>
 				</div>
 
-                <a href="/admin/login" class="block text-center text-accent mb-5">Admin login</a>
                 {#if error}<p role="alert" class="text-red-400 mb-4">{error}</p>{/if}
 				<form class="flex flex-col gap-6 w-full" onsubmit={submit}>
 					<div class="flex flex-col gap-2 w-full">

@@ -1,6 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
+    import { api } from '$lib/api';
+    let exporting = $state(false), error = $state('');
+    async function exportReport() {
+        exporting = true; error = '';
+        try {
+            const [channels, simulations] = await Promise.all([api('/analytics/channels'), api('/budget/simulations')]);
+            const url = URL.createObjectURL(new Blob([JSON.stringify({generated_at: new Date().toISOString(), channels, simulations}, null, 2)], {type:'application/json'}));
+            const link = document.createElement('a'); link.href = url; link.download = 'marketing-summary.json'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch(e) { error = (e as Error).message; } finally { exporting = false; }
+    }
 
 	let visible = $state(false);
 
@@ -15,6 +25,8 @@
 
 {#if visible}
 	<div class="space-y-6" in:fade={{ duration: 400 }}>
+        <p class="text-text-secondary">Overview metrics below are demonstration data. Use the sidebar for stored leads, channel analytics, and budget simulations. Export downloads stored channel and budget data.</p>
+        {#if error}<p role="alert" class="text-red-400">{error}</p>{/if}
 		<!-- Header Section -->
 		<div class="flex justify-between items-end mb-8" in:fly={{ y: -20, duration: 600, delay: 100 }}>
 			<div>
@@ -22,11 +34,11 @@
 				<p class="text-text-secondary">AI-driven insights and real-time performance metrics.</p>
 			</div>
 			<div class="flex gap-3">
-				<button class="px-4 py-2 rounded-lg bg-card border border-white/10 text-white text-sm font-medium hover:bg-white/5 transition-colors">
+				<button onclick={exportReport} disabled={exporting} class="px-4 py-2 rounded-lg bg-card border border-white/10 text-white text-sm font-medium hover:bg-white/5 transition-colors">
 					Export Report
 				</button>
-				<button class="px-4 py-2 rounded-lg bg-accent hover:bg-accent/90 text-white text-sm font-bold transition-colors shadow-[0_0_15px_rgba(164,123,224,0.3)]">
-					Train RL Agent
+				<button disabled title="Model training is not implemented yet" class="px-4 py-2 rounded-lg bg-accent/40 text-white text-sm font-bold">
+					Training unavailable
 				</button>
 			</div>
 		</div>

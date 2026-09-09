@@ -1,16 +1,16 @@
 import { test, expect, type Page } from '@playwright/test';
 
 async function login(page: Page) {
-    await page.getByLabel('Email', { exact: true }).fill('admin@example.com');
+    await page.getByLabel('Work Email', { exact: true }).fill('admin@example.com');
     await page.getByLabel('Password', { exact: true }).fill('BrowserTestPassword123!');
-    await page.getByRole('button', { name: 'Sign in as administrator' }).click();
+    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
 }
 
 test('admin login connects every page and persistent management workflow', async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('/admin/users');
-    await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin%2Fusers$/);
+    await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2Fusers$/);
     await login(page);
     await expect(page.getByRole('heading', { name: 'Manage users', exact: true })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Administration' }).getByRole('link', {name:'Manage users'})).toHaveAttribute('aria-current', 'page');
@@ -62,17 +62,17 @@ test('admin login connects every page and persistent management workflow', async
     await nav.getByRole('link', {name:'Overview',exact:true}).click();
     await expect(page.getByRole('heading', {name:'Administration',exact:true})).toBeVisible();
     await page.getByRole('button', {name:'Sign out',exact:true}).click();
-    await expect(page).toHaveURL('/admin/login');
+    await expect(page).toHaveURL('/login');
     await page.goto('/admin/reports');
-    await expect(page).toHaveURL(/\/admin\/login\?next=%2Fadmin%2Freports$/);
+    await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2Freports$/);
     expect(errors).toEqual([]);
 });
 
 test('login rejects wrong credentials and ignores external redirect targets', async ({ page }) => {
-    await page.goto('/admin/login?next=https://example.com');
-    await page.getByLabel('Email', {exact:true}).fill('admin@example.com');
+    await page.goto('/login?next=https://example.com');
+    await page.getByLabel('Work Email', {exact:true}).fill('admin@example.com');
     await page.getByLabel('Password', {exact:true}).fill('incorrect-password');
-    await page.getByRole('button', {name:'Sign in as administrator'}).click();
+    await page.getByRole('button', {name:'Sign In', exact:true}).click();
     await expect(page.getByRole('alert')).toContainText('Invalid email or password');
     await login(page);
     await expect(page).toHaveURL('/admin');

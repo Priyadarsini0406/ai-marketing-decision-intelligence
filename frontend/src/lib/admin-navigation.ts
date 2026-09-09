@@ -12,6 +12,10 @@ export function adminDestination(value: string | null): string {
 
 export function loginDestination(pathname: string): string {
     return pathname === '/admin' || pathname.startsWith('/admin/')
-        ? `/admin/login?next=${encodeURIComponent(adminDestination(pathname))}`
-        : '/login';
+        ? `/login?next=${encodeURIComponent(adminDestination(pathname))}`
+        : `/login?next=${encodeURIComponent(dashboardDestination(pathname))}`;
+}
+
+export function dashboardDestination(value: string | null): string {
+    return ['/dashboard', '/dashboard/leads', '/dashboard/analytics', '/dashboard/budget'].includes(value || '') ? value! : '/dashboard';
 }

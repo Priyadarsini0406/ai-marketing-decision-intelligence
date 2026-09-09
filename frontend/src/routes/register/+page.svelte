@@ -36,6 +36,7 @@
 				<!-- Subtle inner glow to make it look 'light' -->
 				<div class="absolute -top-20 -right-20 w-40 h-40 bg-white/10 blur-[50px] rounded-full pointer-events-none"></div>
 
+                <div class="flex justify-between mb-6 text-sm text-accent"><a href="/">← Home</a><a href="/login">Sign in</a></div>
 				<div class="text-center mb-8">
 					<h2 class="text-3xl font-bold text-white mb-2">Create an account</h2>
 					<p class="text-text-secondary text-sm">Join the next generation of marketing intelligence.</p>

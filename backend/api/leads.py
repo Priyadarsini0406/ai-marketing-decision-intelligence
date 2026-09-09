@@ -5,6 +5,7 @@ from database.models import Lead, MLPrediction
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
+@router.get("", include_in_schema=False)
 @router.get("/")
 def get_leads(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     leads = db.query(Lead).offset(skip).limit(limit).all()

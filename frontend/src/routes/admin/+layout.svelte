@@ -9,7 +9,6 @@
     let accessCheck = 0;
     afterNavigate(async () => {
         const check = ++accessCheck;
-        if (page.url.pathname === '/admin/login') { user = null; error = ''; return; }
         try {
             const account: User = await api('/auth/me');
             if (check !== accessCheck) return;
@@ -19,13 +18,11 @@
         catch (e) { if (check === accessCheck) { user = null; error = (e as Error).message; } }
     });
     async function logout() {
-        try { await signOut(); window.location.assign('/admin/login'); }
+        try { await signOut(); window.location.assign('/login'); }
         catch (e) { error = (e as Error).message; }
     }
 </script>
-{#if page.url.pathname === '/admin/login'}
-    {@render children()}
-{:else if user}
+{#if user}
     <div class="admin-shell">
         <aside><a class="brand" href="/admin">DecisionIntel <small>ADMIN</small></a>
             <nav aria-label="Administration">{#each adminPages as item}<a href={item.href} aria-current={page.url.pathname === item.href ? 'page' : undefined}>{item.label}</a>{/each}</nav>
@@ -35,5 +32,5 @@
         <main>{#if error}<p role="alert">{error}</p>{/if}{@render children()}</main>
     </div>
 {:else}
-    <div class="login-card"><p role="status">{error || 'Checking administrator access…'}</p>{#if error}<a href="/admin/login">Go to admin login</a>{/if}</div>
+    <div class="login-card"><p role="status">{error || 'Checking administrator access…'}</p>{#if error}<a href="/login">Go to sign in</a>{/if}</div>
 {/if}

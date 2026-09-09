@@ -78,6 +78,8 @@ def ingest_data(csv_path: str):
 
 if __name__ == "__main__":
     init_db()
-    # Path based on the unzipped location
-    csv_file_path = r"e:\mini  project\unzipped_data\digital-marketing-campaign-conversion-prediction-main\Digital_Marketing_Campaign_Dataset.csv"
+    from pathlib import Path
+    csv_file_path = sys.argv[1] if len(sys.argv) > 1 else str(
+        Path(__file__).resolve().parents[2] / "data" / "Digital_Marketing_Campaign_Dataset.csv"
+    )
     ingest_data(csv_file_path)

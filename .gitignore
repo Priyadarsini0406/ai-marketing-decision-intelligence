@@ -1,4 +1,5 @@
 # Python
+backend/artifacts/
 frontend/test-results/
 frontend/playwright-report/
 backend/marketing_ai.db*
@@ -55,6 +56,7 @@ eggs/
 lib/
 !frontend/src/lib/
 !frontend/src/lib/api.ts
+!frontend/src/lib/DataTable.svelte
 !frontend/src/lib/admin-navigation.ts
 lib64/
 parts/
