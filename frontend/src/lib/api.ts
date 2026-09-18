@@ -26,10 +26,18 @@ export async function signIn(email: string, password: string, adminOnly = false)
         await signOut();
         throw new Error('Administrator access required');
     }
-    const destination = result.user.role === 'admin'
-        ? adminDestination(new URLSearchParams(window.location.search).get('next'))
-        : '/dashboard';
+    const destination = roleDestination(result.user.role, new URLSearchParams(window.location.search).get('next'));
     window.location.assign(destination);
+}
+
+function roleDestination(role: string, next: string | null): string {
+    if (role === 'admin') return adminDestination(next ?? '/admin/dashboard');
+    if (role === 'student') {
+        if (next && (next === '/student/dashboard' || (next.startsWith('/student') && next.length > 7))) return next;
+        return '/student/dashboard';
+    }
+    if (next && next.startsWith('/dashboard')) return next;
+    return '/dashboard';
 }
 
 export async function signOut() {

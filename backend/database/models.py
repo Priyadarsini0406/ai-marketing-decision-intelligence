@@ -12,7 +12,7 @@ class User(Base):
     name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(String, nullable=False)
-    role = Column(String, nullable=False, default="marketer")
+    role = Column(String, nullable=False, default="student")
     active = Column(Boolean, nullable=False, default=True)
 
 class LoginSession(Base):
@@ -38,24 +38,21 @@ class Lead(Base):
     __tablename__ = "leads"
 
     id = Column(String, primary_key=True, default=generate_uuid)
-    customer_id = Column(String, unique=True, index=True)
-    age = Column(Integer)
-    gender = Column(String)
-    income = Column(Float)
-    campaign_channel = Column(String)
-    campaign_type = Column(String)
+    student_id = Column(String, unique=True, index=True)
+    student_name = Column(String)
+    course_interested = Column(String)
+    program = Column(String)
+    qualification = Column(String)
+    academic_score = Column(Float)
+    enquiry_source = Column(String)
+    location = Column(String)
+    admission_year = Column(Integer)
+    enquiry_date = Column(String)
+    lead_status = Column(String)
+    engagement_level = Column(String)
+    follow_up_status = Column(String)
+    admission_status = Column(Boolean)
     ad_spend = Column(Float)
-    click_through_rate = Column(Float)
-    conversion_rate = Column(Float)
-    website_visits = Column(Integer)
-    pages_per_visit = Column(Float)
-    time_on_site = Column(Float)
-    social_shares = Column(Integer)
-    email_opens = Column(Integer)
-    email_clicks = Column(Integer)
-    previous_purchases = Column(Integer)
-    loyalty_points = Column(Integer)
-    conversion = Column(Boolean)
 
     predictions = relationship("MLPrediction", back_populates="lead", uselist=False)
 
@@ -64,7 +61,7 @@ class MLPrediction(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     lead_id = Column(String, ForeignKey("leads.id"))
-    conversion_probability = Column(Float)
+    admission_probability = Column(Float)
     lead_score = Column(String)
     segment_cluster = Column(Integer)
     segment_name = Column(String)
@@ -78,15 +75,15 @@ class ChannelMetric(Base):
     id = Column(String, primary_key=True, default=generate_uuid)
     channel_name = Column(String, unique=True, index=True)
     total_spend = Column(Float)
-    total_conversions = Column(Integer)
-    historical_cac = Column(Float)
-    historical_conversion_rate = Column(Float)
+    total_admissions = Column(Integer)
+    historical_cpa = Column(Float)
+    historical_admission_rate = Column(Float)
 
 class BudgetSimulation(Base):
     __tablename__ = "budget_simulations"
 
     id = Column(String, primary_key=True, default=generate_uuid)
     scenario_name = Column(String)
-    allocations = Column(JSON) # e.g., {"Social Media": 5000, "SEO": 2000}
-    predicted_conversions = Column(Float)
+    allocations = Column(JSON) # e.g., {"Google Ads": 5000, "Instagram": 2000}
+    predicted_admissions = Column(Float)
     predicted_cpa = Column(Float)

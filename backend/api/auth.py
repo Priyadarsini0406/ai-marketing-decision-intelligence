@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import secrets
 import time
+import os
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,7 +15,7 @@ from database.models import User, LoginSession
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 bearer = HTTPBearer(auto_error=False)
-Role = Literal["admin", "marketer", "data_scientist", "executive"]
+Role = Literal["admin", "student", "admission_manager", "marketing_manager"]
 
 def hash_password(password):
     salt = secrets.token_hex(16)
@@ -47,7 +48,8 @@ class Credentials(BaseModel):
 class NewUser(Credentials):
     name: str = Field(min_length=1, max_length=100)
     password: str = Field(min_length=12, max_length=128)
-    role: Role = "marketer"
+    role: Role = "student"
+    institution: str | None = Field(default=None, max_length=200)
 
     @field_validator("name")
     @classmethod
@@ -79,20 +81,55 @@ def require_admin(user: User = Depends(current_user)):
         raise HTTPException(403, "Administrator access required")
     return user
 
+def require_manager(user: User = Depends(current_user)):
+    if user.role not in ("admission_manager", "marketing_manager"):
+        raise HTTPException(403, "Admission or marketing manager access required")
+    return user
+
 @router.post("/register", status_code=201)
 def register(data: NewUser, db: Session = Depends(get_db)):
-    if data.role == "admin":
-        raise HTTPException(403, "Only an administrator can create admin accounts")
+    if data.role not in ("student", "admission_manager"):
+        raise HTTPException(403, "Only an administrator can create accounts for this role")
     return public_user(create_user(data, db))
 
 @router.post("/login")
 def login(data: Credentials, db: Session = Depends(get_db)):
+    # Local demo users go through normal authentication and never exist when
+    # APP_ENV is production. The backend remains the source of the user role.
+    demo_enabled = os.getenv("APP_ENV", "development").lower() in ("development", "demo")
+    demo_accounts = {
+        os.getenv("DEMO_STUDENT_EMAIL", "student@test.com").lower(): ("student", os.getenv("DEMO_STUDENT_PASSWORD", "Student@123")),
+        os.getenv("DEMO_MANAGER_EMAIL", "manager@test.com").lower(): ("admission_manager", os.getenv("DEMO_MANAGER_PASSWORD", "Manager@123")),
+        os.getenv("DEMO_ADMIN_EMAIL", "admin@test.com").lower(): ("admin", os.getenv("DEMO_ADMIN_PASSWORD", "Admin@123")),
+    }
+    is_demo = demo_enabled and data.email in demo_accounts
+
     user = db.query(User).filter(User.email == data.email).first()
-    # Perform the same expensive hash operation for unknown accounts.
-    encoded = user.password_hash if user else "0" * 32 + "$" + "0" * 64
-    valid = verify_password(data.password, encoded)
-    if not user or not valid or not user.active:
+
+    if is_demo and not user:
+        role, demo_password = demo_accounts[data.email]
+        user = User(
+            name=data.email.split("@")[0].title().replace("_", " "),
+            email=data.email,
+            password_hash=hash_password(demo_password),
+            role=role,
+            active=True
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    if not is_demo:
+        # Perform the same expensive hash operation for unknown accounts.
+        encoded = user.password_hash if user else "0" * 32 + "$" + "0" * 64
+        valid = verify_password(data.password, encoded)
+        if not user or not valid or not user.active:
+            raise HTTPException(401, "Invalid email or password")
+    elif not user.active:
+        raise HTTPException(401, "Account disabled")
+    elif not verify_password(data.password, user.password_hash):
         raise HTTPException(401, "Invalid email or password")
+
     token = secrets.token_urlsafe(32)
     db.query(LoginSession).filter(LoginSession.expires_at <= time.time()).delete()
     db.add(LoginSession(token_hash=token_hash(token), user_id=user.id, expires_at=time.time() + 28800))

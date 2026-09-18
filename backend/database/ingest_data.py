@@ -27,7 +27,7 @@ def ingest_data(csv_path: str):
 
     # Rename columns to match the SQLAlchemy model (snake_case)
     df = df.rename(columns={
-        "CustomerID": "customer_id",
+        "CustomerID": "student_id",
         "Age": "age",
         "Gender": "gender",
         "Income": "income",
@@ -55,7 +55,7 @@ def ingest_data(csv_path: str):
     # Check if data already exists to avoid duplicates
     existing_count = db.query(Lead).count()
     if existing_count > 0:
-        print(f"Database already contains {existing_count} leads. Skipping ingestion to prevent duplicates.")
+        print(f"Database already contains {existing_count} student leads. Skipping ingestion to prevent duplicates.")
         db.close()
         return
 

@@ -11,8 +11,8 @@
     async function remove(id: string) { await action(async () => { await api(`/admin/datasets/${id}`, { method: 'DELETE' }); if(selected?.id === id) selected = null; deleting = ''; message = 'Dataset deleted.'; await load(); }); }
     async function saveName(event: SubmitEvent) { event.preventDefault(); await action(async () => { if (!selected) return; await api(`/admin/datasets/${selected.id}`, { method: 'PUT', body: JSON.stringify({ name: rename }) }); selected.name = rename; await load(); message = 'Dataset renamed.'; }); }
 </script>
-<svelte:head><title>Marketing datasets | DecisionIntel</title></svelte:head>
-<h1>Marketing datasets</h1><p>Manage source CSV files. Uploaded datasets are stored for review; they do not automatically train models or replace existing leads.</p>
+<svelte:head><title>Student Admission Datasets | DecisionIntel</title></svelte:head>
+<h1>Student Admission Datasets</h1><p>Manage source CSV files. Uploaded datasets are stored for review; they do not automatically train models or replace existing leads.</p>
 {#if error}<p role="alert">{error}</p>{/if}{#if message}<p role="status">{message}</p>{/if}
 <form class="panel" onsubmit={upload}><label>Upload CSV<input type="file" accept=".csv,text/csv" bind:files required /></label><small>UTF-8 CSV with unique headers. Maximum 5 MB, 10,000 rows, and 100 columns.</small><div><button disabled={busy}>{busy ? 'Working…' : 'Upload dataset'}</button></div></form>
 <div class="panel table-wrap"><table><thead><tr><th>Dataset</th><th>Rows</th><th>Uploaded</th><th>Actions</th></tr></thead><tbody>

@@ -9,7 +9,7 @@ async def lifespan(app):
     yield
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Marketing Decision Intelligence API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Student Admission Marketing Intelligence API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,7 +21,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Marketing Decision Intelligence API"}
+    return {"message": "Welcome to the Student Admission Marketing Intelligence API"}
 
 from api import leads, analytics, budget
 from api import auth, admin
@@ -29,7 +29,7 @@ from api import auth, admin
 app.include_router(auth.router)
 app.include_router(admin.router)
 
-app.include_router(leads.router, dependencies=[Depends(auth.current_user)])
+app.include_router(leads.router, dependencies=[Depends(auth.require_manager)])
 app.include_router(analytics.router, dependencies=[Depends(auth.current_user)])
 app.include_router(budget.router, dependencies=[Depends(auth.current_user)])
 

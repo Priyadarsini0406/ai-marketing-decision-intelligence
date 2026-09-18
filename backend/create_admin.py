@@ -17,4 +17,4 @@ if __name__ == "__main__":
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
         create_user(data, db)
-    print(f"Administrator {data.email} created. Sign in at /admin/login.")
+    print(f"Administrator {data.email} created. Sign in at /login.")

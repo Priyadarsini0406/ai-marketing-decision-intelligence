@@ -1,159 +1,176 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { fade, fly } from 'svelte/transition';
+  import { dashboardStats, managerCampaigns, managerFunnelStages, managerLeads, managerRecommendations, managerChannels } from '$lib/manager-demo';
 
-	let visible = $state(false);
-
-	onMount(() => {
-		visible = true;
-	});
+  const topLeads = managerLeads.slice(0, 4);
 </script>
 
 <svelte:head>
-	<title>Overview - Dashboard</title>
+  <title>Manager Dashboard | DecisionIntel</title>
 </svelte:head>
 
-{#if visible}
-	<div class="space-y-6" in:fade={{ duration: 400 }}>
-		<!-- Header Section -->
-		<div class="flex justify-between items-end mb-8" in:fly={{ y: -20, duration: 600, delay: 100 }}>
-			<div>
-				<h1 class="text-3xl font-bold text-white mb-2">Campaign Overview</h1>
-				<p class="text-text-secondary">AI-driven insights and real-time performance metrics.</p>
-			</div>
-			<div class="flex gap-3">
-				<button class="px-4 py-2 rounded-lg bg-card border border-white/10 text-white text-sm font-medium hover:bg-white/5 transition-colors">
-					Export Report
-				</button>
-				<button class="px-4 py-2 rounded-lg bg-accent hover:bg-accent/90 text-white text-sm font-bold transition-colors shadow-[0_0_15px_rgba(164,123,224,0.3)]">
-					Train RL Agent
-				</button>
-			</div>
-		</div>
+<div class="space-y-6 pb-10">
+  <div class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <div>
+      <p class="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Manager dashboard</p>
+      <h1 class="mt-2 text-3xl font-bold text-white">Welcome back, Priyadarshini</h1>
+      <p class="mt-2 max-w-2xl text-text-secondary">Track your admission performance and make data-driven marketing decisions.</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+      <a href="/student-leads/new" class="rounded-xl border border-white/10 bg-card px-4 py-2 text-sm font-medium text-white">+ Add Student Lead</a>
+      <a href="/budget-optimization" class="rounded-xl bg-accent px-4 py-2 text-sm font-bold text-white">Optimize Budget</a>
+    </div>
+  </div>
 
-		<!-- Top Level Metrics -->
-		<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-			<!-- Metric 1 -->
-			<div in:fly={{ y: 20, duration: 600, delay: 200 }} class="bg-card p-6 rounded-2xl border border-white/5 shadow-lg relative overflow-hidden group hover:border-white/10 transition-colors">
-				<div class="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-				<div class="flex items-center space-x-4">
-					<div class="p-3 bg-white/5 border border-white/10 rounded-xl text-text-secondary">
-						<svg xmlns="http://www.w3.org/-2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-						</svg>
-					</div>
-					<div>
-						<p class="text-sm text-text-secondary font-medium mb-1">Total Leads</p>
-						<h3 class="text-2xl font-bold text-white">8,000</h3>
-					</div>
-				</div>
-			</div>
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    {#each dashboardStats as stat}
+      <div class="rounded-2xl border border-white/10 bg-card p-5">
+        <p class="text-xs uppercase tracking-[0.18em] text-text-secondary">{stat.label}</p>
+        <div class="mt-3 flex items-end justify-between">
+          <span class="text-3xl font-bold text-white">{stat.value}</span>
+          <span class="text-sm font-semibold text-green-300">{stat.delta}</span>
+        </div>
+      </div>
+    {/each}
+  </div>
 
-			<!-- Metric 2 -->
-			<div in:fly={{ y: 20, duration: 600, delay: 300 }} class="bg-card p-6 rounded-2xl border border-white/5 shadow-lg relative overflow-hidden group hover:border-white/10 transition-colors">
-				<div class="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-				<div class="flex items-center space-x-4">
-					<div class="p-3 bg-white/5 border border-white/10 rounded-xl text-green-400">
-						<svg xmlns="http://www.w3.org/-2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
-					</div>
-					<div>
-						<p class="text-sm text-text-secondary font-medium mb-1">Avg Conversion Rate</p>
-						<div class="flex items-baseline gap-2">
-							<h3 class="text-2xl font-bold text-white">8.5%</h3>
-							<span class="text-xs text-green-400 font-bold">↑ 1.2%</span>
-						</div>
-					</div>
-				</div>
-			</div>
+  <div class="rounded-2xl border border-white/10 bg-card p-5">
+    <div class="mb-5 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-white">Admission Funnel</h2>
+      <a href="/admission-funnel" class="text-sm font-medium text-accent">View Full Funnel</a>
+    </div>
 
-			<!-- Metric 3 -->
-			<div in:fly={{ y: 20, duration: 600, delay: 400 }} class="bg-card p-6 rounded-2xl border border-accent/20 shadow-[0_0_15px_rgba(164,123,224,0.1)] relative overflow-hidden group hover:border-accent/40 transition-colors">
-				<div class="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity"></div>
-				<div class="flex items-center space-x-4 relative z-10">
-					<div class="p-3 bg-accent/20 border border-accent/30 rounded-xl text-accent">
-						<svg xmlns="http://www.w3.org/-2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-						</svg>
-					</div>
-					<div>
-						<p class="text-sm text-accent font-medium mb-1">Predicted Conversions</p>
-						<h3 class="text-2xl font-bold text-white">640</h3>
-					</div>
-				</div>
-			</div>
+    <div class="grid gap-4 md:grid-cols-5">
+      {#each managerFunnelStages as stage}
+        <div class="rounded-xl border border-white/10 bg-black/10 p-4">
+          <div class="mb-3 flex items-center justify-between">
+            <span class="text-xs uppercase tracking-[0.16em] text-text-secondary">{stage.name}</span>
+            <span class="text-xs text-accent">{stage.conversion}%</span>
+          </div>
+          <div class="mb-2 text-3xl font-bold text-white">{stage.count}</div>
+          <div class="text-sm text-text-secondary">Drop-off: {stage.dropOff}%</div>
+        </div>
+      {/each}
+    </div>
+  </div>
 
-			<!-- Metric 4 -->
-			<div in:fly={{ y: 20, duration: 600, delay: 500 }} class="bg-card p-6 rounded-2xl border border-white/5 shadow-lg relative overflow-hidden group hover:border-white/10 transition-colors">
-				<div class="absolute inset-0 bg-gradient-to-br from-cta/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-				<div class="flex items-center space-x-4">
-					<div class="p-3 bg-white/5 border border-white/10 rounded-xl text-cta">
-						<svg xmlns="http://www.w3.org/-2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-						</svg>
-					</div>
-					<div>
-						<p class="text-sm text-text-secondary font-medium mb-1">Avg CPA</p>
-						<div class="flex items-baseline gap-2">
-							<h3 class="text-2xl font-bold text-white">$45.20</h3>
-							<span class="text-xs text-red-400 font-bold">↓ $2.10</span>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+  <div class="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+    <div class="rounded-2xl border border-white/10 bg-card p-5">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-white">Marketing Channel Performance</h2>
+        <a href="/channel-attribution" class="text-sm font-medium text-accent">View Channel Analytics</a>
+      </div>
 
-		<!-- AI Recommendations Panel -->
-		<div in:fly={{ y: 20, duration: 600, delay: 600 }} class="bg-card p-8 rounded-2xl border border-white/10 shadow-xl flex flex-col md:flex-row justify-between items-center relative overflow-hidden mt-8">
-			<!-- Background decorative circle -->
-			<div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent opacity-10 blur-3xl pointer-events-none"></div>
-			
-			<div class="z-10 mb-6 md:mb-0 max-w-3xl">
-				<div class="flex items-center space-x-3 mb-3">
-					<div class="w-8 h-8 rounded-lg bg-cta/20 flex items-center justify-center border border-cta/30">
-						<span class="text-lg">💡</span>
-					</div>
-					<h3 class="text-xl font-bold text-cta">RL Agent Recommendation</h3>
-					<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-green-500/20 text-green-400 border border-green-500/30 uppercase tracking-wider">High Confidence</span>
-				</div>
-				<p class="text-text-secondary leading-relaxed text-lg">
-					Based on the latest learning episode, shifting <span class="text-white font-bold px-1">15%</span> of the budget from <span class="text-red-400 font-medium px-1">PPC</span> to <span class="text-green-400 font-medium px-1">Social Media</span> is projected to reduce overall CPA to <span class="text-white font-bold">$42.80</span> and increase expected conversions by <span class="text-white font-bold">4.2%</span>.
-				</p>
-			</div>
-			<button class="z-10 px-8 py-4 bg-cta hover:bg-cta/90 text-black font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(242,166,43,0.3)] hover:scale-105 whitespace-nowrap">
-				Apply Allocation
-			</button>
-		</div>
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {#each managerChannels.slice(0, 6) as channel}
+          <div class="rounded-xl border border-white/10 bg-black/10 p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <span class="text-sm font-semibold text-white">{channel.channel}</span>
+              <span class="text-xs text-accent">{channel.conversion}%</span>
+            </div>
+            <div class="space-y-2 text-sm text-text-secondary">
+              <p>Leads: <span class="text-white">{channel.leads}</span></p>
+              <p>Applications: <span class="text-white">{channel.applications}</span></p>
+              <p>Admissions: <span class="text-white">{channel.admissions}</span></p>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
 
-		<!-- Charts placeholder area -->
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-			<div in:fly={{ y: 20, duration: 600, delay: 700 }} class="bg-card p-6 rounded-2xl border border-white/5 shadow-lg h-96 flex flex-col relative overflow-hidden">
-				<div class="flex justify-between items-center mb-6 z-10">
-					<h3 class="font-bold text-white text-lg">Channel Performance</h3>
-					<select class="bg-white/5 border border-white/10 text-sm text-text-secondary rounded-lg px-3 py-1 outline-none">
-						<option>Last 30 Days</option>
-						<option>Last 7 Days</option>
-					</select>
-				</div>
-				<div class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-xl z-10">
-					<span class="text-4xl mb-4 opacity-50">📈</span>
-					<p class="text-text-secondary">ECharts Instance Placeholder</p>
-					<p class="text-xs text-slate-500 mt-2">Data will be fetched from FastAPI backend.</p>
-				</div>
-			</div>
+    <div class="rounded-2xl border border-white/10 bg-card p-5">
+      <h2 class="text-xl font-bold text-white">Budget Overview</h2>
+      <div class="mt-4 space-y-3 text-sm text-text-secondary">
+        <p>Total Budget: <span class="text-white">₹10,00,000</span></p>
+        <p>Spent: <span class="text-white">₹7,20,000</span></p>
+        <p>Remaining: <span class="text-white">₹2,80,000</span></p>
+      </div>
+      <div class="mt-5 h-2.5 rounded-full bg-white/5">
+        <div class="h-full rounded-full bg-accent" style="width: 72%"></div>
+      </div>
+      <a href="/budget-optimization" class="mt-5 inline-block rounded-xl bg-accent px-4 py-2 text-sm font-bold text-white">Optimize Budget</a>
+    </div>
+  </div>
 
-			<div in:fly={{ y: 20, duration: 600, delay: 800 }} class="bg-card p-6 rounded-2xl border border-white/5 shadow-lg h-96 flex flex-col relative overflow-hidden">
-				<div class="flex justify-between items-center mb-6 z-10">
-					<h3 class="font-bold text-white text-lg">Customer Segments (K-Means)</h3>
-					<button class="text-accent text-sm hover:underline">View Details</button>
-				</div>
-				<div class="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-xl z-10">
-					<span class="text-4xl mb-4 opacity-50">🧮</span>
-					<p class="text-text-secondary">ECharts Scatter Plot Placeholder</p>
-					<p class="text-xs text-slate-500 mt-2">Awaiting ML Pipeline execution.</p>
-				</div>
-			</div>
-		</div>
-	</div>
-{/if}
+  <div class="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
+    <div class="rounded-2xl border border-white/10 bg-card p-5">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-xl font-bold text-white">High-Potential Student Leads</h2>
+        <a href="/student-leads" class="text-sm font-medium text-accent">View all</a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left text-sm">
+          <thead class="border-b border-white/10 text-xs uppercase tracking-[0.15em] text-text-secondary">
+            <tr>
+              <th class="px-3 py-2">Student</th>
+              <th class="px-3 py-2">Course</th>
+              <th class="px-3 py-2">Probability</th>
+              <th class="px-3 py-2">Prediction</th>
+              <th class="px-3 py-2">Source</th>
+              <th class="px-3 py-2">Stage</th>
+              <th class="px-3 py-2">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each topLeads as lead}
+              <tr class="border-b border-white/5 text-white">
+                <td class="px-3 py-3">{lead.student_name}</td>
+                <td class="px-3 py-3">{lead.course_interested}</td>
+                <td class="px-3 py-3 text-accent">{lead.probability}%</td>
+                <td class="px-3 py-3">{lead.prediction}</td>
+                <td class="px-3 py-3">{lead.source}</td>
+                <td class="px-3 py-3">{lead.lead_status}</td>
+                <td class="px-3 py-3"><a href={`/student-leads/${lead.id}`} class="text-accent">View</a></td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-card p-5">
+      <h2 class="text-xl font-bold text-white">AI Insights</h2>
+      <div class="mt-4 space-y-4">
+        {#each managerRecommendations.slice(0, 2) as recommendation}
+          <div class="rounded-xl border border-white/10 bg-black/10 p-4">
+            <p class="text-sm font-semibold text-white">{recommendation.title}</p>
+            <p class="mt-2 text-sm text-text-secondary">{recommendation.reason}</p>
+          </div>
+        {/each}
+      </div>
+      <a href="/ai-recommendations" class="mt-5 inline-block rounded-xl border border-white/10 bg-card px-4 py-2 text-sm font-medium text-white">View Recommendations</a>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-white/10 bg-card p-5">
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-xl font-bold text-white">Campaign Performance</h2>
+      <a href="/campaign-analytics" class="text-sm font-medium text-accent">View Campaign Analytics</a>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left text-sm">
+        <thead class="border-b border-white/10 text-xs uppercase tracking-[0.15em] text-text-secondary">
+          <tr>
+            <th class="px-3 py-2">Campaign</th>
+            <th class="px-3 py-2">Spend</th>
+            <th class="px-3 py-2">Leads</th>
+            <th class="px-3 py-2">Admissions</th>
+            <th class="px-3 py-2">Conversion</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each managerCampaigns as campaign}
+            <tr class="border-b border-white/5 text-white">
+              <td class="px-3 py-3">{campaign.name}</td>
+              <td class="px-3 py-3">₹{campaign.spend.toLocaleString()}</td>
+              <td class="px-3 py-3">{campaign.leads}</td>
+              <td class="px-3 py-3">{campaign.admissions}</td>
+              <td class="px-3 py-3 text-accent">{campaign.conversion}%</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

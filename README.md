@@ -1,5 +1,5 @@
-# ai-marketing-decision-intelligence
-AI-driven marketing decision intelligence platform that predicts lead conversion, explains predictions using SHAP, segments customers, analyzes campaigns and channels, and optimizes marketing budget allocation using reinforcement learning.
+# ai-admission-decision-intelligence
+AI-driven admission decision intelligence platform that predicts student lead conversion, explains predictions using SHAP, segments students, analyzes admission campaigns and channels, and optimizes admission marketing budget allocation using reinforcement learning.
 
 ## Run locally (Windows PowerShell)
 
@@ -39,7 +39,7 @@ Accounts, hashed passwords, eight-hour revocable sessions, datasets, and setting
 - `/admin/users`: create accounts, change roles and names, reset passwords, and activate/deactivate users. Updates revoke that user's sessions. An administrator cannot disable or demote their own account.
 - `/admin/datasets`: upload UTF-8 CSV files, preview the first 50 rows, rename, and delete datasets. Limits: 5 MB, 10,000 rows, 100 unique columns. Uploads are stored separately from existing leads and do not automatically run ingestion or model training.
 - `/admin/configuration`: persist organization name, currency, model choice, conversion threshold, test fraction, and random seed. Organization and currency affect reports; the threshold affects the high probability lead count. Model training parameters are saved for future integration: there is currently no training service in this repository.
-- `/admin/reports`: view all stored leads, predictions/segments, channel analytics, budget simulations, and dataset inventory; export the complete report as JSON. Empty databases show empty states, not fabricated metrics. The existing marketing dashboard remains a demonstration page.
+- `/admin/reports`: view all stored leads, predictions/segments, channel analytics, budget simulations, and dataset inventory; export the complete report as JSON. Empty databases show empty states, not fabricated metrics. The existing admission dashboard remains a demonstration page.
 
 Admin APIs enforce roles on the backend. Existing leads, analytics, and budget APIs now require authentication too. The frontend keeps the session token in session storage; logout invalidates it on the server.
 

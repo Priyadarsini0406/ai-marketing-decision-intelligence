@@ -1,0 +1,79 @@
+Decision-Intel Student Outcome Prediction Experiment
+================================================================================
+Project: Student Academic Outcome Classification
+Objective: Predict the final student academic outcome from the approved feature set.
+Scope: This dataset does not contain direct marketing campaign or lead conversion data; this model represents the Student Outcome Prediction component of Decision-Intel.
+
+Dataset
+- Rows: 4424
+- Original columns: 37
+- Target: Target
+- Classes: ['Dropout', 'Enrolled', 'Graduate']
+- Missing values: 0
+
+Approved feature list
+- Marital status
+- Application mode
+- Application order
+- Course
+- Daytime/evening attendance	
+- Previous qualification
+- Previous qualification (grade)
+- Nacionality
+- Mother's qualification
+- Father's qualification
+- Mother's occupation
+- Father's occupation
+- Admission grade
+- Displaced
+- Educational special needs
+- Debtor
+- Tuition fees up to date
+- Gender
+- Scholarship holder
+- Age at enrollment
+- International
+- Curricular units 1st sem (credited)
+- Curricular units 1st sem (enrolled)
+- Curricular units 1st sem (evaluations)
+- Curricular units 1st sem (approved)
+- Curricular units 1st sem (grade)
+- Curricular units 1st sem (without evaluations)
+- Curricular units 2nd sem (credited)
+- Curricular units 2nd sem (enrolled)
+- Curricular units 2nd sem (evaluations)
+- Curricular units 2nd sem (approved)
+- Curricular units 2nd sem (grade)
+- Curricular units 2nd sem (without evaluations)
+- Unemployment rate
+- Inflation rate
+- GDP
+
+Excluded feature list
+- Target
+
+Preprocessing
+- Numeric features: StandardScaler after median imputation
+- Categorical features: Most-frequent imputation + OneHotEncoder(handle_unknown='ignore')
+- Split before fitting preprocessing transformations
+- Train/test split: 80/20, stratified, random_state=42
+- Numeric columns used: 18
+- Categorical columns used: 18
+
+Model results
+Model | Accuracy | Precision | Recall | F1 | ROC-AUC
+Logistic Regression | 0.7672 | 0.7142 | 0.6860 | 0.6948 | 0.8807
+Random Forest | 0.7593 | 0.7131 | 0.7061 | 0.7076 | 0.8863
+Gradient Boosting | 0.7537 | 0.6904 | 0.6654 | 0.6723 | 0.8846
+
+Selected model: Random Forest
+Selection basis: highest macro F1, with ROC-AUC and accuracy used as tie-breakers if needed.
+
+Saved artifacts
+- Core model pipeline: E:\mini  project\ml\models\decision_intel_student_outcome_model.pkl
+- Feature metadata: E:\mini  project\ml\models\feature_metadata.json
+- Metrics metadata: E:\mini  project\ml\models\model_metrics.json
+
+Visualizations
+- target_distribution.png
+- model_metric_comparison.png

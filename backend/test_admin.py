@@ -25,7 +25,7 @@ class AdminIntegrationTests(unittest.TestCase):
         cls.engine = engine
         Base.metadata.create_all(engine)
         with SessionLocal() as db:
-            create_user(NewUser(name='Admin', email='admin@example.com', password='TestPassword123!', role='admin'), db)
+            create_user(NewUser(name='Admin', email='testadmin@example.com', password='TestPassword123!', role='admin'), db)
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', 0))
             port = sock.getsockname()[1]
@@ -71,7 +71,7 @@ class AdminIntegrationTests(unittest.TestCase):
         with response:
             return response.status, json.load(response)
 
-    def login(self, email='admin@example.com', password='TestPassword123!'):
+    def login(self, email='testadmin@example.com', password='TestPassword123!'):
         status, data = self.request('POST', '/auth/login', {'email': email, 'password': password})
         self.assertEqual(status, 200, data)
         return data['token']
@@ -79,9 +79,9 @@ class AdminIntegrationTests(unittest.TestCase):
     def test_admin_workflows_and_access_control(self):
         for path in ['/admin/users', '/admin/datasets', '/admin/configuration', '/admin/reports', '/leads/']:
             self.assertEqual(self.request('GET', path)[0], 401)
-        self.assertEqual(self.request('POST', '/auth/login', {'email':'admin@example.com','password':'wrong'})[0], 401)
+        self.assertEqual(self.request('POST', '/auth/login', {'email':'testadmin@example.com','password':'wrong'})[0], 401)
         admin = self.login()
-        user_data = {'name':'Marketer','email':'marketer@example.com','password':'StrongPassword123!','role':'marketer'}
+        user_data = {'name':'Admission Manager','email':'testmanager@example.com','password':'StrongPassword123!','role':'admission_manager'}
         self.assertEqual(self.request('POST','/auth/register', {**user_data,'role':'admin'})[0], 403)
         status, user = self.request('POST','/admin/users', user_data, admin)
         self.assertEqual(status, 201)
@@ -92,7 +92,7 @@ class AdminIntegrationTests(unittest.TestCase):
             self.assertEqual(self.request('GET',path,token=regular)[0],403)
         self.assertEqual(self.request('POST','/admin/users',user_data,regular)[0],403)
         status, admin_user = self.request('GET','/auth/me',token=admin)
-        self.assertEqual(self.request('PUT','/admin/users/'+admin_user['id'],{'name':'Admin','role':'marketer','active':True},admin)[0],400)
+        self.assertEqual(self.request('PUT','/admin/users/'+admin_user['id'],{'name':'Admin','role':'student','active':True},admin)[0],400)
         update = {'name':'Updated','role':'admin','active':True,'password':'ChangedPassword123!'}
         self.assertEqual(self.request('PUT','/admin/users/'+user['id'],update,admin)[0],200)
         self.assertEqual(self.request('GET','/auth/me',token=regular)[0],401)

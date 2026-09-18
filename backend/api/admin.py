@@ -69,7 +69,7 @@ async def upload_dataset(file: UploadFile = File(...), db: Session = Depends(get
             raise ValueError("CSV must contain at least one data row")
     except (UnicodeDecodeError, csv.Error, ValueError) as exc:
         raise HTTPException(400, str(exc))
-    item = Dataset(name=(file.filename or "Marketing dataset")[:200], columns=columns, rows=rows, created_at=time.time())
+    item = Dataset(name=(file.filename or "Student Admission dataset")[:200], columns=columns, rows=rows, created_at=time.time())
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -144,9 +144,9 @@ def reports(db: Session = Depends(get_db)):
         "generated_at": time.time(), "configuration": config,
         "summary": {"users": db.query(User).count(), "datasets": len(datasets),
                     "dataset_rows": sum(len(d.rows) for d in datasets), "leads": len(leads),
-                    "conversions": sum(bool(l.conversion) for l in leads),
+                    "admissions": sum(bool(l.admission_status) for l in leads),
                     "ad_spend": sum(l.ad_spend or 0 for l in leads),
-                    "high_probability_leads": sum((p.conversion_probability or 0) >= config["conversion_threshold"] for p in predictions)},
+                    "high_probability_leads": sum((p.admission_probability or 0) >= config["conversion_threshold"] for p in predictions)},
         "channels": [serialize(c) for c in db.query(ChannelMetric).all()],
         "simulations": [serialize(s) for s in db.query(BudgetSimulation).all()],
         "predictions": [serialize(p) for p in predictions],

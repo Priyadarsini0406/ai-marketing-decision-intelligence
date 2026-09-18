@@ -1,11 +1,11 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { api, type User } from '$lib/api';
-    let users = $state<User[]>([]), editing = $state(''), name = $state(''), email = $state(''), password = $state(''), role = $state('marketer'), active = $state(true), error = $state(''), message = $state(''), busy = $state(false), loading = $state(true);
-    const roles = ['marketer', 'data_scientist', 'executive', 'admin'];
+    let users = $state<User[]>([]), editing = $state(''), name = $state(''), email = $state(''), password = $state(''), role = $state('student'), active = $state(true), error = $state(''), message = $state(''), busy = $state(false), loading = $state(true);
+    const roles = ['student', 'admission_manager', 'marketing_manager', 'admin'];
     async function load() { users = await api('/admin/users'); }
     onMount(async () => { try { await load(); } catch(e) { error = (e as Error).message; } finally { loading = false; } });
-    function reset() { editing = ''; name = ''; email = ''; password = ''; role = 'marketer'; active = true; }
+    function reset() { editing = ''; name = ''; email = ''; password = ''; role = 'student'; active = true; }
     function edit(user: User) { editing = user.id; name = user.name; email = user.email; role = user.role; active = user.active; password = ''; message = ''; }
     async function save(event: SubmitEvent) {
         event.preventDefault(); busy = true; error = ''; message = '';
