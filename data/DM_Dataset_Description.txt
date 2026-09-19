@@ -1,0 +1,27 @@
+## Dataset Description
+
+**Demographic Information**
+- `CustomerID`: Unique identifier for each customer
+- `Age`: Age of the customer
+- `Gender`: Male or Female
+- `Income`: Annual income (USD)
+
+**Marketing Variables**
+- `CampaignChannel`: Email, Social Media, SEO, PPC, Referral
+- `CampaignType`: Awareness, Consideration, Conversion, Retention
+- `AdSpend`: Campaign spend (USD)
+- `ClickThroughRate`: Percentage of clicks per impression
+- `ConversionRate`: Clicks that result in conversion
+
+**Engagement Metrics**
+- `WebsiteVisits`: Number of visits
+- `PagesPerVisit`: Avg pages per session
+- `TimeOnSite`: Avg time per visit (minutes)
+- `SocialShares`, `EmailOpens`, `EmailClicks`: Engagement levels
+
+**Purchase History**
+- `PreviousPurchases`: Count of past purchases
+- `LoyaltyPoints`: Points earned
+
+**Target Variable**
+- `Conversion`: 1 = Converted, 0 = Not Converted

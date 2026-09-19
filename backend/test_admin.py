@@ -2,6 +2,8 @@
 Run with the project Python environment: python -m unittest test_admin -v
 """
 import json
+import io
+import zipfile
 import os
 from pathlib import Path
 import socket
@@ -53,7 +55,7 @@ class AdminIntegrationTests(unittest.TestCase):
         else:
             os.environ['DATABASE_URL'] = cls.previous_url
 
-    def request(self, method, path, data=None, token=None, raw=None):
+    def request(self, method, path, data=None, token=None, raw=None, filename='campaign.csv'):
         headers = {}
         if token:
             headers['Authorization'] = 'Bearer ' + token
@@ -62,7 +64,8 @@ class AdminIntegrationTests(unittest.TestCase):
             body = json.dumps(data).encode()
             headers['Content-Type'] = 'application/json'
         if raw is not None:
-            body = ('--BOUNDARY\r\nContent-Disposition: form-data; name="file"; filename="campaign.csv"\r\nContent-Type: text/csv\r\n\r\n' + raw + '\r\n--BOUNDARY--\r\n').encode()
+            body = (f'--BOUNDARY\r\nContent-Disposition: form-data; name="file"; filename="{filename}"\r\nContent-Type: application/octet-stream\r\n\r\n'.encode()
+                    + (raw.encode() if isinstance(raw, str) else raw) + b'\r\n--BOUNDARY--\r\n')
             headers['Content-Type'] = 'multipart/form-data; boundary=BOUNDARY'
         try:
             response = urlopen(Request(self.base + path, data=body, headers=headers, method=method), timeout=10)
@@ -88,6 +91,60 @@ class AdminIntegrationTests(unittest.TestCase):
         self.assertNotIn('password_hash', user)
         self.assertEqual(self.request('POST','/admin/users', user_data, admin)[0], 409)
         regular = self.login(user_data['email'], user_data['password'])
+        for path in ['/workspace/overview', '/workspace/segments', '/workspace/settings']:
+            self.assertEqual(self.request('GET',path)[0],401)
+        self.assertEqual(self.request('POST','/workspace/simulate',{'budget':100,'mode':'equal'})[0],401)
+        self.assertEqual(self.request('PUT','/workspace/settings',{'currency':'INR','compact':True},regular)[0],200)
+        self.assertEqual(self.request('GET','/workspace/settings',token=regular)[1],{'currency':'INR','compact':True})
+        self.assertEqual(self.request('GET','/workspace/settings',token=admin)[1]['currency'],'USD')
+        self.assertEqual(self.request('PUT','/workspace/settings',{'currency':'BAD'},regular)[0],422)
+        lead_data = {'customer_id':'WORKSPACE-1','age':30,'gender':'Female','income':1000,
+                     'campaign_channel':'Email','campaign_type':'Awareness','ad_spend':100,
+                     'click_through_rate':.1,'conversion_rate':.1,'website_visits':2,
+                     'pages_per_visit':2,'time_on_site':3,'social_shares':0,'email_opens':2,
+                     'email_clicks':1,'previous_purchases':0,'loyalty_points':0,'conversion':True}
+        self.assertEqual(self.request('POST','/leads',lead_data)[0],401)
+        status, created_lead = self.request('POST','/leads',lead_data,regular)
+        self.assertEqual(status,201,created_lead)
+        self.assertEqual(self.request('POST','/leads',lead_data,regular)[0],409)
+        self.assertEqual(self.request('PUT','/leads/'+created_lead['id'],{**lead_data,'ad_spend':200},regular)[0],200)
+        self.assertEqual(self.request('GET','/leads?search=WORKSPACE-1',token=regular)[1][0]['ad_spend'],200)
+        status, scenario = self.request('POST','/workspace/simulate',{'budget':1000,'mode':'equal'},regular)
+        self.assertEqual(status,200,scenario)
+        self.assertEqual(scenario['predicted_conversions'],5)
+        self.assertEqual(self.request('POST','/workspace/simulate',{'budget':1000,'mode':'custom','allocations':{'Email':20}},regular)[0],422)
+        overview = self.request('GET','/workspace/overview',token=regular)[1]
+        self.assertEqual(overview['summary']['leads'],1)
+        self.assertEqual(overview['funnel'][-1]['count'],1)
+        self.assertEqual(self.request('GET','/workspace/segments',token=regular)[1][0]['leads'],1)
+        def zipped(entries):
+            output = io.BytesIO()
+            with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
+                for name, value in entries.items():
+                    archive.writestr(name, value)
+            return output.getvalue()
+        for endpoint, token in [('/datasets', regular), ('/admin/datasets', admin)]:
+            status, item = self.request('POST', endpoint, token=token, filename='campaign.zip',
+                raw=zipped({'folder/campaign.csv':'channel,spend\nSEO,100', 'README.txt':'Campaign data'}))
+            self.assertEqual(status, 201, item)
+            self.assertEqual(item['row_count'], 1)
+            self.assertEqual(self.request('DELETE','/admin/datasets/'+item['id'],token=admin)[0],200)
+        for contents in [b'broken zip', zipped({'readme.txt':'no CSV'}),
+                         zipped({'a.csv':'a\n1', 'b.csv':'b\n2'}), zipped({'a.csv':'a,a\n1,2'})]:
+            self.assertEqual(self.request('POST','/datasets',token=regular,filename='bad.zip',raw=contents)[0],400)
+        self.assertEqual(self.request('POST','/datasets',token=regular,filename='big.zip',
+            raw=zipped({'a.csv':'a\n' + 'x' * (5 * 1024 * 1024)}))[0],413)
+        self.assertEqual(self.request('POST','/datasets',raw='channel,spend\nSEO,100')[0],401)
+        self.assertEqual(self.request('POST','/datasets',token=regular,raw='a,a\n1,2')[0],400)
+        status, uploaded = self.request('POST','/datasets',token=regular,raw='channel,spend\nSEO,100')
+        self.assertEqual(status,201,uploaded)
+        self.assertEqual(uploaded['row_count'],1)
+        upload_path = '/admin/datasets/' + uploaded['id']
+        self.assertEqual(self.request('POST','/admin/datasets',token=regular,raw='a\n1')[0],403)
+        self.assertEqual(self.request('PUT',upload_path,{'name':'Changed'},regular)[0],403)
+        self.assertEqual(self.request('DELETE',upload_path,token=regular)[0],403)
+        self.assertEqual(self.request('GET',upload_path,token=admin)[1]['rows'][0]['channel'],'SEO')
+        self.assertEqual(self.request('DELETE',upload_path,token=admin)[0],200)
         for path in ['/admin/users','/admin/datasets','/admin/configuration','/admin/reports']:
             self.assertEqual(self.request('GET',path,token=regular)[0],403)
         self.assertEqual(self.request('POST','/admin/users',user_data,regular)[0],403)

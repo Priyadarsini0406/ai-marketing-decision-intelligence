@@ -1,4 +1,4 @@
-import { adminDestination, loginDestination } from './admin-navigation';
+import { adminDestination, dashboardDestination, loginDestination } from './admin-navigation';
 
 export type User = { id: string; name: string; email: string; role: string; active: boolean };
 
@@ -19,14 +19,20 @@ export async function api(path: string, options: RequestInit = {}) {
     return data;
 }
 
-export async function signIn(email: string, password: string, adminOnly = false) {
+export async function signIn(email: string, password: string) {
     const result = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     sessionStorage.setItem('session', result.token);
+<<<<<<< HEAD
     if (adminOnly && result.user.role !== 'admin') {
         await signOut();
         throw new Error('Administrator access required');
     }
     const destination = roleDestination(result.user.role, new URLSearchParams(window.location.search).get('next'));
+=======
+    const destination = result.user.role === 'admin'
+        ? adminDestination(new URLSearchParams(window.location.search).get('next'))
+        : dashboardDestination(new URLSearchParams(window.location.search).get('next'));
+>>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
     window.location.assign(destination);
 }
 

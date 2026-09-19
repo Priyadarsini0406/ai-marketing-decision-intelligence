@@ -1,3 +1,4 @@
+import { workspacePages } from './workspace-pages';
 export const adminPages = [
     { href: '/admin/dashboard', label: 'Dashboard' },
     { href: '/admin/students', label: 'Students' },
@@ -15,6 +16,7 @@ export const adminPages = [
 ];
 
 export function adminDestination(value: string | null): string {
+<<<<<<< HEAD
     return adminPages.some((item) => item.href === value) ? value! : '/admin/dashboard';
 }
 
@@ -26,4 +28,18 @@ export function loginDestination(pathname: string): string {
         return `/login?next=${encodeURIComponent(pathname)}`;
     }
     return pathname === '/dashboard' || pathname.startsWith('/dashboard/') ? `/login?next=${encodeURIComponent(pathname)}` : '/login';
+=======
+    if (value === '/admin/account') return value;
+    return adminPages.some((item) => item.href === value) ? value! : '/admin';
+}
+
+export function loginDestination(pathname: string): string {
+    return pathname === '/admin' || pathname.startsWith('/admin/')
+        ? `/login?next=${encodeURIComponent(adminDestination(pathname))}`
+        : `/login?next=${encodeURIComponent(dashboardDestination(pathname))}`;
+}
+
+export function dashboardDestination(value: string | null): string {
+    return ['/dashboard', '/dashboard/leads', '/dashboard/analytics', '/dashboard/budget', '/dashboard/datasets', '/dashboard/account', ...workspacePages.map(item => `/dashboard/${item.slug}`)].includes(value || '') ? value! : '/dashboard';
+>>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
 }

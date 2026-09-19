@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "decision-intel-root",
   "private": true,
   "scripts": {
@@ -13,3 +14,18 @@
     "concurrently": "^9.2.1"
   }
 }
+=======
+  "name": "ai-marketing-decision-intelligence",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "start": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "check": "npm --prefix frontend run check",
+    "test:admin": "npm --prefix frontend run test:admin",
+    "install:frontend": "npm --prefix frontend install"
+  }
+}
+>>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
