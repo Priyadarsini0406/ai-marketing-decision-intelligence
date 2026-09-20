@@ -50,7 +50,7 @@
 </script>
 
 {#if user}
-<div class="flex h-screen bg-primary font-sans text-text-primary overflow-hidden">
+<div class="role-effects flex h-screen bg-primary font-sans text-text-primary overflow-hidden">
     {#if mobileOpen}<button class="fixed inset-0 z-30 bg-black/60 md:hidden" aria-label="Close navigation" onclick={() => mobileOpen = false}></button>{/if}
     <aside class:translate-x-0={mobileOpen} class="fixed md:static inset-y-0 left-0 z-40 w-72 md:w-64 -translate-x-full md:translate-x-0 bg-card border-r border-white/5 flex flex-col transition-transform duration-200 shrink-0">
         <div class="h-20 border-b border-white/5 flex items-center px-6"><a href="/" class="flex items-center gap-2"><div class="w-8 h-8 rounded-lg bg-linear-to-br from-accent to-secondary grid place-items-center shadow-[0_0_15px_rgba(164,123,224,.5)]">🎓</div><span class="text-xl font-bold tracking-wider text-white">Decision<span class="text-accent font-serif italic">Intel</span></span></a></div>

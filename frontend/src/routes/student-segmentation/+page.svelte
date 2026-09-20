@@ -1,4 +1,5 @@
 <script lang="ts">
+    import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
   import { managerSegments } from '$lib/manager-demo';
 </script>
 
@@ -6,11 +7,12 @@
   <title>Student Segmentation | DecisionIntel</title>
 </svelte:head>
 
-<div class="space-y-6">
-  <div>
+<div class="space-y-6">  <div>
     <p class="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Lead intelligence</p>
     <h1 class="mt-2 text-3xl font-bold text-white">Student Segmentation</h1>
   </div>
+<div class="grid gap-5 xl:grid-cols-2"><AnalyticsChart title="Student segment distribution" kind="donut" categories={managerSegments.map(item => item.title)} series={[{ name: 'Students', values: managerSegments.map(item => item.count) }]} unit="Students" /><AnalyticsChart title="Segment probabilities and conversion" categories={managerSegments.map(item => item.title)} series={[{ name: 'Average probability', values: managerSegments.map(item => item.avgProbability) }, { name: 'Conversion rate', values: managerSegments.map(item => item.conversionRate) }]} unit="%" /></div>
+
 
   <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
     <div class="rounded-2xl border border-white/10 bg-card p-5">

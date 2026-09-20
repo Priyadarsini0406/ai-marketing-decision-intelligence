@@ -1,4 +1,5 @@
 <script lang="ts">
+    import RecordChart from '$lib/components/RecordChart.svelte';
     import { api } from '$lib/api';
     import DataTable from '$lib/DataTable.svelte';
     let { data } = $props();
@@ -76,6 +77,10 @@
         {#if slug === 'reports' && overview}<div class="summary-grid">{#each Object.entries(overview.summary) as [key,value]}<div class="workspace-panel"><p>{key.replaceAll('_',' ')}</p><strong>{value.toLocaleString()}</strong></div>{/each}</div><section class="workspace-panel"><h2>Campaign performance</h2><DataTable rows={overview.campaigns} /></section>{/if}
         {#if slug === 'funnel' && overview}<section class="workspace-panel">{#each overview.funnel as stage}<div class="funnel-stage"><span>{stage.stage}: {stage.count}</span><meter min="0" max={Math.max(1, overview.summary.leads)} value={Number(stage.count)}>{stage.count}</meter></div>{/each}<p>Conversions without a recorded website visit are outside this nested cohort; stage order cannot be inferred from this dataset.</p></section>{/if}
         <section class="workspace-panel"><DataTable {rows} /></section>
+    {/if}
+    {#if !busy && !error && slug !== 'settings'}
+        {#if result}<RecordChart rows={result.factors ? result.factors as Row[] : result.allocations ? Object.entries(result.allocations as Record<string,number>).map(([channel,amount]) => ({channel,amount})) : [result]} title="Calculated result" />{/if}
+        <RecordChart rows={rows.length ? rows : overview?.prediction_preview ?? []} title={`${data.feature.label}: graphical summary`} />
     {/if}
     {#if overview && !busy && !error && slug !== 'settings'}
         {#if slug === 'prediction' || slug === 'explainability'}

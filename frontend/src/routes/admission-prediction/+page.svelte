@@ -1,4 +1,5 @@
 <script lang="ts">
+    import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
   import { managerLeads } from '$lib/manager-demo';
 
   const summary = [
@@ -13,8 +14,7 @@
   <title>Admission Prediction | DecisionIntel</title>
 </svelte:head>
 
-<div class="space-y-6">
-  <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+<div class="space-y-6">  <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
     <div>
       <p class="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Manager intelligence</p>
       <h1 class="mt-2 text-3xl font-bold text-white">Admission Prediction</h1>
@@ -23,6 +23,8 @@
       Demo / mock prediction data only
     </div>
   </div>
+<AnalyticsChart title="Admission probability by student" categories={managerLeads.map(item => item.student_name)} series={[{ name: 'Predicted probability', values: managerLeads.map(item => item.probability) }]} unit="%" />
+
 
   <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
     {#each summary as item}

@@ -1,9 +1,14 @@
 <script lang="ts">
+    import RecordChart from '$lib/components/RecordChart.svelte';
+    import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
+    import { managerCampaigns, managerChannels } from '$lib/manager-demo';
     import DataTable from '$lib/DataTable.svelte';
     import { fullReport, fullReportCsv, reportCatalog, reportCsv } from '$lib/manager-reports';
     let selected = $state('lead');
     let search = $state('');
     let notice = $state('');
+    let trendSource = $state('campaigns');
+    const trendRows = $derived(trendSource === 'campaigns' ? managerCampaigns.map(item => ({ ...item, label: item.name })) : managerChannels.map(item => ({ ...item, label: item.channel })));
     let exporting = $state(false);
     let exportError = $state('');
     const report = $derived(reportCatalog.find(item => item.type === selected)!);
@@ -60,6 +65,8 @@
     {#if exportError}<p role="alert" class="text-sm text-red-300">{exportError}</p>{/if}
     {#if notice}<p role="status" class="text-sm text-accent">{notice}</p>{/if}
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{#each summary as item}<div class="panel"><p class="caption">{item.label}</p><p class="mt-3 text-3xl text-white font-bold">{item.value}</p></div>{/each}</div>
+    <div class="field"><label for="report-performance-source">Performance comparison</label><select id="report-performance-source" bind:value={trendSource}><option value="campaigns">Campaign performance</option><option value="channels">Channel performance</option></select></div>
+    <AnalyticsChart title="Analytics performance trends" kind="line" categories={trendRows.map(item => item.label)} series={[{ name: 'Leads', values: trendRows.map(item => item.leads) }, { name: 'Applications', values: trendRows.map(item => item.applications) }, { name: 'Admissions', values: trendRows.map(item => item.admissions) }]} unit="Students" description="Compare outcomes across campaigns or channels. Points represent category totals, not dates; this overview includes the full dataset." />
     <section aria-label="Available reports" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {#each reportCatalog as item}
             <article class="panel flex flex-col gap-3">
@@ -73,6 +80,7 @@
         <div class="flex flex-wrap justify-between gap-4 items-end"><div><h2>{report.label} preview</h2><p class="mt-2 text-sm text-text-secondary">Showing {rows.length} of {report.rows.length} records. Monetary columns use INR; percentage columns use 0–100.</p></div><button class="action" disabled={!rows.length} onclick={() => download(reportCsv(rows), `${report.type}-report-filtered.csv`, 'text/csv;charset=utf-8')}>Download displayed rows (CSV)</button></div>
         <div class="grid gap-4 sm:grid-cols-2"><div class="field"><label for="report-type">Report type</label><select id="report-type" value={selected} onchange={(event) => selectReport(event.currentTarget.value)}>{#each reportCatalog as item}<option value={item.type}>{item.label}</option>{/each}</select></div><label class="field">Search report<input type="search" bind:value={search} placeholder="Search any column" /></label></div>
         <DataTable {rows} empty="No records match your search. Clear the search to see all report rows." />
+        <RecordChart {rows} title={`${report.label}: graphical summary`} />
     </section>
 </div>
 

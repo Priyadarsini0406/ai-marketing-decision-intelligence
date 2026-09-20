@@ -1,4 +1,5 @@
 <script lang="ts">
+    import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
     import { managerBudget, managerChannels, managerRecommendations, whatIfScenario } from '$lib/manager-demo';
     import DataTable from '$lib/DataTable.svelte';
     let { view }: { view: 'budget' | 'simulator' | 'recommendations' } = $props();
@@ -70,6 +71,7 @@
 <div class="space-y-6">
     <div><p class="text-xs uppercase tracking-[0.2em] text-accent font-semibold">{view === 'recommendations' ? 'AI insights' : 'Budget intelligence'}</p><h1 class="mt-2 text-3xl font-bold text-white">{titles[view]}</h1><p class="mt-2 text-text-secondary">{view === 'budget' ? 'Compare channel allocations using the supplied budget and admission performance.' : view === 'simulator' ? 'Explore how changes in channel investment affect estimated admission outcomes.' : 'Review admission and marketing actions from the supplied recommendation set.'}</p></div>
     {#if view === 'recommendations'}
+<AnalyticsChart title="Channel evidence: cost per admission" categories={managerChannels.map(item => item.channel)} series={[{ name: 'Cost per admission', values: managerChannels.map(item => Math.round(item.spend / item.admissions)) }]} unit="INR" />
         <div class="grid gap-4 sm:grid-cols-3">
             <div class="panel"><p class="caption">Recommendations</p><strong>{managerRecommendations.length}</strong></div>
             <div class="panel"><p class="caption">Insights</p><strong>{managerRecommendations.filter(item => item.type === 'Insight').length}</strong></div>
@@ -89,6 +91,14 @@
             <div class="panel"><p class="caption">Total budget</p><strong>{money(managerBudget.totalBudget)}</strong></div>
             <div class="panel"><p class="caption">Spent</p><strong>{money(managerBudget.spent)}</strong></div>
             <div class="panel"><p class="caption">Remaining</p><strong>{money(managerBudget.remaining)}</strong></div>
+        </div>
+        {#if view === 'budget'}
+            <AnalyticsChart title="Budget performance trends" kind="line" categories={channels.map(item => item.channel)} series={[{ name: 'Current allocation', values: channels.map(item => item.currentAmount) }, { name: 'Recorded channel spend', values: channels.map(item => item.spend) }, ...(result ? [{ name: 'Scenario allocation', values: channels.map(item => result!.allocation[item.channel]) }] : [])]} unit="INR" description="Comparison across channels, not a time series. Calculate an allocation to add the scenario line; recorded spend is the supplied historical reference." />
+        {/if}
+        <div class="grid gap-5 xl:grid-cols-2">
+            <AnalyticsChart title="Current budget allocation" kind="donut" categories={channels.map(item => item.channel)} series={[{ name: 'Allocation', values: channels.map(item => item.currentAmount) }]} unit="INR" />
+            {#if view === 'simulator'}<AnalyticsChart title="Provided scenario outcomes" categories={['Leads','Applications','Admissions']} series={[{ name: 'Current', values: [whatIfScenario.current.leads,whatIfScenario.current.applications,whatIfScenario.current.admissions] }, { name: 'Simulated', values: [whatIfScenario.simulated.leads,whatIfScenario.simulated.applications,whatIfScenario.simulated.admissions] }]} unit="Students" />
+            {:else}<AnalyticsChart title="Allocation by channel" categories={channels.map(item => item.channel)} series={[{ name: 'Current allocation', values: channels.map(item => item.currentAmount) }]} unit="INR" />{/if}
         </div>
         {#if view === 'budget'}
             <section class="panel"><h2>Current channel allocation</h2><div class="mt-5 space-y-4">{#each channels as item}<div><div class="mb-2 flex justify-between gap-3 text-sm"><span>{item.channel}</span><span>{money(item.currentAmount)} · {item.percent}%</span></div><div class="track"><div class="bar" style:width={`${item.percent}%`}></div></div></div>{/each}</div><div class="mt-6"><DataTable rows={currentRows} /></div></section>
@@ -112,6 +122,7 @@
             </form>
         </section>
         {#if result}
+            <AnalyticsChart title="Scenario allocation comparison" categories={channels.map(item => item.channel)} series={[{ name: 'Current', values: channels.map(item => item.currentAmount) }, { name: 'Scenario', values: channels.map(item => result!.allocation[item.channel]) }]} unit="INR" />
             <section class="panel" aria-live="polite"><h2>Scenario result</h2><p class="note">Projected outcomes for {money(result.budget)} across {channels.length} channels.</p>
                 <div class="grid gap-4 my-5 sm:grid-cols-2 xl:grid-cols-4"><div><p class="caption">Estimated leads</p><strong>{number(result.leads)}</strong></div><div><p class="caption">Estimated applications</p><strong>{number(result.applications)}</strong></div><div><p class="caption">Estimated admissions</p><strong>{number(result.admissions)}</strong></div><div><p class="caption">Cost per admission</p><strong>{result.admissions ? money(result.budget / result.admissions) : '—'}</strong></div></div>
                 <p class="note">Current-mix baseline at {money(managerBudget.totalBudget)}: {number(baseline.admissions)} estimated admissions. Scenario change: {result.admissions >= baseline.admissions ? '+' : ''}{number(result.admissions - baseline.admissions)} admissions.</p>

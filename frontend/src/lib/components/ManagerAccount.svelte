@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { api, signOut, type User } from '$lib/api';
     import { managerProfile, managerSettings } from '$lib/manager-demo';
-    let { view }: { view: 'profile' | 'settings' } = $props();
+    let { view, audience = 'manager' }: { view: 'profile' | 'settings'; audience?: 'manager' | 'admin' } = $props();
     let user = $state<User | null>(null);
     let profile = $state({ ...managerProfile });
     let savedProfile = $state({ ...managerProfile });
@@ -18,10 +18,11 @@
         { key: 'predictionNotifications', title: 'Prediction updates', description: 'Admission prediction results and changes in lead potential.' },
         { key: 'marketingInsightNotifications', title: 'Marketing insights', description: 'Campaign performance, channel insights, and budget recommendations.' }
     ];
-    const storageKey = () => `decisionintel:manager-account:${user!.id}`;
+    const storageKey = () => `decisionintel:${audience}-account:${user!.id}`;
     onMount(async () => {
         try {
             user = await api('/auth/me');
+            if (audience === 'admin' && user) { profile.name = user.name; profile.email = user.email; profile.role = 'Administrator'; }
             const stored = localStorage.getItem(storageKey());
             if (stored) {
                 const parsed = JSON.parse(stored);
@@ -59,7 +60,7 @@
 
 <svelte:head><title>{view === 'profile' ? 'Profile' : 'Settings'} | DecisionIntel</title></svelte:head>
 <div class="account-workspace">
-    <div class="page-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h1>{view === 'profile' ? 'Profile' : 'Settings'}</h1><p class="subtitle">{view === 'profile' ? 'Your professional identity, contact details, and account access.' : 'Make your admission and marketing workspace work for you.'}</p></div><span class="workspace-badge">Admission &amp; Marketing</span></div>
+    <div class="page-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h1>{view === 'profile' ? 'Profile' : 'Settings'}</h1><p class="subtitle">{view === 'profile' ? 'Your professional identity, contact details, and account access.' : 'Manage your workspace preferences and account access.'}</p></div><span class="workspace-badge">{audience === 'admin' ? 'Administration' : 'Admission & Marketing'}</span></div>
     {#if error}<p role="alert" class="message error">{error}</p>{/if}
     {#if notice}<p role="status" class="message success">{notice}</p>{/if}
     {#if !loaded && !error}<p role="status" class="subtitle">Loading your workspace...</p>{/if}
@@ -73,7 +74,7 @@
                 <section class="panel"><div class="section-heading"><span class="section-number">01</span><div><h2>Professional details</h2><p>Contact information used in your workspace profile.</p></div></div>
                     <form onsubmit={saveProfile}>
                         <div class="form-grid"><label>Full name<input bind:value={profile.name} readonly={!editing} required maxlength="100" autocomplete="name" /></label><label>Contact email<input type="email" bind:value={profile.email} readonly={!editing} required maxlength="254" autocomplete="email" /></label><label>Phone number<input type="tel" bind:value={profile.phone} readonly={!editing} maxlength="30" autocomplete="tel" /></label><label>Institution<input bind:value={profile.institution} readonly={!editing} required maxlength="150" autocomplete="organization" /></label></div>
-                        <div class="detail-line"><span>Workspace role</span><strong>{managerProfile.role}</strong></div>
+                        <div class="detail-line"><span>Workspace role</span><strong>{audience === 'admin' ? 'Administrator' : managerProfile.role}</strong></div>
                         <div class="section-footer"><p>Profile edits are saved in this browser. Your sign-in email and account permissions stay managed by your administrator.</p>{#if editing}<div class="actions"><button class="button secondary" type="button" onclick={cancel}>Cancel</button><button class="button primary" type="submit">Save profile</button></div>{/if}</div>
                     </form>
                 </section>

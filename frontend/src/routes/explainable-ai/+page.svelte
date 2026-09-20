@@ -1,4 +1,5 @@
 <script lang="ts">
+    import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
   import { managerLeads, shapDemo } from '$lib/manager-demo';
 
   let selectedId = $state(managerLeads[0]?.id ?? '');
@@ -9,12 +10,13 @@
   <title>Explainable AI | DecisionIntel</title>
 </svelte:head>
 
-<div class="space-y-6">
-  <div>
+<div class="space-y-6">  <div>
     <p class="text-xs uppercase tracking-[0.2em] text-accent font-semibold">AI insights</p>
     <h1 class="mt-2 text-3xl font-bold text-white">Explainable AI</h1>
     <p class="mt-2 text-text-secondary">Understand the factors influencing admission conversion predictions.</p>
   </div>
+<AnalyticsChart title="SHAP feature contributions" categories={[...shapDemo.positive,...shapDemo.negative].map(item => item.name)} series={[{ name: 'Contribution', values: [...shapDemo.positive,...shapDemo.negative].map(item => item.value) }]} description="Supplied demo explanation. Positive values support the prediction; negative values reduce it." unit="Contribution" />
+
 
   <div class="rounded-2xl border border-white/10 bg-card p-5">
     <label for="student-lead-select" class="block text-sm font-medium text-text-secondary">Student lead</label>

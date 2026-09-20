@@ -1,4 +1,5 @@
 <script lang="ts">
+    import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
     import { managerFunnelStages, managerChannels, managerCampaigns } from '$lib/manager-demo';
     import DataTable from '$lib/DataTable.svelte';
 
@@ -73,13 +74,28 @@
         <div><p class="text-xs uppercase tracking-[0.2em] text-accent font-semibold">Admission analytics</p><h1 class="mt-2 text-3xl font-bold text-white">{titles[view]}</h1><p class="mt-2 text-text-secondary">{descriptions[view]}</p></div>
         <button class="action" onclick={exportCsv} disabled={!rows.length}>Export CSV</button>
     </div>
+    {#if view === 'campaigns'}
+        <AnalyticsChart title="Campaign performance trends" kind="line" categories={campaigns.map(item => item.name)} series={[{ name: 'Leads', values: campaigns.map(item => item.leads) }, { name: 'Applications', values: campaigns.map(item => item.applications) }, { name: 'Admissions', values: campaigns.map(item => item.admissions) }]} unit="Students" description="Comparison across the selected campaigns, not a time series. Hover over a campaign to inspect all three outcomes." />
+    {/if}
     {#if view !== 'funnel'}
         <div class="flex flex-wrap gap-4 items-end">
             <div class="grid gap-2 text-sm text-text-secondary"><label for="analytics-channel">Channel</label><select id="analytics-channel" bind:value={selectedChannel}><option>All channels</option>{#each availableChannels as channel}<option>{channel}</option>{/each}</select></div>
             {#if view === 'campaigns'}<label class="grid gap-2 text-sm text-text-secondary">Search campaigns<input bind:value={search} placeholder="Campaign name" /></label>{/if}
         </div>
     {/if}
+    {#if view !== 'funnel'}
+    <div class="grid gap-5 xl:grid-cols-2">
+    {#if view === 'attribution'}
+        <AnalyticsChart title="Channel admission share" kind="donut" categories={channels.map(item => item.channel)} series={[{ name: 'Admissions', values: channels.map(item => item.admissions) }]} unit="Admissions" />
+        <AnalyticsChart title="Channel outcomes" categories={channels.map(item => item.channel)} series={[{ name: 'Applications', values: channels.map(item => item.applications) }, { name: 'Admissions', values: channels.map(item => item.admissions) }]} unit="Students" />
+    {:else}
+        <AnalyticsChart title="Campaign outcomes" categories={campaigns.map(item => item.name)} series={[{ name: 'Applications', values: campaigns.map(item => item.applications) }, { name: 'Admissions', values: campaigns.map(item => item.admissions) }]} unit="Students" />
+        <AnalyticsChart title="Campaign budget and spend" categories={campaigns.map(item => item.name)} series={[{ name: 'Budget', values: campaigns.map(item => item.budget) }, { name: 'Spend', values: campaigns.map(item => item.spend) }]} unit="INR" />
+    {/if}
+    </div>
+    {/if}
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
         {#each cards as card}<div class="panel"><p class="text-xs uppercase tracking-wider text-text-secondary">{card.label}</p><p class="mt-3 text-2xl font-bold text-white">{card.value}</p></div>{/each}
     </div>
     {#if view === 'funnel'}

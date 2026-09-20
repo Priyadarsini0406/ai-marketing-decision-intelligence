@@ -1,0 +1,16 @@
+[
+  { "course": "BCA", "program": "Bachelor of Computer Applications" },
+  { "course": "B.Sc.", "program": "B.Sc. in Computer Science" },
+  { "course": "B.Sc.", "program": "B.Sc. in Data Science" },
+  { "course": "B.Tech", "program": "B.Tech in Computer Science and Engineering" },
+  { "course": "B.Tech", "program": "B.Tech in Cybersecurity" },
+  { "course": "B.E.", "program": "B.E. in Mechanical Engineering" },
+  { "course": "B.E.", "program": "B.E. in Electronics and Communication Engineering" },
+  { "course": "B.Com", "program": "Bachelor of Commerce" },
+  { "course": "B.Com", "program": "B.Com in Accounting and Finance" },
+  { "course": "BBA", "program": "BBA in Business Analytics" },
+  { "course": "MBA", "program": "MBA in Finance" },
+  { "course": "MBA", "program": "MBA in Human Resource Management" },
+  { "course": "M.Sc.", "program": "M.Sc. in Artificial Intelligence" },
+  { "course": "M.Tech", "program": "M.Tech in Computer Science and Engineering" }
+]
