@@ -14,13 +14,8 @@
 <div class="actions"><button onclick={load} disabled={busy}>{busy ? 'Loading…' : 'Refresh'}</button><button class="secondary" onclick={download} disabled={!report || busy}>Download full report (JSON)</button></div>
 {#if error}<p role="alert">{error}</p>{/if}
 {#if report}<p>{report.configuration.organization_name} · Generated {new Date(report.generated_at * 1000).toLocaleString()}</p>
-<<<<<<< HEAD
 <div class="grid">{#each Object.entries(report.summary) as [label, value]}<div class="stat">{label.replaceAll('_', ' ')}<strong>{label === 'ad_spend' ? new Intl.NumberFormat(undefined, {style:'currency', currency:report.configuration.currency}).format(value) : value.toLocaleString()}</strong></div>{/each}</div>
-{#each [['Channel analytics', report.channels], ['Budget simulations', report.simulations], ['Lead predictions and segments', report.predictions], ['Admission leads', report.leads], ['Dataset inventory', report.datasets]] as section}
-=======
-<div class="grid">{#each Object.entries(report.summary) as [label, value], index}<div class="stat" style:--delay={`${index * 55}ms`}>{label.replaceAll('_', ' ')}<strong>{label === 'ad_spend' ? new Intl.NumberFormat(undefined, {style:'currency', currency:report.configuration.currency}).format(value) : value.toLocaleString()}</strong></div>{/each}</div>
-{#each [['Channel analytics', report.channels], ['Budget simulations', report.simulations], ['Lead predictions and segments', report.predictions], ['Marketing leads', report.leads], ['Dataset inventory', report.datasets]] as section, index}
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
+{#each [['Channel analytics', report.channels], ['Budget simulations', report.simulations], ['Lead predictions and segments', report.predictions], ['Admission leads', report.leads], ['Dataset inventory', report.datasets]] as section, index}
 {@const rows = section[1] as Record<string, unknown>[]}
 <section class="panel" style:--delay={`${180 + index * 70}ms`}><h2>{section[0]}</h2>{#if rows.length}<p>{rows.length} records. Showing up to 100; the download includes all records.</p><div class="table-wrap"><table><thead><tr>{#each Object.keys(rows[0]) as key}<th>{key.replaceAll('_', ' ')}</th>{/each}</tr></thead><tbody>{#each rows.slice(0,100) as row}<tr>{#each Object.values(row) as value}<td>{display(value)}</td>{/each}</tr>{/each}</tbody></table></div>{:else}<p>No stored records available.</p>{/if}</section>
 {/each}{/if}

@@ -3,11 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 async function login(page: Page) {
     await page.getByLabel('Work Email', { exact: true }).fill('admin@example.com');
     await page.getByLabel('Password', { exact: true }).fill('BrowserTestPassword123!');
-<<<<<<< HEAD
-    await page.getByRole('button', { name: 'Sign In' }).click();
-=======
     await page.getByRole('button', { name: 'Sign In', exact: true }).click();
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
 }
 
 test('admin login connects every page and persistent management workflow', async ({ page }) => {
@@ -59,15 +55,6 @@ test('admin login connects every page and persistent management workflow', async
     expect(download.suggestedFilename()).toBe('marketing-report.json');
     expect(await download.failure()).toBeNull();
 
-<<<<<<< HEAD
-    await nav.getByRole('link', { name: 'Student Admission Datasets' }).click();
-    await page.getByRole('button', { name: 'Delete', exact: true }).click();
-    await page.getByRole('button', { name: 'Confirm delete' }).click();
-    await expect(page.getByRole('cell', { name: 'Renamed campaign', exact: true })).toHaveCount(0);
-    await nav.getByRole('link', { name: 'Overview', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Administration', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-=======
     await nav.getByRole('link', {name:'Marketing datasets'}).click();
     await page.getByRole('button', {name:'Delete',exact:true}).click();
     await page.getByRole('button', {name:'Confirm delete'}).click();
@@ -76,7 +63,6 @@ test('admin login connects every page and persistent management workflow', async
     await expect(page.getByRole('heading', {name:'Administration',exact:true})).toBeVisible();
     await page.getByRole('link', {name:'My account',exact:true}).click();
     await page.getByRole('button', {name:'Sign out',exact:true}).click();
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
     await expect(page).toHaveURL('/login');
     await page.goto('/admin/reports');
     await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2Freports$/);
@@ -85,15 +71,9 @@ test('admin login connects every page and persistent management workflow', async
 
 test('login rejects wrong credentials and ignores external redirect targets', async ({ page }) => {
     await page.goto('/login?next=https://example.com');
-<<<<<<< HEAD
-    await page.getByLabel('Email', { exact: true }).fill('admin@example.com');
-    await page.getByLabel('Password', { exact: true }).fill('incorrect-password');
-    await page.getByRole('button', { name: 'Sign In' }).click();
-=======
     await page.getByLabel('Work Email', {exact:true}).fill('admin@example.com');
     await page.getByLabel('Password', {exact:true}).fill('incorrect-password');
     await page.getByRole('button', {name:'Sign In', exact:true}).click();
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
     await expect(page.getByRole('alert')).toContainText('Invalid email or password');
     await login(page);
     await expect(page).toHaveURL('/admin');

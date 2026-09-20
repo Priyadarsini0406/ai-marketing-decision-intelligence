@@ -53,13 +53,8 @@ The authenticated dashboard links to `/dashboard/leads`, `/dashboard/analytics`,
 
 - `/admin/users`: create accounts, change roles and names, reset passwords, and activate/deactivate users. Updates revoke that user's sessions. An administrator cannot disable or demote their own account.
 - `/admin/datasets`: upload UTF-8 CSV files, preview the first 50 rows, rename, and delete datasets. Limits: 5 MB, 10,000 rows, 100 unique columns. Uploads are stored separately from existing leads and do not automatically run ingestion or model training.
-<<<<<<< HEAD
 - `/admin/configuration`: persist organization name, currency, model choice, conversion threshold, test fraction, and random seed. Organization and currency affect reports; the threshold affects the high probability lead count. Model training parameters are saved for future integration: there is currently no training service in this repository.
 - `/admin/reports`: view all stored leads, predictions/segments, channel analytics, budget simulations, and dataset inventory; export the complete report as JSON. Empty databases show empty states, not fabricated metrics. The existing admission dashboard remains a demonstration page.
-=======
-- `/admin/configuration`: persist organization name, currency, model choice, conversion threshold, test fraction, and random seed. Organization and currency affect reports; the threshold affects the high probability lead count. These UI model settings are saved for future integration; the command-line trainer currently uses its documented fixed configuration.
-- `/admin/reports`: view all stored leads, predictions/segments, channel analytics, budget simulations, and dataset inventory; export the complete report as JSON. Empty databases show empty states, not fabricated metrics. The marketing dashboard displays live stored-data aggregates.
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
 
 Admin APIs enforce roles on the backend. Existing leads, analytics, and budget APIs now require authentication too. The frontend keeps the session token in session storage; logout invalidates it on the server.
 

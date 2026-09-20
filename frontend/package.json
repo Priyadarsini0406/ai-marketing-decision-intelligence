@@ -4,7 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-        "test:admin": "playwright test",
+		"test:admin": "playwright test",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
@@ -25,6 +25,8 @@
 		"vite": "^8.0.16"
 	},
 	"dependencies": {
-		"echarts": "^6.1.0"
+		"echarts": "^6.1.0",
+		"jspdf": "^4.2.1",
+		"jspdf-autotable": "^5.0.8"
 	}
 }

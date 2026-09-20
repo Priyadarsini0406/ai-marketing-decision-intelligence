@@ -61,6 +61,24 @@ class Lead(Base):
 
     predictions = relationship("MLPrediction", back_populates="lead", uselist=False)
 
+    customer_id = Column(String, unique=True, index=True)
+    age = Column(Integer)
+    gender = Column(String)
+    income = Column(Float)
+    campaign_channel = Column(String)
+    campaign_type = Column(String)
+    click_through_rate = Column(Float)
+    conversion_rate = Column(Float)
+    website_visits = Column(Integer)
+    pages_per_visit = Column(Float)
+    time_on_site = Column(Float)
+    social_shares = Column(Integer)
+    email_opens = Column(Integer)
+    email_clicks = Column(Integer)
+    previous_purchases = Column(Integer)
+    loyalty_points = Column(Integer)
+    conversion = Column(Boolean)
+
 class MLPrediction(Base):
     __tablename__ = "ml_predictions"
 
@@ -74,6 +92,8 @@ class MLPrediction(Base):
 
     lead = relationship("Lead", back_populates="predictions")
 
+    conversion_probability = Column(Float)
+
 class ChannelMetric(Base):
     __tablename__ = "channel_metrics"
 
@@ -84,6 +104,10 @@ class ChannelMetric(Base):
     historical_cpa = Column(Float)
     historical_admission_rate = Column(Float)
 
+    total_conversions = Column(Integer)
+    historical_cac = Column(Float)
+    historical_conversion_rate = Column(Float)
+
 class BudgetSimulation(Base):
     __tablename__ = "budget_simulations"
 
@@ -92,3 +116,5 @@ class BudgetSimulation(Base):
     allocations = Column(JSON) # e.g., {"Google Ads": 5000, "Instagram": 2000}
     predicted_admissions = Column(Float)
     predicted_cpa = Column(Float)
+
+    predicted_conversions = Column(Float)

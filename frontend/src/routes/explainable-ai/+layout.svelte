@@ -2,4 +2,5 @@
     import DashboardLayout from '$lib/components/DashboardLayout.svelte';
     let { children } = $props();
 </script>
-<DashboardLayout role="admin">{@render children()}</DashboardLayout>
+
+<DashboardLayout role="manager">{@render children()}</DashboardLayout>

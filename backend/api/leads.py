@@ -1,18 +1,13 @@
-<<<<<<< HEAD
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from datetime import date
 import uuid
-=======
-from fastapi import APIRouter, Depends, HTTPException, Query
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.models import Lead, MLPrediction
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
-<<<<<<< HEAD
 class LeadCreate(BaseModel):
     student_name: str = Field(min_length=1, max_length=150)
     email: str | None = None
@@ -35,9 +30,7 @@ def create_lead(data: LeadCreate, db: Session = Depends(get_db)):
     db.add(lead); db.commit(); db.refresh(lead)
     return lead
 
-=======
 @router.get("", include_in_schema=False)
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
 @router.get("/")
 def get_leads(skip: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=500), search: str = "", db: Session = Depends(get_db)):
     query = db.query(Lead)

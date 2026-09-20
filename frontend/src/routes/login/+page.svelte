@@ -162,7 +162,6 @@
                         <p class="text-text-secondary">Sign in to continue to Decision-Intel.</p>
                     </div>
 
-<<<<<<< HEAD
                     {#if loginError}<p role="alert" class="text-red-400 mb-6 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20">{loginError}</p>{/if}
                     
                     <form class="flex flex-col gap-6 w-full" onsubmit={handleLogin}>
@@ -183,29 +182,6 @@
                                 <div class="flex flex-wrap gap-2">{#each Object.entries(demoAccounts) as [role, account]}<button type="button" onclick={() => fillDemo(role as keyof typeof demoAccounts)} class="text-xs px-2.5 py-1.5 rounded-lg border border-white/10 text-text-secondary hover:text-white hover:border-accent/50 hover:bg-accent/10 transition-colors">{account.label}</button>{/each}</div>
                             </div>
                         {/if}
-=======
-                {#if error}<p role="alert" class="text-red-400 mb-4">{error}</p>{/if}
-				<form class="flex flex-col gap-6 w-full" onsubmit={submit}>
-					<div class="flex flex-col gap-2 w-full">
-						<label for="email" class="text-sm font-medium text-text-secondary">Work Email</label>
-						<div class="relative w-full">
-							<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-								<svg xmlns="http://www.w3.org/-2000/svg" class="h-5 w-5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
-									<path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-									<path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-								</svg>
-							</div>
-							<input 
-								type="email" 
-								id="email" 
-                                bind:value={email}
-								placeholder="name@company.com"
-								required
-								class="w-full bg-black/50 border border-white/10 rounded-xl pl-11 pr-4 py-3.5 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent/80 focus:border-transparent transition-all"
-							/>
-						</div>
-					</div>
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
 
                         <button type="submit" disabled={loginBusy} class="w-full bg-cta hover:bg-cta/90 text-card font-bold text-lg rounded-xl py-3.5 mt-2 transition-all shadow-[0_0_20px_rgba(242,166,43,0.2)] hover:shadow-[0_0_30px_rgba(242,166,43,0.4)] transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0">
                             {loginBusy ? 'Signing in...' : 'Sign In'}

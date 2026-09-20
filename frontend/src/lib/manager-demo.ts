@@ -255,7 +255,7 @@ export const managerNotifications = [
 ];
 
 export const managerProfile = {
-  name: 'Priyadarshini Nair',
+  name: 'Adminstrator',
   email: 'priya.nair@decisionintel.edu',
   phone: '+91 98765 43210',
   institution: 'DecisionIntel Academy',

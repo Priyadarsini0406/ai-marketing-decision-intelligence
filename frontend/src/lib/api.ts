@@ -22,28 +22,17 @@ export async function api(path: string, options: RequestInit = {}) {
 export async function signIn(email: string, password: string) {
     const result = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     sessionStorage.setItem('session', result.token);
-<<<<<<< HEAD
-    if (adminOnly && result.user.role !== 'admin') {
-        await signOut();
-        throw new Error('Administrator access required');
-    }
     const destination = roleDestination(result.user.role, new URLSearchParams(window.location.search).get('next'));
-=======
-    const destination = result.user.role === 'admin'
-        ? adminDestination(new URLSearchParams(window.location.search).get('next'))
-        : dashboardDestination(new URLSearchParams(window.location.search).get('next'));
->>>>>>> 2b474db99b96dfd413a3dcbba57429394ce9d29d
     window.location.assign(destination);
 }
 
 function roleDestination(role: string, next: string | null): string {
     if (role === 'admin') return adminDestination(next ?? '/admin/dashboard');
     if (role === 'student') {
-        if (next && (next === '/student/dashboard' || (next.startsWith('/student') && next.length > 7))) return next;
+        if (next && next.startsWith('/student/')) return next;
         return '/student/dashboard';
     }
-    if (next && next.startsWith('/dashboard')) return next;
-    return '/dashboard';
+    return dashboardDestination(next);
 }
 
 export async function signOut() {
