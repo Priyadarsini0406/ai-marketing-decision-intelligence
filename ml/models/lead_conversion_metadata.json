@@ -1,0 +1,75 @@
+{
+  "project": "Decision-Intel Lead Conversion",
+  "target_column": "Converted",
+  "positive_class": 1,
+  "selected_model": "XGBoost",
+  "random_state": 42,
+  "features": {
+    "numeric": [
+      "TotalVisits",
+      "Total Time Spent on Website",
+      "Page Views Per Visit",
+      "Asymmetrique Activity Score",
+      "Asymmetrique Profile Score"
+    ],
+    "categorical": [
+      "Lead Origin",
+      "Lead Source",
+      "Do Not Email",
+      "Last Activity",
+      "Country",
+      "Specialization",
+      "How did you hear about X Education",
+      "What is your current occupation",
+      "City",
+      "Asymmetrique Activity Index",
+      "Asymmetrique Profile Index",
+      "A free copy of Mastering The Interview",
+      "Last Notable Activity"
+    ]
+  },
+  "excluded_features": {
+    "identifiers": [
+      "Prospect ID",
+      "Lead Number"
+    ],
+    "constant": [
+      "Magazine",
+      "Receive More Updates About Our Courses",
+      "Update me on Supply Chain Content",
+      "Get updates on DM Content",
+      "I agree to pay the amount through cheque"
+    ],
+    "leakage": [
+      "Tags",
+      "Lead Quality",
+      "Lead Profile"
+    ],
+    "near_constant": [
+      "Do Not Call",
+      "Search",
+      "Newspaper Article",
+      "X Education Forums",
+      "Newspaper",
+      "Digital Advertisement",
+      "Through Recommendations",
+      "What matters most to you in choosing a course"
+    ]
+  },
+  "placeholder_values": {
+    "Select": "Not Selected",
+    "(missing)": "Missing"
+  },
+  "thresholds": {
+    "decision": 0.5,
+    "priority_high": 0.7,
+    "priority_medium": 0.4
+  },
+  "metrics": {
+    "accuracy": 0.8446969696969697,
+    "precision": 0.7785058977719528,
+    "recall": 0.8342696629213483,
+    "f1": 0.8054237288135593,
+    "roc_auc": 0.9162854585377433
+  }
+}

@@ -1,7 +1,10 @@
 import csv
 import io
+import json
 import time
 import zipfile
+from datetime import datetime
+from pathlib import Path
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
@@ -170,4 +173,103 @@ def reports(db: Session = Depends(get_db)):
         "predictions": [serialize(p) for p in predictions],
         "leads": [serialize(l) for l in leads],
         "datasets": [dataset_summary(d) for d in datasets],
+    }
+
+ML_ROOT = Path(__file__).resolve().parents[2] / "ml"
+EVALUATION_PATH = ML_ROOT / "reports" / "lead_conversion_evaluation.txt"
+METADATA_PATH = ML_ROOT / "models" / "lead_conversion_metadata.json"
+
+def _parse_evaluation_table(path: Path) -> list[dict]:
+    """Parse the model comparison table produced by the training pipeline.
+
+    The report is the single source of truth written by training; model metrics
+    are read from it rather than being copied into this API.
+    """
+    if not path.exists():
+        return []
+    lines = path.read_text(encoding="utf-8").splitlines()
+    header_index = next(
+        (i for i, line in enumerate(lines) if line.split("|")[0].strip().lower() == "model"),
+        None,
+    )
+    if header_index is None:
+        return []
+    header = [part.strip().lower().replace(" ", "_").replace("-", "_") for part in lines[header_index].split("|")]
+
+    def numeric(value: str | None):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    models = []
+    for line in lines[header_index + 1:]:
+        if "|" not in line:
+            break
+        record = dict(zip(header, [part.strip() for part in line.split("|")]))
+        model = {
+            "name": record.get("model", "").strip(),
+            "accuracy": numeric(record.get("accuracy")),
+            "precision": numeric(record.get("precision")),
+            "recall": numeric(record.get("recall")),
+            "f1": numeric(record.get("f1")),
+            "roc_auc": numeric(record.get("roc_auc")),
+        }
+        if model["name"] and all(v is not None for v in list(model.values())[1:]):
+            models.append(model)
+    return models
+
+
+@router.get("/ml/model-performance")
+def model_performance():
+    """Dynamic model performance derived from the existing ML evaluation output.
+
+    Reads ml/reports/lead_conversion_evaluation.txt (all models) and
+    ml/models/lead_conversion_metadata.json (selected model, thresholds). No
+    metrics are duplicated or hard-coded here; when training is re-run the
+    report and metadata update and this endpoint reflects the new values.
+    """
+    metadata = None
+    if METADATA_PATH.exists():
+        try:
+            metadata = json.loads(METADATA_PATH.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            metadata = None
+
+    models = _parse_evaluation_table(EVALUATION_PATH)
+
+    # Fallback for a metadata-only install: expose the selected model's metrics.
+    if not models and metadata and isinstance(metadata.get("metrics"), dict):
+        metrics = metadata["metrics"]
+        models = [{
+            "name": metadata.get("selected_model") or "Selected model",
+            "accuracy": metrics.get("accuracy"),
+            "precision": metrics.get("precision"),
+            "recall": metrics.get("recall"),
+            "f1": metrics.get("f1"),
+            "roc_auc": metrics.get("roc_auc"),
+        }]
+
+    selected_model = metadata.get("selected_model") if metadata else None
+    if selected_model and not any(m["name"] == selected_model for m in models):
+        selected_model = None
+
+    evaluated_at = None
+    for path in (EVALUATION_PATH, METADATA_PATH):
+        if path.exists():
+            evaluated_at = datetime.fromtimestamp(path.stat().st_mtime).isoformat(timespec="seconds")
+            break
+
+    return {
+        "available": bool(models),
+        "selected_model": selected_model,
+        "evaluated_at": evaluated_at,
+        "target_column": metadata.get("target_column") if metadata else None,
+        "random_state": metadata.get("random_state") if metadata else None,
+        "thresholds": metadata.get("thresholds") if metadata else None,
+        "models": models,
+        "source": {
+            "evaluation": EVALUATION_PATH.name if EVALUATION_PATH.exists() else None,
+            "metadata": METADATA_PATH.name if METADATA_PATH.exists() else None,
+        },
     }

@@ -97,7 +97,7 @@
 	</div>
 
 	{#if visible}
-		<div in:fly={{ x: -50, duration: 1500, delay: 1000 }} class="hidden lg:block absolute left-10 top-1/3 bg-card/80 backdrop-blur-md border border-white/10 p-5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-[bounce_6s_infinite]">
+		<div in:fly={{ x: -50, duration: 1500, delay: 1000 }} class="hidden lg:block absolute left-10 top-20 bg-card/80 backdrop-blur-md border border-white/10 p-5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
 			<div class="flex items-center gap-3 mb-2">
 				<div class="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_10px_#4ade80]"></div>
 				<span class="text-xs font-bold text-text-secondary uppercase tracking-wider">Student Lead Scored</span>
@@ -106,15 +106,7 @@
 			<div class="text-sm text-accent mt-1">94% Admission Probability</div>
 		</div>
 
-		<div in:fly={{ x: 50, duration: 1500, delay: 1200 }} class="hidden lg:block absolute right-10 top-1/2 bg-card/80 backdrop-blur-md border border-white/10 p-5 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] animate-[bounce_5s_infinite_1s]">
-			<div class="flex items-center gap-3 mb-2">
-				<div class="w-2 h-2 rounded-full bg-cta shadow-[0_0_10px_#F2A62B]"></div>
-				<span class="text-xs font-bold text-text-secondary uppercase tracking-wider">AI Budget Insight</span>
-			</div>
-			<div class="text-lg font-bold">Shift +15% to Social</div>
-			<div class="text-sm text-white/70 mt-1">Expected conversion improvement: +4.2%</div>
-		</div>
-	{/if}
+		{/if}
 </section>
 
 <!-- Pipeline Section -->

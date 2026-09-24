@@ -1,6 +1,7 @@
 import { workspacePages } from './workspace-pages';
 export const adminPages = [
     { href: '/admin/dashboard', label: 'Dashboard' },
+    { href: '/admin/model-performance', label: 'Model Performance' },
     { href: '/admin/students', label: 'Students' },
     { href: '/admin/managers', label: 'Managers' },
     { href: '/admin/users', label: 'User Accounts' },

@@ -24,7 +24,7 @@
 
   <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
     {#each dashboardStats as stat}
-      <div class="rounded-2xl border border-white/10 bg-card p-5">
+      <div class="dashboard-card p-5">
         <p class="text-xs uppercase tracking-[0.18em] text-text-secondary">{stat.label}</p>
         <div class="mt-3 flex items-end justify-between">
           <span class="text-3xl font-bold text-white">{stat.value}</span>
@@ -34,7 +34,7 @@
     {/each}
   </div>
 
-  <div class="rounded-2xl border border-white/10 bg-card p-5">
+  <div class="dashboard-card p-5">
     <div class="mb-5 flex items-center justify-between">
       <h2 class="text-xl font-bold text-white">Admission Funnel</h2>
       <a href="/admission-funnel" class="text-sm font-medium text-accent">View Full Funnel</a>
@@ -42,7 +42,7 @@
 
     <div class="grid gap-4 md:grid-cols-5">
       {#each managerFunnelStages as stage}
-        <div class="rounded-xl border border-white/10 bg-black/10 p-4">
+        <div class="dashboard-card bg-black/10 p-4">
           <div class="mb-3 flex items-center justify-between">
             <span class="text-xs uppercase tracking-[0.16em] text-text-secondary">{stage.name}</span>
             <span class="text-xs text-accent">{stage.conversion}%</span>
@@ -55,7 +55,7 @@
   </div>
 
   <div class="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
-    <div class="rounded-2xl border border-white/10 bg-card p-5">
+    <div class="dashboard-card p-5">
       <div class="mb-4 flex items-center justify-between">
         <h2 class="text-xl font-bold text-white">Marketing Channel Performance</h2>
         <a href="/channel-attribution" class="text-sm font-medium text-accent">View Channel Analytics</a>
@@ -63,7 +63,7 @@
 
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {#each managerChannels.slice(0, 6) as channel}
-          <div class="rounded-xl border border-white/10 bg-black/10 p-4">
+          <div class="dashboard-card bg-black/10 p-4">
             <div class="mb-3 flex items-center justify-between">
               <span class="text-sm font-semibold text-white">{channel.channel}</span>
               <span class="text-xs text-accent">{channel.conversion}%</span>
@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <div class="rounded-2xl border border-white/10 bg-card p-5">
+    <div class="dashboard-card p-5">
       <h2 class="text-xl font-bold text-white">Budget Overview</h2>
       <div class="mt-4 space-y-3 text-sm text-text-secondary">
         <p>Total Budget: <span class="text-white">₹10,00,000</span></p>
@@ -93,7 +93,7 @@
   </div>
 
   <div class="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-    <div class="rounded-2xl border border-white/10 bg-card p-5">
+    <div class="dashboard-card p-5">
       <div class="mb-4 flex items-center justify-between">
         <h2 class="text-xl font-bold text-white">High-Potential Student Leads</h2>
         <a href="/student-leads" class="text-sm font-medium text-accent">View all</a>
@@ -129,11 +129,11 @@
       </div>
     </div>
 
-    <div class="rounded-2xl border border-white/10 bg-card p-5">
+    <div class="dashboard-card p-5">
       <h2 class="text-xl font-bold text-white">AI Insights</h2>
       <div class="mt-4 space-y-4">
         {#each managerRecommendations.slice(0, 2) as recommendation}
-          <div class="rounded-xl border border-white/10 bg-black/10 p-4">
+          <div class="dashboard-card bg-black/10 p-4">
             <p class="text-sm font-semibold text-white">{recommendation.title}</p>
             <p class="mt-2 text-sm text-text-secondary">{recommendation.reason}</p>
           </div>
@@ -143,7 +143,7 @@
     </div>
   </div>
 
-  <div class="rounded-2xl border border-white/10 bg-card p-5">
+  <div class="dashboard-card p-5">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-xl font-bold text-white">Campaign Performance</h2>
       <a href="/campaign-analytics" class="text-sm font-medium text-accent">View Campaign Analytics</a>

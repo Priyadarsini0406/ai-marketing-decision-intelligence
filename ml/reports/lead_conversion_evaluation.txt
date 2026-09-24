@@ -1,0 +1,54 @@
+Decision-Intel Lead Conversion Prediction Experiment
+=======================================================
+Project: Education Lead Conversion (X Education leads dataset)
+Objective: Predict the probability that an education lead converts, then
+rank leads as High / Medium / Low priority for follow-up.
+
+Dataset
+-------
+- Path: data/Leads X Education.csv
+- Rows: 9240
+- Columns: 37
+- Target: Converted (0 = not converted, 1 = converted)
+- Class distribution: {0: 5679, 1: 3561}
+- Duplicate rows: 0
+- Missing values: 41039
+
+Features used (18)
+------------------------------
+Numeric (5): TotalVisits, Total Time Spent on Website, Page Views Per Visit, Asymmetrique Activity Score, Asymmetrique Profile Score
+Categorical (13): Lead Origin, Lead Source, Do Not Email, Last Activity, Country, Specialization, How did you hear about X Education, What is your current occupation, City, Asymmetrique Activity Index, Asymmetrique Profile Index, A free copy of Mastering The Interview, Last Notable Activity
+
+Features excluded and why
+--------------------------
+- Identifiers (2): Prospect ID, Lead Number
+- Constant columns (5): Magazine, Receive More Updates About Our Courses, Update me on Supply Chain Content, Get updates on DM Content, I agree to pay the amount through cheque
+- Post-hoc leakage labels (3): Tags, Lead Quality, Lead Profile (assigned after contact; leak outcome)
+- Near-constant columns (8): Do Not Call, Search, Newspaper Article, X Education Forums, Newspaper, Digital Advertisement, Through Recommendations, What matters most to you in choosing a course (minority < 0.2%; no signal)
+
+Preprocessing
+-------------
+- 'Select' placeholder mapped to 'Not Selected'; missing categoricals -> 'Missing'
+- Numeric: median imputation + StandardScaler
+- Categorical: constant imputation + OneHotEncoder(handle_unknown='ignore')
+- Train/test split before fitting any transformation (no data leakage)
+- Split: 80/20 stratified, random_state=42
+- Class imbalance (38.5% converted) handled with balanced class weights
+
+Model results (held-out test set)
+---------------------------------
+Model | Accuracy | Precision | Recall | F1 | ROC-AUC
+Logistic Regression | 0.8160 | 0.7391 | 0.8076 | 0.7718 | 0.8980
+Random Forest | 0.8258 | 0.7546 | 0.8118 | 0.7821 | 0.9051
+Gradient Boosting | 0.8360 | 0.7632 | 0.8329 | 0.7965 | 0.9127
+XGBoost | 0.8447 | 0.7785 | 0.8343 | 0.8054 | 0.9163
+
+Selected model: XGBoost
+Selection basis: highest F1 for the positive (converted) class, the business
+metric used to find leads worth following up, with ROC-AUC as tie-breaker.
+
+Saved artifacts
+---------------
+- Preprocessor: E:\mini  project\ml\models\lead_preprocessor.pkl
+- Model: E:\mini  project\ml\models\lead_conversion_model.pkl
+- Metadata: E:\mini  project\ml\models\lead_conversion_metadata.json
