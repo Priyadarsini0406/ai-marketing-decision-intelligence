@@ -7,6 +7,7 @@
     import ManagerAccount from '$lib/components/ManagerAccount.svelte';
     import AdminNotifications from '$lib/components/AdminNotifications.svelte';
     import AdminPlatformSettings from '$lib/components/AdminPlatformSettings.svelte';
+    import AdminActivity from '$lib/components/AdminActivity.svelte';
     const titles: Record<string, string> = { students: 'Students', managers: 'Managers', courses: 'Courses / Programs', institutions: 'Institutions', 'data-import': 'Data Import', activity: 'System Activity', 'audit-logs': 'Audit Logs', notifications: 'Notifications', profile: 'Profile', settings: 'Settings' };
     let title = $derived(titles[page.params.path ?? ''] ?? 'Administration');
 </script>
@@ -18,6 +19,8 @@
     <AdminDatasets view="data-import" />
 {:else if page.params.path === 'notifications'}
     <AdminNotifications />
+{:else if page.params.path === 'activity' || page.params.path === 'audit-logs'}
+    {#key page.params.path}<AdminActivity view={page.params.path} />{/key}
 {:else if page.params.path === 'profile' || page.params.path === 'settings'}
     {#key page.params.path}<ManagerAccount view={page.params.path} audience="admin" />{/key}
     {#if page.params.path === 'settings'}<AdminPlatformSettings />{/if}
