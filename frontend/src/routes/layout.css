@@ -43,6 +43,16 @@
     --di-green-soft: rgba(127, 211, 172, 0.14);
     --di-red-ink: #F0A2B2;
     --di-red-soft: rgba(240, 162, 178, 0.14);
+
+    /* Geometry and elevation. These were previously only declared inside the
+       `.di-light` scope, so every dark-theme page that read them fell back to
+       the initial value: square corners and no shadow. They are pure tokens,
+       so the light system keeps overriding them. */
+    --di-radius: 16px;
+    --di-radius-sm: 12px;
+    --di-radius-lg: 22px;
+    --di-shadow: 0 1px 2px rgba(0, 0, 0, .40), 0 12px 28px -18px rgba(0, 0, 0, .78);
+    --di-shadow-lift: 0 2px 6px rgba(0, 0, 0, .46), 0 26px 46px -24px rgba(0, 0, 0, .92);
   }
 
   body {
@@ -248,3 +258,319 @@
   }
 }
 
+/* ==========================================================================
+   Shared design primitives (dark = design of record)
+   --------------------------------------------------------------------------
+   The light design system in src/lib/di-light.css scopes the shared
+   primitives to `.di-light` and redefines every --di-* token they read, so
+   the two themes already agree on geometry, colour and elevation.
+
+   Before this block the primitives themselves only existed inside that
+   `.di-light` scope, which meant the default dark theme had no .di-btn,
+   .di-brand-mark, .di-glow and no --di-radius / --di-shadow at all: buttons
+   rendered as unstyled anchors, corners were square and cards had no
+   elevation. These rules read only tokens, so they are theme-neutral.
+
+   They are deliberately unlayered (layered rules lose to the unlayered
+   .di-light rules that follow in the import order), which is what lets the
+   light system keep overriding them when it is active.
+   ========================================================================== */
+
+:root {
+  --di-navbar-bg: color-mix(in srgb, var(--di-bg) 78%, transparent);
+  --di-glass: color-mix(in srgb, var(--di-surface) 72%, transparent);
+  --di-focus-ring: 0 0 0 3px var(--di-accent-glow);
+}
+
+.di-card {
+  background-color: var(--di-surface);
+  border: 1px solid var(--di-border);
+  border-radius: var(--di-radius);
+  box-shadow: var(--di-shadow);
+}
+
+.di-eyebrow {
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--di-accent-ink);
+}
+
+.di-title {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  color: var(--di-text);
+}
+
+.di-muted { color: var(--di-muted); }
+
+.di-label {
+  display: block;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--di-text);
+}
+
+.di-hint { font-size: .75rem; color: var(--di-muted); }
+
+.di-input {
+  width: 100%;
+  min-width: 0;
+  margin-top: .4375rem;
+  min-height: 2.5rem;
+  padding: .75rem .875rem;
+  font: inherit;
+  font-size: .875rem;
+  line-height: 1.5;
+  color: var(--di-text);
+  background-color: var(--di-surface);
+  border: 1px solid var(--di-border-strong);
+  border-radius: var(--di-radius-sm);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.di-input::placeholder { color: color-mix(in srgb, var(--di-muted) 62%, var(--di-surface)); }
+
+.di-input:hover { border-color: var(--di-accent-line); }
+
+.di-input:focus,
+.di-input:focus-visible {
+  outline: none;
+  border-color: var(--di-accent);
+  box-shadow: var(--di-focus-ring);
+}
+
+.di-input[aria-invalid='true'] {
+  border-color: var(--di-red-ink);
+  box-shadow: 0 0 0 3px var(--di-red-soft);
+}
+
+.di-field-error {
+  display: block;
+  margin-top: .375rem;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--di-red-ink);
+}
+
+/* Buttons ------------------------------------------------------------- */
+
+/* Box metrics are deliberately identical to `.di-light .di-btn` in
+   src/lib/di-light.css (padding, font-size, weight and radius). The themes
+   must differ only in colour, otherwise toggling the theme would reflow the
+   signed-in shells. */
+.di-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .75rem 1.125rem;
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 600;
+  border-radius: var(--di-radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background-color 150ms ease;
+}
+
+.di-btn-primary {
+  background-image: var(--di-accent-sheen);
+  color: #FFFFFF;
+  box-shadow:
+    0 10px 22px -12px var(--di-accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, .28);
+}
+
+.di-btn-secondary {
+  background-color: var(--di-surface);
+  color: var(--di-accent-ink);
+  border-color: var(--di-accent-line);
+}
+
+.di-btn-ghost {
+  background-color: transparent;
+  color: var(--di-muted);
+  border-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .di-btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow:
+      0 16px 30px -14px var(--di-accent-glow),
+      inset 0 1px 0 rgba(255, 255, 255, .34);
+  }
+  .di-btn-secondary:hover:not(:disabled) { background-color: var(--di-accent-soft); }
+  .di-btn-ghost:hover:not(:disabled) { background-color: var(--di-accent-soft); color: var(--di-accent-ink); }
+}
+
+.di-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+/* Alerts -------------------------------------------------------------- */
+
+.di-alert {
+  padding: .75rem .875rem;
+  border-radius: var(--di-radius-sm);
+  font-size: .8125rem;
+  line-height: 1.6;
+}
+
+.di-alert-error {
+  color: var(--di-red-ink);
+  background-color: var(--di-red-soft);
+  border: 1px solid var(--di-red-ink);
+  border-color: color-mix(in srgb, var(--di-red-ink) 34%, transparent);
+}
+
+.di-alert-success {
+  color: var(--di-green-ink);
+  background-color: var(--di-green-soft);
+  border-color: color-mix(in srgb, var(--di-green-ink) 34%, transparent);
+}
+
+.di-alert-info {
+  color: var(--di-accent-ink);
+  background-color: var(--di-accent-soft);
+  border: 1px solid var(--di-accent-line);
+}
+
+/* Brand lockup -------------------------------------------------------- */
+
+.di-brand-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background-image: var(--di-accent-sheen);
+  color: #FFFFFF;
+  box-shadow: 0 8px 18px -10px var(--di-accent-glow);
+}
+
+.di-brand-name {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: var(--di-text);
+  text-decoration: none;
+}
+
+.di-brand-name em {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  color: var(--di-accent);
+}
+
+/* Restrained purple wash behind hero panels. -------------------------- */
+
+.di-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(720px circle at 12% -10%, var(--di-accent-soft) 0%, transparent 62%),
+    radial-gradient(520px circle at 92% 4%, var(--di-accent-glow) 0%, transparent 60%);
+}
+
+
+/* ==========================================================================
+   Dark remediation for the signed-in shells.
+
+   The admin, manager and student pages predate the theme system and still
+   carry literal light values: a #FFFFFF field fill (sometimes paired with
+   `color: white`, which is invisible), a #DED6C9 border, #262230 body ink,
+   #6F6979 muted copy, #6A31C4 / #4E1D93 accent text, and a cream app-shell
+   header. On the dark background that produced white-on-white inputs,
+   dark-on-dark headings and accent text at 1.7:1.
+
+   This layer re-points those at the same tokens the auth screens already
+   use, so the shells match the landing page without rewriting every page.
+   Light mode is untouched: every rule is gated on `:not(.di-light)`, and the
+   `.di-*` primitives are excluded so their audited geometry is preserved.
+   ========================================================================== */
+
+html:not(.di-light) { color-scheme: dark; }
+
+/* Form controls. `.di-input` is already themed, so it is excluded to keep
+   its measured box metrics and focus ring exactly as authored. */
+html:not(.di-light) :is(input, select, textarea):not(.di-input) {
+  background-color: var(--di-surface-muted);
+  color: var(--di-text);
+  border-color: var(--di-border-strong);
+}
+
+html:not(.di-light) :is(input, select, textarea):not(.di-input)::placeholder {
+  color: var(--di-muted);
+  opacity: .72;
+}
+
+html:not(.di-light) option { background-color: var(--di-surface); color: var(--di-text); }
+
+html:not(.di-light) :is(input[type='checkbox'], input[type='radio']) {
+  accent-color: var(--di-accent);
+}
+
+html:not(.di-light) :is(input[type='checkbox'], input[type='radio']) + span,
+html:not(.di-light) :is(input[type='checkbox'], input[type='radio']) + label {
+  color: var(--di-text);
+}
+
+/* Headings and strong text were pinned to the light-theme ink #262230. */
+html:not(.di-light) :is(h1, h2, h3, h4, h5, h6, strong, b, legend) {
+  color: var(--di-text);
+}
+
+/* Secondary copy: #6F6979 only reached 3.6:1 on the dark surfaces. */
+html:not(.di-light) :is(p, small, dt, dd, label, caption, figcaption, time, th, dt) {
+  color: var(--di-muted);
+}
+
+/* Accent copy and links: #6A31C4 / #4E1D93 sat at 1.7:1 on dark. */
+html:not(.di-light) :is(a, .eyebrow, [class*='eyebrow'], .badge, .action, .secondary, .chart-unit) {
+  color: var(--di-accent-ink);
+}
+
+html:not(.di-light) :is(.badge, .action, .secondary) {
+  border-color: var(--di-accent-line);
+}
+
+/* Hairlines: #E9E4DC dividers and table rules vanish against a dark card. */
+html:not(.di-light) :is(th, td, hr, .summary-divider, .section-footer, .table-wrap) {
+  border-color: var(--di-border);
+}
+
+/* Ghost/secondary buttons that rely on a light fill. */
+html:not(.di-light) :is(button, a).secondary,
+html:not(.di-light) .sh-icon-btn {
+  background-color: var(--di-accent-soft);
+  color: var(--di-accent-ink);
+  border-color: var(--di-accent-line);
+}
+
+/* The app-shell header was hard-coded to the light cream, which put white
+   headings on a light bar. */
+html:not(.di-light) .sh-header {
+  background-color: var(--di-navbar-bg);
+  border-bottom-color: var(--di-border);
+}
+
+html:not(.di-light) :is(.sh-title, .sh-crumb, .sh-brand-name, .sh-nav-label) {
+  color: var(--di-text);
+}
+
+html:not(.di-light) .sh-nav-label,
+html:not(.di-light) .sh-crumb { color: var(--di-muted); }
+
+/* Chart surfaces and the empty-state dashes also assumed a light card. */
+html:not(.di-light) :is(.analytics-chart, .metric-control) { background-color: var(--di-surface); }
+html:not(.di-light) .empty { border-color: var(--di-border-strong); }

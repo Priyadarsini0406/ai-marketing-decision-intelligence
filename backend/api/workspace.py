@@ -36,6 +36,7 @@ def save_settings(data: Preferences, user=Depends(current_user), db: Session = D
 
 @router.get("/overview")
 def overview(db: Session = Depends(get_db)):
+    import ml_service as svc
     leads = db.query(Lead).all()
     groups = defaultdict(lambda: {"leads": 0, "conversions": 0, "spend": 0.0})
     for lead in leads:

@@ -26,6 +26,8 @@
         <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" /><path d="M10 16.5 13.5 12 10 7.5" /><path d="M13.5 12H4" />
     {:else if name === 'menu'}
         <path d="M4 7h16M4 12h16M4 17h16" />
+    {:else if name === 'close'}
+        <path d="M6 6l12 12M18 6L6 18" />
     {:else if name === 'cap'}
         <path d="M22 9 12 4 2 9l10 5z" /><path d="M6.5 11.5V16c0 1.5 2.7 3 5.5 3s5.5-1.5 5.5-3v-4.5" /><path d="M22 9v5" />
     {:else if name === 'mail'}

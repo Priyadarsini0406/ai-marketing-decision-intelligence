@@ -37,9 +37,14 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
+		min-height: 2.25rem;
+		/* "Dark" and "Light" are different widths; pinning the box keeps the
+		   surrounding nav from shifting when the theme is toggled. */
+		min-width: 5rem;
+		justify-content: center;
 		padding: 0.4rem 0.7rem;
 		border-radius: 999px;
-		border: 1px solid var(--di-border);
+		border: 1px solid var(--di-border-strong);
 		background: var(--di-surface);
 		color: var(--di-text);
 		font-size: 0.78rem;
@@ -50,8 +55,13 @@
 	}
 
 	.di-theme-toggle:hover {
-		border-color: var(--di-accent-line);
-		color: var(--di-accent);
+		border-color: var(--di-accent);
+		color: var(--di-accent-ink);
+	}
+
+	.di-theme-toggle:focus-visible {
+		outline: 2px solid var(--di-accent);
+		outline-offset: 2px;
 	}
 
 	.di-theme-toggle__label {

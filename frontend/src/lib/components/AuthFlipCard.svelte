@@ -878,8 +878,40 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         background-image: linear-gradient(165deg, #F6F0FE 0%, #FFFFFF 58%, #F3EBFC 100%);
         border-right: 1px solid var(--di-border);
     }
-    .brand-pane.right { border-right: 0; border-left: 1px solid var(--di-border); }
+    /* The registration panel sits on the right of the flipped face. It keeps
+       the same 40% width as the login panel, and is pinned to the full height
+       of the card so the light surface runs edge to edge from the top border
+       radius to the bottom one. `height: 100%` resolves against the face,
+       whose height is fixed by `position: absolute; inset: 0`. */
+    .brand-pane.right {
+        border-right: 0;
+        border-left: 1px solid var(--di-border);
+        align-self: stretch;
+        height: 100%;
+    }
     @media (min-width: 62rem) { .brand-pane { display: flex; } }
+
+    /* The brand pane keeps its light gradient in *both* themes, so it must
+       never inherit the dark-theme ink tokens: --di-text is #FFFFFF and
+       --di-muted is #C9C5CE there, which is white-on-cream. The rules below
+       repoint only the text/foreground colours onto the light-pane palette,
+       leaving the background, size, spacing and layout untouched. Light mode
+       needs no change, so the whole block is gated on `:not(.di-light)`. */
+    :global(html:not(.di-light)) .brand-pane :global(.di-brand-name) { color: #1E1A26; }
+    :global(html:not(.di-light)) .brand-pane :global(.di-brand-name) :global(em) { color: #6A31C4; }
+    :global(html:not(.di-light)) .brand-pane :global(.di-eyebrow) { color: #6A31C4; }
+    :global(html:not(.di-light)) .brand-pane .pitch { color: #1E1A26; }
+    :global(html:not(.di-light)) .brand-pane .pitch :global(em) { color: #6A31C4; }
+    :global(html:not(.di-light)) .brand-pane .pitch-copy { color: #4A4454; }
+    :global(html:not(.di-light)) .brand-pane .points li { color: #2A2434; }
+    :global(html:not(.di-light)) .brand-pane .point-icon {
+        color: #5B21B6;
+        background-color: rgba(106, 49, 196, .10);
+        border-color: rgba(106, 49, 196, .22);
+    }
+    /* The logo tile keeps its purple sheen, but the dark theme's sheen is a
+       light purple, so a white glyph would vanish. Dark purple reads on it. */
+    :global(html:not(.di-light)) .brand-pane .art { color: #3B0F73; }
 
     .brand { display: flex; align-items: center; gap: 0.65rem; }
     .brand :global(em) { font-style: normal; color: var(--di-accent); }
