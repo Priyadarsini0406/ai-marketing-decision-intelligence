@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { fly, scale } from 'svelte/transition';
 	import OutlineIcon from '$lib/components/OutlineIcon.svelte';
+import ThemeToggle from '$lib/ThemeToggle.svelte';
 
 	let visible = $state(false);
 
@@ -56,7 +57,7 @@
 	<meta name="description" content="Decision-Intel uses explainable AI, admission prediction, and marketing intelligence to help institutions convert student enquiries." />
 </svelte:head>
 
-<div class="di-light landing">
+<div class="landing">
 	<div class="di-glow" aria-hidden="true"></div>
 
 	<!-- Navbar -->
@@ -71,10 +72,12 @@
 				<a href="#pipeline">How it works</a>
 				<a href="#institutions">Institutions</a>
 			</nav>
-			<div class="nav-actions">
-				<a href="/login" class="nav-login">Log in</a>
-				<a href="/register" class="di-btn di-btn-primary nav-cta">Get started</a>
-			</div>
+		<div class="nav-actions">
+			<ThemeToggle />
+			<a href="/login" class="nav-login">Log in</a>
+			<a href="/register" class="di-btn di-btn-primary nav-cta">Get started</a>
+		</div>
+
 		</div>
 	</header>
 

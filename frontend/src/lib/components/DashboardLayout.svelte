@@ -3,6 +3,7 @@
     import { page } from '$app/state';
     import { api, signOut, type User } from '$lib/api';
     import OutlineIcon from '$lib/components/OutlineIcon.svelte';
+import ThemeToggle from '$lib/ThemeToggle.svelte';
 
     let { role, children }: { role: 'student' | 'manager' | 'admin'; children: import('svelte').Snippet } = $props();
     type NavItem = { label: string; href: string; icon: string; outline?: string };
@@ -61,7 +62,7 @@
 <svelte:window onclick={() => (menuOpen = false)} onkeydown={(event) => { if (event.key === 'Escape') menuOpen = false; }} />
 
 {#if user}
-<div class="role-effects di-light flex h-screen bg-primary font-sans text-text-primary overflow-hidden" class:student-shell={student}>
+<div class="role-effects flex h-screen bg-primary font-sans text-text-primary overflow-hidden" class:student-shell={student}>
     {#if mobileOpen}<button class="fixed inset-0 z-30 bg-black/30 md:hidden" aria-label="Close navigation" onclick={() => mobileOpen = false}></button>{/if}
     <aside class:translate-x-0={mobileOpen} class="fixed md:static inset-y-0 left-0 z-40 w-72 md:w-64 -translate-x-full md:translate-x-0 flex flex-col transition-transform duration-200 shrink-0 {student ? 'st-sidebar' : 'sh-sidebar'}">
         <div class="flex items-center {student ? 'st-brand px-5' : 'sh-brand'}">
@@ -93,6 +94,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3 {student ? 'st-header-actions' : ''}">
+                <ThemeToggle />
                 <a href={accountLinks.notifications} class="{student ? 'st-icon-btn' : 'sh-icon-btn'}" aria-label="Notifications"><OutlineIcon name="notifications" size={18} /></a>
                 {#if student}
                     <button class="st-profile-btn" aria-haspopup="menu" aria-expanded={menuOpen} onclick={(event) => { event.stopPropagation(); menuOpen = !menuOpen; }}>

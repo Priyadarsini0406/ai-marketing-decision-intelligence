@@ -433,3 +433,118 @@
   background: radial-gradient(720px circle at 12% -10%, var(--di-accent-soft) 0%, transparent 62%),
     radial-gradient(520px circle at 92% 4%, rgba(106, 49, 196, .18) 0%, transparent 60%);
 }
+
+/* ------------------------------------------------------------------
+   Dark surface + motion layer, re-pointed at the light palette.
+
+   routes/layout.css holds the Decision-Intel dark design of record:
+   the @theme tokens, the .bg-primary/.bg-secondary/.bg-card/
+   .dashboard-card surfaces, the body glow, and the role-effects
+   motion colours. Those literals are intentionally left untouched, so
+   dark mode renders exactly as designed. This block re-points the
+   theme-dependent properties for the light palette, reusing the
+   values the light build used before the toggle existed.
+
+   Unlayered, so it wins over @layer base / @layer components.
+   ------------------------------------------------------------------ */
+
+html.di-light { color-scheme: light; }
+
+html.di-light body {
+  background-color: var(--di-bg);
+  background-image: none;
+  color: var(--di-text);
+}
+
+/* Surfaces: flat light panels, matching the pre-toggle light build. */
+html.di-light .bg-primary {
+  background-color: var(--di-bg);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--di-accent) 4%, transparent), transparent 18%);
+}
+
+html.di-light .bg-secondary {
+  background: linear-gradient(135deg, var(--di-accent-soft), color-mix(in srgb, var(--di-accent) 10%, var(--di-surface)));
+}
+
+html.di-light .bg-card {
+  background: var(--di-surface);
+  box-shadow: var(--di-shadow);
+  border-color: var(--di-border);
+}
+
+html.di-light .dashboard-card {
+  border: 1px solid var(--di-border);
+  background: var(--di-surface);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.di-light .bg-card:hover,
+  html.di-light .dashboard-card:hover {
+    border-color: var(--di-border);
+    background: var(--di-surface);
+    box-shadow: var(--di-shadow);
+    transform: none;
+  }
+}
+
+/* role-effects motion colours. */
+.di-light .role-effects .motion-card::after {
+  background: radial-gradient(240px circle at var(--glow-x, 50%) var(--glow-y, 50%), #6A31C41C, transparent 75%);
+}
+.di-light .role-effects .motion-card:focus-within {
+  border-color: #6A31C466;
+  box-shadow: 0 0 20px #6A31C415;
+}
+.di-light .role-effects .bar::after {
+  background: linear-gradient(100deg, transparent 15%, #6A31C466 50%, transparent 85%);
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .di-light .site-motion .role-effects .motion-card:hover {
+    border-color: #6A31C49C;
+    box-shadow: 0 12px 32px #26223044, 0 0 22px #6A31C426, inset 0 1px 0 #6A31C422;
+  }
+  .di-light .site-motion .role-effects :is(button, .button, .action):not(:disabled):hover {
+    border-color: #4E1D93;
+    box-shadow: 0 0 16px #6A31C440, 0 4px 16px #26223022;
+  }
+  .di-light .site-motion .role-effects :is(.primary, .bg-cta):not(:disabled):hover {
+    border-color: #4E1D93;
+    box-shadow: 0 0 18px #6A31C438;
+  }
+  .di-light .site-motion .role-effects .nav-link:hover {
+    background-color: #6A31C414;
+    box-shadow: inset 3px 0 0 #6A31C4;
+    color: #4E1D93;
+  }
+  .di-light .site-motion .role-effects .nav-active:hover { box-shadow: inset 3px 0 0 #6A31C4, 0 0 18px #6A31C426; }
+  .di-light .site-motion .role-effects tbody tr:hover { background-color: #6A31C414; }
+}
+
+.di-light .site-motion :is(input, select, textarea):focus-visible {
+  box-shadow: 0 0 0 5px #6A31C416;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .di-light .site-motion .motion-card:hover {
+    border-color: #6A31C452;
+    box-shadow: 0 10px 28px #26223026, 0 0 0 1px #6A31C40c;
+  }
+  .di-light .site-motion :is(button, .button, .action, a[class*="bg-"]):not(:disabled):hover {
+    box-shadow: 0 5px 18px #6A31C426;
+  }
+  .di-light .site-motion nav a:hover { color: #4E1D93; }
+  .di-light .site-motion tbody tr:hover { background-color: #6A31C40c; }
+  .di-light .site-motion :is(input, select, textarea):not(:disabled):not([readonly]):hover {
+    border-color: #6A31C466;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .di-light .site-motion .nav-active { animation-name: di-light-active-navigation; }
+}
+
+@keyframes di-light-active-navigation {
+  from { box-shadow: 0 0 0 #6A31C400; }
+  to { box-shadow: 0 0 15px #6A31C41f; }
+}

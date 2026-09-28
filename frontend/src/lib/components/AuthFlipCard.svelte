@@ -2,6 +2,7 @@
     import { tick, untrack } from 'svelte';
     import { signIn, api } from '$lib/api';
     import OutlineIcon from './OutlineIcon.svelte';
+import ThemeToggle from '$lib/ThemeToggle.svelte';
 
     let { face = 'login' }: { face?: 'login' | 'register' } = $props();
 
@@ -203,7 +204,7 @@
     }
 </script>
 
-<div class="di-light auth">
+<div class="auth">
     <div class="glow glow-a" aria-hidden="true"></div>
     <div class="glow glow-b" aria-hidden="true"></div>
 
@@ -211,6 +212,10 @@
         <OutlineIcon name="chevron-right" size={16} />
         Back to home
     </a>
+
+    <div class="auth-theme">
+        <ThemeToggle />
+    </div>
 
     <div class="stage">
         <div class="flip" class:flipped>
@@ -776,11 +781,8 @@
 </div>
 
 <style>
-    /* The app shell paints a dark page background by default. Authentication is
-       a fixed light experience, so claim html/body here (this stylesheet is only
-       loaded on the auth routes) instead of letting dark bleed around the card. */
-    :global(html) { background-color: #F7F5F2; }
-    :global(body) { background-color: #F7F5F2; color: #262230; }
+    /* Page background follows the global theme (see di-light.css), so the card
+       is never ringed by the wrong palette. */
 
     .auth {
         --flip-h: clamp(540px, calc(100dvh - 8.5rem), 720px);
@@ -819,6 +821,18 @@
         transition: color 150ms ease;
     }
     .back :global(svg) { transform: rotate(180deg); }
+
+    /* Theme toggle parked in the same top-right corner as the back link, so
+       the flip-card layout below is untouched. */
+    .auth-theme {
+        position: absolute;
+        top: 1.25rem;
+        right: 1.5rem;
+        z-index: 3;
+    }
+    @media (max-width: 40rem) {
+        .auth-theme { top: 1rem; right: 1rem; }
+    }
     .back:hover { color: var(--di-accent); }
     .back:focus-visible { outline: 2px solid var(--di-accent); outline-offset: 3px; border-radius: 6px; }
 

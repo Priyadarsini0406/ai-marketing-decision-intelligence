@@ -1,12 +1,55 @@
 /* ------------------------------------------------------------------
-   Student portal design system — fixed light theme.
+   Student portal design system.
    Loaded only by /student/* and scoped to .student-shell, so the
-   manager and admin dashboards keep their existing dark styling.
-   The Decision-Intel purple (--color-accent #6A31C4) stays untouched
-   and is the only accent colour used.
+   manager and admin dashboards keep their own styling.
+
+   The --st-* primitives are declared twice: the dark set below is the
+   Decision-Intel dark design of record, and the light set is applied
+   only when the light theme is active. Every rule in this file reads
+   the tokens, so both palettes share one set of components.
    ------------------------------------------------------------------ */
 
 .student-shell {
+  /* Decision-Intel dark palette. */
+  --st-accent: #A47BE0;
+  --st-accent-ink: #C8A5F0;
+  --st-accent-soft: #1b1325;
+  --st-accent-line: rgba(164, 123, 224, 0.18);
+  --st-accent-glow: rgba(164, 123, 224, 0.22);
+  --st-accent-sheen: linear-gradient(180deg, #C8A5F0 0%, #A47BE0 52%, #8B5FC9 100%);
+  --st-accent-shadow: rgba(164, 123, 224, 0.55);
+
+  --st-bg: #09080d;
+  --st-surface: #120f18;
+  --st-surface-muted: #1b1325;
+  --st-border: rgba(255, 255, 255, 0.10);
+  --st-border-strong: rgba(164, 123, 224, 0.28);
+  --st-text: #FFFFFF;
+  --st-text-muted: #C9C5CE;
+  --st-header-veil: rgba(9, 8, 13, 0.85);
+  --st-scrollbar-hover: #C9C5CE;
+
+  --st-amber-ink: #F5C674;
+  --st-amber-soft: rgba(242, 166, 43, 0.14);
+  --st-green-ink: #7FD3AC;
+  --st-green-soft: rgba(127, 211, 172, 0.14);
+  --st-danger-ink: #F0A2B2;
+  --st-danger-soft: rgba(240, 162, 178, 0.14);
+  --st-brand-ink: #FFFFFF;
+
+  --st-radius: 16px;
+  --st-radius-sm: 12px;
+  --st-shadow: 0 1px 2px rgba(0, 0, 0, 0.30), 0 10px 28px -18px rgba(0, 0, 0, 0.70);
+  --st-shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.35), 0 20px 38px -24px rgba(0, 0, 0, 0.80);
+  --st-shadow-float: 0 26px 50px -30px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --st-shadow-panel: 0 10px 22px -14px rgba(0, 0, 0, 0.75);
+
+  background-color: var(--st-bg);
+  color: var(--st-text);
+}
+
+/* Decision-Intel light palette. */
+html.di-light .student-shell {
   /* Deeper, richer Decision-Intel purple — same family as --color-accent (#6A31C4),
      tuned darker for a premium/glossy look on the light surface. */
   --st-accent: #6A31C4;
@@ -15,6 +58,7 @@
   --st-accent-line: #E7D6FA;
   --st-accent-glow: rgba(106, 49, 196, .30);
   --st-accent-sheen: linear-gradient(180deg, #7E4ADA 0%, #6A31C4 52%, #5924AB 100%);
+  --st-accent-shadow: rgba(106, 49, 196, .9);
 
   --st-bg: #F7F5F2;
   --st-surface: #FFFFFF;
@@ -23,19 +67,21 @@
   --st-border-strong: #DED6C9;
   --st-text: #262230;
   --st-text-muted: #6F6979;
+  --st-header-veil: rgba(247, 245, 242, .88);
+  --st-scrollbar-hover: #6F6979;
 
   --st-amber-ink: #4E1D93;
   --st-amber-soft: #F3EBFC;
   --st-green-ink: #256B4C;
   --st-green-soft: #E7F2EC;
+  --st-danger-ink: #A32B44;
+  --st-danger-soft: #FBEAEE;
+  --st-brand-ink: #FFFFFF;
 
-  --st-radius: 16px;
-  --st-radius-sm: 12px;
   --st-shadow: 0 1px 2px rgba(38, 34, 48, .04), 0 10px 28px -18px rgba(38, 34, 48, .32);
   --st-shadow-lift: 0 2px 4px rgba(38, 34, 48, .05), 0 20px 38px -24px rgba(38, 34, 48, .45);
-
-  background-color: var(--st-bg);
-  color: var(--st-text);
+  --st-shadow-float: 0 26px 50px -30px rgba(38, 34, 48, .55), 0 2px 6px rgba(38, 34, 48, .05);
+  --st-shadow-panel: 0 10px 22px -14px rgba(38, 34, 48, .5);
 }
 
 .student-shell .st-icon { flex: none; }
@@ -57,10 +103,10 @@
   height: 2.125rem;
   border-radius: 11px;
   background-color: var(--st-accent);
-  color: #FFFFFF;
+  color: var(--st-brand-ink);
   display: grid;
   place-items: center;
-  box-shadow: 0 6px 14px -8px rgba(106, 49, 196, .9);
+  box-shadow: 0 6px 14px -8px var(--st-accent-shadow);
 }
 
 .student-shell .st-brand-name { font-size: 1.2rem; font-weight: 700; letter-spacing: .01em; color: var(--st-text); }
@@ -117,7 +163,7 @@
   z-index: 30;
   height: 5rem;
   border-bottom: 1px solid var(--st-border);
-  background-color: rgba(247, 245, 242, .88);
+  background-color: var(--st-header-veil);
   backdrop-filter: blur(10px);
 }
 
@@ -182,7 +228,7 @@
   background-color: var(--st-surface);
   border: 1px solid var(--st-border);
   border-radius: var(--st-radius);
-  box-shadow: 0 26px 50px -30px rgba(38, 34, 48, .55), 0 2px 6px rgba(38, 34, 48, .05);
+  box-shadow: var(--st-shadow-float);
 }
 
 .student-shell .st-menu-head { padding: .6rem .65rem .6rem; margin-bottom: .3rem; border-bottom: 1px solid var(--st-border); }
@@ -204,8 +250,8 @@
 
 .student-shell .st-menu-item .st-icon { color: var(--st-accent); }
 .student-shell .st-menu-item:hover { background-color: var(--st-accent-soft); color: var(--st-text); }
-.student-shell .st-menu-item.st-danger:hover { background-color: #FBEAEE; color: #A32B44; }
-.student-shell .st-menu-item.st-danger:hover .st-icon { color: #A32B44; }
+.student-shell .st-menu-item.st-danger:hover { background-color: var(--st-danger-soft); color: var(--st-danger-ink); }
+.student-shell .st-menu-item.st-danger:hover .st-icon { color: var(--st-danger-ink); }
 
 /* ---- Content canvas --------------------------------------------- */
 
@@ -214,7 +260,7 @@
 
 .student-shell .custom-scrollbar { scrollbar-color: var(--st-border-strong) transparent; scrollbar-width: thin; }
 .student-shell .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--st-border-strong); }
-.student-shell .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6F6979; }
+.student-shell .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--st-scrollbar-hover); }
 
 /* ---- Neutralise the dark-theme motion layer for the light shell -- */
 
@@ -234,6 +280,6 @@
   .site-motion .student-shell .st-nav-link:hover { color: var(--st-text); }
   .site-motion .student-shell .st-nav-link.st-active:hover { color: var(--st-accent-ink); }
   .site-motion .student-shell :is(a[class*="bg-"], .button, .action):not(:disabled):hover {
-    box-shadow: 0 10px 22px -14px rgba(38, 34, 48, .5);
+    box-shadow: var(--st-shadow-panel);
   }
 }
