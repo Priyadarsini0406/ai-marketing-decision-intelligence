@@ -89,9 +89,20 @@ def overview(db: Session = Depends(get_db)):
                                 'evidence': f'{len(members)} leads across {len(set(l.campaign_type for l in members))} campaign types',
                                 'qualification': 'Use the cohort breakdown to compare outcomes; small cohorts are uncertain.'})
     prediction_rows = db.query(MLPrediction, Lead).join(Lead, MLPrediction.lead_id == Lead.id).order_by(Lead.customer_id).limit(50).all()
-    prediction_preview = [{'customer_id': l.customer_id, 'channel': l.campaign_channel,
+    prediction_preview = [{'lead_id': l.id, 'customer_id': l.customer_id, 'source': l.enquiry_source,
                            'probability': p.conversion_probability, 'score': p.lead_score,
+                           'segment': p.segment_name,
                            'observed_conversion': l.conversion} for p, l in prediction_rows]
+    # Aggregates over every stored score, so the UI never has to infer totals from the 50-row preview.
+    scored = db.query(MLPrediction.conversion_probability, MLPrediction.lead_score).all()
+    prediction_summary = {
+        "scored": len(scored),
+        "high": sum(svc.score_band(probability) == "High" for probability, _ in scored),
+        "medium": sum(svc.score_band(probability) == "Medium" for probability, _ in scored),
+        "low": sum(svc.score_band(probability) == "Low" for probability, _ in scored),
+        "predicted_admissions": sum((probability or 0) >= 0.5 for probability, _ in scored),
+        "mean_probability": round(sum(probability or 0 for probability, _ in scored) / len(scored), 4) if scored else None
+    }
     scenarios = [{'scenario': s.scenario_name, 'allocations': s.allocations,
                   'estimated_conversions': s.predicted_conversions, 'estimated_cpa': s.predicted_cpa}
                  for s in db.query(BudgetSimulation).order_by(BudgetSimulation.scenario_name).limit(50)]
@@ -100,59 +111,108 @@ def overview(db: Session = Depends(get_db)):
             "channels": channels, "funnel": funnel,
             "campaigns": [{"campaign_type": name, **g} for name, g in sorted(campaigns.items())],
             "recommendations": recommendations, "cohorts": breakdowns,
-            "prediction_preview": prediction_preview, "saved_scenarios": scenarios}
+            "prediction_preview": prediction_preview, "prediction_summary": prediction_summary,
+            "saved_scenarios": scenarios}
 
 @lru_cache(maxsize=2)
 def load_model(stamp):
-    import joblib
-    return joblib.load(Path(__file__).resolve().parents[1] / "artifacts/conversion_model.joblib")
+    import ml_service as svc
+    return svc.load_pipeline()
+
+@lru_cache(maxsize=2)
+def load_segments(stamp):
+    import ml_service as svc
+    return svc.load_segments()
 
 def model_and_frame(lead):
-    import pandas as pd
-    from train_model import FEATURES, COLUMNS
-    path = Path(__file__).resolve().parents[1] / "artifacts/conversion_model.joblib"
-    if not path.exists():
-        raise HTTPException(409, "Train the conversion model before requesting predictions.")
-    model = load_model(path.stat().st_mtime_ns)
-    row = {feature: getattr(lead, COLUMNS[feature]) for feature in FEATURES}
-    if any(value is None for value in row.values()):
-        raise HTTPException(422, "This lead is missing required model features.")
-    return model, pd.DataFrame([row])
+    """Resolve the lead's real feature vector and the trained XGBoost pipeline."""
+    import ml_service as svc
+    if not svc.MODEL_PATH.exists():
+        raise HTTPException(409, "Train the lead conversion model before requesting predictions.")
+    try:
+        pipeline, contract = load_model(svc.MODEL_PATH.stat().st_mtime_ns)
+        frame, frame_source = svc.frame_for_lead(lead, contract)
+    except svc.PipelineError as error:
+        raise HTTPException(409, str(error))
+    return pipeline, contract, frame, frame_source
+
+def live_segment(pipeline, frame):
+    """The lead's real cluster, from the same fitted segmentation the import used."""
+    import ml_service as svc
+    try:
+        artifact = load_segments(svc.SEGMENT_PATH.stat().st_mtime_ns)
+        cluster, name = svc.assign_segments(artifact, pipeline, frame)
+        return cluster[0], name[0]
+    except (svc.PipelineError, FileNotFoundError):
+        return None, None
 
 @router.get("/prediction/{lead_id}")
 def prediction(lead_id: str, explain: bool = False, db: Session = Depends(get_db)):
     lead = db.get(Lead, lead_id)
     if lead is None: raise HTTPException(404, "Lead not found")
-    model, frame = model_and_frame(lead)
-    probability = float(model.predict_proba(frame)[0, 1])
+    import ml_service as svc
+    pipeline, contract, frame, frame_source = model_and_frame(lead)
+    probability = float(pipeline.predict_proba(frame)[0, 1])
+    cluster, segment = live_segment(pipeline, frame)
     result = {"customer_id": lead.customer_id, "probability": probability,
-              "score": "High" if probability >= .7 else "Medium" if probability >= .4 else "Low",
-              "note": "Current model inference. Imported training leads are not an independent evaluation."}
+              "score": svc.score_band(probability),
+              "segment_cluster": cluster, "segment": segment,
+              "model": contract.get("model", "lead_conversion_xgboost"),
+              "feature_source": frame_source,
+              "note": "Live XGBoost inference. The model is refit on all dataset rows, "
+                      "so this is not an independent evaluation of the lead."}
     if explain:
-        import shap
-        encoded = model.named_steps["encode"].transform(frame)
-        explainer = shap.TreeExplainer(model.named_steps["classifier"])
-        values = np.asarray(explainer.shap_values(encoded)).reshape(-1)
-        names = model.named_steps["encode"].get_feature_names_out()
-        result["factors"] = sorted([{"feature": str(name), "log_odds_contribution": float(value)}
-                                    for name, value in zip(names, values)], key=lambda r: abs(r["log_odds_contribution"]), reverse=True)
-        result["base_log_odds"] = float(np.asarray(explainer.expected_value).reshape(-1)[0])
+        factor = svc.explain_frame(
+            pipeline, frame, contract["numeric_features"], contract["categorical_features"], top_n=5
+        )[0]
+        result["factors"] = factor["top_positive"] + factor["top_negative"]
+        result["top_positive"] = factor["top_positive"]
+        result["top_negative"] = factor["top_negative"]
+        result["base_value"] = factor["base_value"]
+        result["explanation_method"] = factor["method"]
     return result
 
 @router.get("/segments")
 def segments(db: Session = Depends(get_db)):
-    from sklearn.cluster import KMeans
-    from sklearn.preprocessing import StandardScaler
-    leads = db.query(Lead).order_by(Lead.customer_id).all()
-    if not leads: return []
-    features = np.array([[l.website_visits or 0, l.email_clicks or 0, l.previous_purchases or 0, l.loyalty_points or 0] for l in leads], dtype=float)
-    count = min(4, len(np.unique(features, axis=0)))
-    labels = KMeans(n_clusters=count, random_state=42, n_init=10).fit_predict(StandardScaler().fit_transform(features))
-    return [{"segment": f"Behavior cluster {i + 1}", "leads": int(sum(labels == i)),
-             "average_visits": round(float(features[labels == i, 0].mean()), 2),
-             "average_email_clicks": round(float(features[labels == i, 1].mean()), 2),
-             "average_purchases": round(float(features[labels == i, 2].mean()), 2),
-             "average_loyalty_points": round(float(features[labels == i, 3].mean()), 2)} for i in range(count)]
+    """Segment sizes and real averages, aggregated from the stored predictions.
+
+    The clusters come from K-Means over the XGBoost pipeline's own imputed
+    engagement features, so a segment describes measured behaviour rather than
+    row order. No value here is randomised.
+    """
+    rows = db.query(MLPrediction.segment_cluster, MLPrediction.segment_name,
+                    MLPrediction.conversion_probability, MLPrediction.lead_score,
+                    Lead.website_visits, Lead.pages_per_visit, Lead.time_on_site,
+                    Lead.conversion).join(Lead, MLPrediction.lead_id == Lead.id).all()
+    if not rows: return []
+
+    buckets = defaultdict(lambda: {"leads": 0, "probability": [], "high": 0,
+                                   "visits": [], "pages": [], "time": [],
+                                   "conversions": 0, "known": 0})
+    for cluster, name, probability, score, visits, pages, time_on_site, conversion in rows:
+        if cluster is None or not name: continue
+        bucket = buckets[cluster]
+        bucket["segment"] = name
+        bucket["leads"] += 1
+        bucket["probability"].append(float(probability or 0.0))
+        bucket["high"] += int(score == "High")
+        bucket["visits"].append(float(visits or 0.0))
+        bucket["pages"].append(float(pages or 0.0))
+        bucket["time"].append(float(time_on_site or 0.0))
+        bucket["known"] += int(conversion is not None)
+        bucket["conversions"] += int(conversion is True)
+
+    def mean(values): return round(sum(values) / len(values), 4) if values else None
+
+    return [{"segment_cluster": cluster, "segment": bucket["segment"], "leads": bucket["leads"],
+             "average_probability": mean(bucket["probability"]),
+             "high_score_leads": bucket["high"],
+             "average_visits": mean(bucket["visits"]),
+             "average_pages_per_visit": mean(bucket["pages"]),
+             "average_time_on_site": mean(bucket["time"]),
+             "known_outcomes": bucket["known"], "conversions": bucket["conversions"],
+             "conversion_rate": round(bucket["conversions"] / bucket["known"], 4) if bucket["known"] else None}
+            for cluster, bucket in sorted(buckets.items())]
 
 class SimulationInput(BaseModel):
     budget: float = Field(gt=0, le=100000000, allow_inf_nan=False)

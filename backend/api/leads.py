@@ -47,8 +47,24 @@ def get_lead(lead_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{lead_id}/prediction")
 def get_lead_prediction(lead_id: str, db: Session = Depends(get_db)):
+    """Return the stored XGBoost prediction and its SHAP factors."""
     prediction = db.query(MLPrediction).filter(MLPrediction.lead_id == lead_id).first()
-    return prediction
+    if prediction is None:
+        raise HTTPException(404, "No prediction stored for this lead")
+    explanation = prediction.shap_explanation or {}
+    return {
+        "lead_id": lead_id,
+        "conversion_probability": prediction.conversion_probability,
+        "admission_probability": prediction.admission_probability,
+        "lead_score": prediction.lead_score,
+        "segment_cluster": prediction.segment_cluster,
+        "segment": prediction.segment_name,
+        "model": explanation.get("model", "lead_conversion_xgboost"),
+        "explanation_method": explanation.get("method"),
+        "base_value": explanation.get("base_value"),
+        "top_positive": explanation.get("top_positive", []),
+        "top_negative": explanation.get("top_negative", []),
+    }
 
 from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy.exc import IntegrityError

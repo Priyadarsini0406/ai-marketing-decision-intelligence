@@ -26,10 +26,10 @@
 
 <style>
     .account-page{max-width:720px;margin:0 auto}.account-page h1{font-size:30px;font-weight:700;margin-bottom:12px}.account-page p{color:var(--color-text-secondary);margin-bottom:24px}
-    .panel{padding:28px;border:1px solid #a47be040;border-radius:20px;background:var(--color-secondary);margin-top:24px}
+    .panel{padding:28px;border:1px solid #6A31C440;border-radius:20px;background:var(--color-secondary);margin-top:24px}
     .identity{display:flex;gap:18px;align-items:center;margin-bottom:28px}.identity h2{font-size:22px;font-weight:600;overflow-wrap:anywhere;min-width:0;margin:0}
-    .profile-circle{display:grid;place-items:center;flex-shrink:0;width:64px;height:64px;background:var(--color-cta);color:var(--color-primary);font-weight:700;font-size:22px;border-radius:50%;box-shadow:0 0 25px #f2a62b20}
+    .profile-circle{display:grid;place-items:center;flex-shrink:0;width:64px;height:64px;background:var(--color-cta);color:var(--color-primary);font-weight:700;font-size:22px;border-radius:50%;box-shadow:0 0 25px #6A31C420}
     dl{display:grid;grid-template-columns:130px minmax(0,1fr);gap:16px;margin-bottom:28px}dt{color:var(--color-text-secondary)}dd{overflow-wrap:anywhere;color:var(--color-text-primary)}.role{text-transform:capitalize}
-    .account-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid #ffffff15;padding-top:22px}.account-actions a{color:var(--color-accent)}.account-actions button{padding:10px 18px;border-radius:9px;background:var(--color-cta);color:var(--color-primary);font-weight:600;cursor:pointer}.account-actions button:disabled{opacity:.6}
-    .account-page [role=alert]{color:#ffadb9}@media(max-width:600px){dl{grid-template-columns:minmax(0,1fr);gap:8px}dd{margin-bottom:12px}.panel{padding:18px}}
+    .account-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid #6A31C415;padding-top:22px}.account-actions a{color:var(--color-accent)}.account-actions button{padding:10px 18px;border-radius:9px;background:var(--color-cta);color:var(--color-primary);font-weight:600;cursor:pointer}.account-actions button:disabled{opacity:.6}
+    .account-page [role=alert]{color:#A32B44}@media(max-width:600px){dl{grid-template-columns:minmax(0,1fr);gap:8px}dd{margin-bottom:12px}.panel{padding:18px}}
 </style>

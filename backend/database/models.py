@@ -14,6 +14,10 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False, default="student")
     active = Column(Boolean, nullable=False, default=True)
+    # Registration details captured by the student sign-up wizard. Stored as a
+    # single document so the public registration form can grow without
+    # reshaping the existing authentication tables.
+    profile = Column(JSON, nullable=True)
 
 class LoginSession(Base):
     __tablename__ = "login_sessions"

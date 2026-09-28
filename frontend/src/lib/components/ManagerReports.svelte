@@ -3,7 +3,9 @@
     import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
     import { managerCampaigns, managerChannels } from '$lib/manager-demo';
     import DataTable from '$lib/DataTable.svelte';
-    import { fullReport, fullReportCsv, reportCatalog, reportCsv } from '$lib/manager-reports';
+    import { buildReportCatalog, fullReport, fullReportCsv, reportCsv } from '$lib/manager-reports';
+    import { emptyModelSnapshot, loadModelSnapshot, type ModelSnapshot } from '$lib/ml-api';
+    import { onMount } from 'svelte';
     let selected = $state('lead');
     let search = $state('');
     let notice = $state('');
@@ -11,14 +13,18 @@
     const trendRows = $derived(trendSource === 'campaigns' ? managerCampaigns.map(item => ({ ...item, label: item.name })) : managerChannels.map(item => ({ ...item, label: item.channel })));
     let exporting = $state(false);
     let exportError = $state('');
+    let model = $state<ModelSnapshot>(emptyModelSnapshot);
+    let modelError = $state('');
+    const reportCatalog = $derived(buildReportCatalog(model));
     const report = $derived(reportCatalog.find(item => item.type === selected)!);
     const rows = $derived(report.rows.filter(row => Object.values(row).some(value => String(value ?? '').toLowerCase().includes(search.trim().toLowerCase()))));
-    const summary = [
+    const summary = $derived([
         { label: 'Available reports', value: reportCatalog.length },
         { label: 'Student records', value: reportCatalog.find(item => item.type === 'lead')!.rows.length },
         { label: 'Acquisition channels', value: reportCatalog.find(item => item.type === 'channel')!.rows.length },
         { label: 'Campaigns', value: reportCatalog.find(item => item.type === 'campaign')!.rows.length }
-    ];
+    ]);
+    onMount(async () => { try { model = await loadModelSnapshot(); } catch (error) { modelError = (error as Error).message; } });
     function download(content: string | ArrayBuffer, filename: string, mime: string) {
         const url = URL.createObjectURL(new Blob([content], { type: mime }));
         const link = document.createElement('a');
@@ -34,7 +40,7 @@
     async function downloadAll(format: 'pdf' | 'json' | 'csv') {
         exporting = true; exportError = ''; notice = '';
         try {
-            const snapshot = fullReport();
+            const snapshot = fullReport(model);
             const filename = `admission-marketing-analytics.${format}`;
             if (format === 'pdf') {
                 const { analyticsPdf } = await import('$lib/analytics-pdf');
@@ -63,6 +69,7 @@
     </section>
     {#if exporting}<p role="status" class="text-sm text-accent">Preparing the complete report...</p>{/if}
     {#if exportError}<p role="alert" class="text-sm text-red-300">{exportError}</p>{/if}
+    {#if modelError}<p role="alert" class="text-sm text-red-300">{modelError}</p>{/if}
     {#if notice}<p role="status" class="text-sm text-accent">{notice}</p>{/if}
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{#each summary as item}<div class="panel"><p class="caption">{item.label}</p><p class="mt-3 text-3xl text-white font-bold">{item.value}</p></div>{/each}</div>
     <div class="field"><label for="report-performance-source">Performance comparison</label><select id="report-performance-source" bind:value={trendSource}><option value="campaigns">Campaign performance</option><option value="channels">Channel performance</option></select></div>
@@ -85,9 +92,9 @@
 </div>
 
 <style>
-    .panel{min-width:0;padding:1.25rem;border:1px solid #ffffff1a;border-radius:1rem;background:var(--color-card,#21182b)}
-    h2{font-size:1.1rem;font-weight:700;color:white}.caption{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary,#b6aec4)}
-    .action{padding:.65rem .9rem;border:1px solid #ffffff26;border-radius:.65rem;color:white;cursor:pointer;font-size:.875rem}.action:hover,.action[aria-pressed=true]{background:#a47be01a;border-color:#a47be080}.primary{background:var(--color-accent,#a47be0);color:#171020;font-weight:600}.action:disabled{opacity:.5;cursor:default}
-    .field{display:grid;gap:.5rem;font-size:.875rem;color:var(--color-text-secondary,#b6aec4)}input,select{min-width:0;width:100%;padding:.7rem .85rem;border:1px solid #ffffff26;border-radius:.5rem;background:#171020;color:white}
-    button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #a47be0;outline-offset:3px}
+    .panel{min-width:0;padding:1.25rem;border:1px solid #6A31C41a;border-radius:1rem;background:var(--color-card,#FFFFFF)}
+    h2{font-size:1.1rem;font-weight:700;color:#262230}.caption{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary,#6F6979)}
+    .action{padding:.65rem .9rem;border:1px solid #E7D6FA;border-radius:.65rem;color:#4E1D93;cursor:pointer;font-size:.875rem}.action:hover,.action[aria-pressed=true]{background:#6A31C41a;border-color:#6A31C480}.primary{background:var(--color-accent,#6A31C4);color:#FFFFFF;font-weight:600}.action:disabled{opacity:.5;cursor:default}
+    .field{display:grid;gap:.5rem;font-size:.875rem;color:var(--color-text-secondary,#6F6979)}input,select{min-width:0;width:100%;padding:.7rem .85rem;border:1px solid #DED6C9;border-radius:.5rem;background:#FFFFFF;color:#262230}
+    button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #6A31C4;outline-offset:3px}
 </style>

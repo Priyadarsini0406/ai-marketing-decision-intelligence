@@ -1,139 +1,363 @@
-"""Train and import the local campaign dataset: python backend/train_model.py."""
+"""Import the real lead dataset and store XGBoost predictions with SHAP.
+
+    python backend/train_model.py
+
+The model itself is trained by ml/scripts/train_lead_conversion_xgboost.py; this
+module owns the database side. Every stored probability comes from an
+out-of-fold model, so no lead is ever scored by a model that trained on it.
+"""
+from __future__ import annotations
+
 import argparse
-import hashlib
 import json
 import time
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.metrics import accuracy_score, balanced_accuracy_score, confusion_matrix, f1_score, roc_auc_score
-from sklearn.model_selection import StratifiedKFold, cross_val_predict, train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder
+from sqlalchemy import delete, func
+from sqlalchemy import update as row_update
+from sklearn.model_selection import StratifiedKFold
 
+import ml_service as svc
 from database.connection import Base, SessionLocal, engine
-from database.models import Dataset, Lead, MLPrediction
+from database.models import MLPrediction, Lead, generate_uuid
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CSV = ROOT / 'data' / 'Digital_Marketing_Campaign_Dataset.csv'
-COLUMNS = dict(zip(
-    ['CustomerID', 'Age', 'Gender', 'Income', 'CampaignChannel', 'CampaignType',
-     'AdSpend', 'ClickThroughRate', 'ConversionRate', 'WebsiteVisits', 'PagesPerVisit',
-     'TimeOnSite', 'SocialShares', 'EmailOpens', 'EmailClicks', 'PreviousPurchases',
-     'LoyaltyPoints', 'Conversion'],
-    ['customer_id', 'age', 'gender', 'income', 'campaign_channel', 'campaign_type',
-     'ad_spend', 'click_through_rate', 'conversion_rate', 'website_visits', 'pages_per_visit',
-     'time_on_site', 'social_shares', 'email_opens', 'email_clicks', 'previous_purchases',
-     'loyalty_points', 'conversion']))
-CATEGORICAL = ['Gender', 'CampaignChannel', 'CampaignType']
-# ConversionRate describes observed conversions; omit it from prospective scoring.
-FEATURES = [c for c in COLUMNS if c not in ('CustomerID', 'Conversion', 'ConversionRate')]
+
+# Rows written by the old seed_mock_data.py, which injected random probabilities
+# and a hardcoded SHAP dict. They are removed so no fabricated score survives.
+SEEDED_STUDENT_ID_PREFIX = "STU-"
+
+# Every stored explanation must carry this marker. Anything else in
+# ml_predictions is a seeded or hand-written value, not a model output.
+SHAP_METHOD = "shap.TreeExplainer"
+
+CV_FOLDS = 5
+TOP_FACTORS = 5
+
+# Supabase round-trips cost roughly 200 ms over the pooler, so a per-row flush
+# would take hours for 9,240 leads. Writes are sent as chunked executemany
+# batches, which keeps a full import to a few minutes.
+WRITE_CHUNK = 500
+
+# Only fields with an exact counterpart in the dataset are mapped. The database
+# structure is unchanged, so columns with no real source (ad_spend, income,
+# campaign_channel, email/loyalty counters) are deliberately left NULL rather
+# than invented; the spend-driven analytics keep their existing 409 behaviour.
+COLUMN_MAP = {
+    "customer_id": svc.KEY_COLUMN,
+    "conversion": svc.TARGET_COLUMN,
+    "enquiry_source": "Lead Source",
+    "location": "City",
+    "lead_status": "Tags",
+    "engagement_level": "Asymmetrique Activity Index",
+    "website_visits": "TotalVisits",
+    "pages_per_visit": "Page Views Per Visit",
+    "time_on_site": "Total Time Spent on Website",
+}
+
+INTEGER_COLUMNS = {"website_visits"}
+FLOAT_COLUMNS = {"pages_per_visit", "time_on_site"}
 
 
-def read_dataset(path):
-    frame = pd.read_csv(path, dtype={'CustomerID': str})
-    missing = set(COLUMNS) - set(frame.columns)
+def _clean(value):
+    """Normalise a pandas scalar into a value the database can store."""
+    if value is None:
+        return None
+    if isinstance(value, float) and np.isnan(value):
+        return None
+    if pd.isna(value):
+        return None
+    return value
+
+
+def _as_int(value):
+    value = _clean(value)
+    if value is None:
+        return None
+    return int(value)
+
+
+def _as_float(value):
+    value = _clean(value)
+    if value is None:
+        return None
+    return float(value)
+
+
+def normalise_engagement(value) -> str | None:
+    """Turn Asymmetrique's '01.High' style index into a plain engagement level."""
+    value = _clean(value)
+    if value is None:
+        return None
+    text = str(value).strip()
+    for prefix in ("01.", "02.", "03."):
+        if text.startswith(prefix):
+            return text[len(prefix):]
+    return text or None
+
+
+def build_lead_payload(record: dict) -> dict:
+    """Map one dataset row onto the unchanged leads schema."""
+    payload: dict = {}
+    for column, source in COLUMN_MAP.items():
+        if column == "customer_id":
+            payload[column] = str(record[source])
+        elif column == "conversion":
+            payload[column] = bool(record[source])
+        elif column == "engagement_level":
+            payload[column] = normalise_engagement(record[source])
+        elif column in INTEGER_COLUMNS:
+            payload[column] = _as_int(record[source])
+        elif column in FLOAT_COLUMNS:
+            payload[column] = _as_float(record[source])
+        else:
+            value = _clean(record[source])
+            payload[column] = str(value) if value is not None else None
+    return payload
+
+
+def out_of_fold_scores(
+    frame: pd.DataFrame,
+    numeric: list[str],
+    categorical: list[str],
+    folds: int = CV_FOLDS,
+) -> tuple[np.ndarray, list[dict]]:
+    """Score every row with a model that never saw it, and explain each score.
+
+    Returns out-of-fold probabilities plus one SHAP factor list per row.
+    """
+    features = [*numeric, *categorical]
+    x = frame[features]
+    y = frame[svc.TARGET_COLUMN]
+
+    probabilities = np.zeros(len(frame), dtype=float)
+    explanations: list[dict | None] = [None] * len(frame)
+
+    splitter = StratifiedKFold(n_splits=folds, shuffle=True, random_state=svc.RANDOM_STATE)
+    for fold, (train_index, test_index) in enumerate(splitter.split(x, y), start=1):
+        print(f"  fold {fold}/{folds}: fitting on {len(train_index)} rows", flush=True)
+        pipeline = svc.make_model(numeric, categorical)
+        pipeline.fit(x.iloc[train_index], y.iloc[train_index])
+
+        probabilities[test_index] = pipeline.predict_proba(x.iloc[test_index])[:, 1]
+        fold_explanations = svc.explain_frame(
+            pipeline, x.iloc[test_index], numeric, categorical, top_n=TOP_FACTORS
+        )
+        for position, row_index in enumerate(test_index):
+            explanations[row_index] = fold_explanations[position]
+
+    missing = [i for i, item in enumerate(explanations) if item is None]
     if missing:
-        raise ValueError(f'Missing columns: {sorted(missing)}')
-    if frame[list(COLUMNS)].isna().any().any():
-        raise ValueError('Required dataset columns contain missing values')
-    if frame.CustomerID.duplicated().any() or frame.CustomerID.str.strip().eq('').any():
-        raise ValueError('CustomerID must be nonempty and unique')
-    for column in set(COLUMNS) - set(CATEGORICAL) - {'CustomerID'}:
-        frame[column] = pd.to_numeric(frame[column], errors='raise')
-        if not np.isfinite(frame[column]).all():
-            raise ValueError(f'{column} contains non-finite values')
-    if set(frame.Conversion.unique()) != {0, 1} or frame.Conversion.value_counts().min() < 5:
-        raise ValueError('Conversion must contain both 0 and 1, with at least five rows per class')
-    return frame
+        raise svc.PipelineError(f"{len(missing)} rows were never scored by a fold model")
+    return probabilities, [item for item in explanations if item is not None]
 
 
-def make_model():
-    return Pipeline([
-        ('encode', ColumnTransformer([
-            ('category', OneHotEncoder(handle_unknown='ignore', sparse_output=False), CATEGORICAL),
-            ('numeric', 'passthrough', [c for c in FEATURES if c not in CATEGORICAL])])),
-        ('classifier', GradientBoostingClassifier(n_estimators=150, max_depth=3, random_state=42))])
+def _chunks(rows: list, size: int = WRITE_CHUNK):
+    for start in range(0, len(rows), size):
+        yield rows[start:start + size]
 
 
-def persist(frame, probabilities, name):
-    """Upsert only the supplied customers; keep unrelated records and accounts."""
+def _execute_in_chunks(db, statement, rows: list) -> int:
+    for chunk in _chunks(rows):
+        db.execute(statement, chunk)
+    return len(rows)
+
+
+def purge_seeded(db) -> int:
+    """Delete seeded leads and every prediction this pipeline did not produce.
+
+    A prediction is treated as fabricated unless its stored explanation carries
+    this model's SHAP marker, so no hand-written or randomly seeded score can
+    survive an import. Predictions are removed first: leads.id is referenced.
+    """
+    # coalesce covers both a NULL column and a stored explanation with no
+    # "method" key, which is exactly the shape the seeded rows had.
+    fabricated = db.query(MLPrediction.id).filter(
+        func.coalesce(MLPrediction.shap_explanation["method"].as_string(), "") != SHAP_METHOD
+    )
+    prediction_ids = [row[0] for row in fabricated.all()]
+    for chunk in _chunks(prediction_ids):
+        db.execute(delete(MLPrediction).where(MLPrediction.id.in_(chunk)))
+
+    # Leads left with no prediction are the seeded stubs; a real lead always has one.
+    orphaned = db.query(Lead.id).filter(
+        Lead.student_id.like(f"{SEEDED_STUDENT_ID_PREFIX}%"),
+        ~Lead.id.in_(db.query(MLPrediction.lead_id)),
+    )
+    lead_ids = [row[0] for row in orphaned.all()]
+    for chunk in _chunks(lead_ids):
+        db.execute(delete(Lead).where(Lead.id.in_(chunk)))
+    return len(lead_ids)
+
+
+def _prediction_row(lead_id: str, probability: float, explanation: dict,
+                    cluster: int | None, name: str | None, prediction_id: str | None = None) -> dict:
+    score = float(probability)
+    row = {
+        "lead_id": lead_id,
+        "conversion_probability": score,
+        # The admin report reads admission_probability; it is the same model
+        # output, so it carries the real score rather than a stale random value.
+        "admission_probability": score,
+        "lead_score": svc.score_band(score),
+        "segment_cluster": cluster,
+        "segment_name": name,
+        "shap_explanation": explanation,
+    }
+    if prediction_id is not None:
+        row["id"] = prediction_id
+    return row
+
+
+def persist(
+    db,
+    frame: pd.DataFrame,
+    probabilities: np.ndarray,
+    explanations: list[dict],
+    segments: tuple[list[int], list[str]] | None = None,
+) -> dict:
+    """Upsert leads and their real predictions; keep unrelated rows."""
+    removed = purge_seeded(db)
+
+    records = frame.to_dict(orient="records")
+    existing_leads = {lead.customer_id: lead for lead in db.query(Lead).all()}
+    existing_predictions = {prediction.lead_id: prediction for prediction in db.query(MLPrediction).all()}
+
+    clusters, names = segments if segments else ([None] * len(frame), [None] * len(frame))
+
+    lead_inserts: list[dict] = []
+    lead_updates: list[dict] = []
+    prediction_inserts: list[dict] = []
+    prediction_updates: list[dict] = []
+    created = updated = 0
+
+    for record, probability, explanation, cluster, name in zip(
+        records, probabilities, explanations, clusters, names
+    ):
+        payload = build_lead_payload(record)
+        lead = existing_leads.get(payload["customer_id"])
+        if lead is None:
+            # The key is generated up front so the prediction can reference it in
+            # the same batch; the column default only runs once a row is sent.
+            row = {"id": generate_uuid(), **payload}
+            lead_inserts.append(row)
+            lead_id = row["id"]
+            created += 1
+        else:
+            lead_id = lead.id
+            if any(getattr(lead, key) != value for key, value in payload.items()):
+                lead_updates.append({"id": lead_id, **payload})
+            updated += 1
+
+        existing = existing_predictions.get(lead_id)
+        if existing is None:
+            prediction_inserts.append(
+                {"id": generate_uuid(), **_prediction_row(lead_id, probability, explanation, cluster, name)}
+            )
+        elif _prediction_is_stale(existing, probability, explanation, cluster, name):
+            prediction_updates.append(
+                {"id": existing.id,
+                 **_prediction_row(lead_id, probability, explanation, cluster, name, existing.id)}
+            )
+
+    _execute_in_chunks(db, Lead.__table__.insert(), lead_inserts)
+    # ORM bulk update by primary key: the id key becomes the WHERE clause and is
+    # never written back into the row.
+    _execute_in_chunks(db, row_update(Lead), lead_updates)
+    # Leads are written first so the prediction foreign keys resolve.
+    _execute_in_chunks(db, MLPrediction.__table__.insert(), prediction_inserts)
+    _execute_in_chunks(db, row_update(MLPrediction), prediction_updates)
+
+    return {
+        "leads_created": created,
+        "leads_updated": updated,
+        "leads_inserted": len(lead_inserts),
+        "leads_written": len(lead_updates),
+        "predictions_inserted": len(prediction_inserts),
+        "predictions_updated": len(prediction_updates),
+        "seeded_leads_removed": removed,
+    }
+
+
+def _prediction_is_stale(prediction, probability: float, explanation: dict,
+                         cluster: int | None, name: str | None) -> bool:
+    """Only rewrite a stored prediction when something the UI reads has changed."""
+    score = float(probability)
+    return (
+        prediction.conversion_probability != score
+        or prediction.admission_probability != score
+        or prediction.lead_score != svc.score_band(score)
+        or prediction.segment_cluster != cluster
+        or prediction.segment_name != name
+        or (prediction.shap_explanation or {}) != explanation
+    )
+
+
+def run(csv_path: Path = svc.DATASET_PATH, import_data: bool = True, folds: int = CV_FOLDS) -> dict:
+    served_pipeline, _ = svc.load_pipeline()  # fail fast if training has not run
+
+    frame = svc.read_dataset(csv_path)
+    numeric, categorical, _ = svc.resolve_features(frame)
+    features = [*numeric, *categorical]
+    print(
+        f"Loaded {len(frame)} leads; {len(numeric)} numeric and "
+        f"{len(categorical)} categorical features",
+        flush=True,
+    )
+
+    # Segmentation uses the served pipeline's imputer, so a lead's segment is
+    # derived from exactly the values its prediction used. K-Means is
+    # unsupervised, so fitting it on every row leaks no target information.
+    print(f"Fitting the {svc.SEGMENT_COUNT}-segment lead segmentation...", flush=True)
+    segment_artifact = svc.fit_segments(served_pipeline, frame[features])
+    svc.save_segments(segment_artifact)
+    clusters, names = svc.assign_segments(segment_artifact, served_pipeline, frame[features])
+
+    print(f"Generating out-of-fold predictions and SHAP explanations...", flush=True)
+    probabilities, explanations = out_of_fold_scores(frame, numeric, categorical, folds)
+
+    summary = {
+        "leads": int(len(frame)),
+        "folds": folds,
+        "mean_probability": round(float(probabilities.mean()), 4),
+        "high_score_leads": int((probabilities >= svc.HIGH_SCORE_MIN).sum()),
+        "actual_conversions": int(frame[svc.TARGET_COLUMN].sum()),
+        "segments": {
+            str(cluster): {
+                "name": segment_artifact["names"][cluster],
+                "leads": profile["leads"],
+                "engagement_index": profile["engagement_index"],
+                "mean_probability": profile["mean_probability"],
+            }
+            for cluster, profile in sorted(segment_artifact["profile"].items())
+        },
+    }
+
+    if not import_data:
+        print(json.dumps(summary, indent=2))
+        return summary
+
     Base.metadata.create_all(bind=engine)
     with SessionLocal.begin() as db:
-        leads = {lead.customer_id: lead for lead in db.query(Lead).all()}
-        predictions = {p.lead_id: p for p in db.query(MLPrediction).all()}
-        records = frame[list(COLUMNS)].rename(columns=COLUMNS).to_dict(orient='records')
-        for record, probability in zip(records, probabilities):
-            record['conversion'] = bool(record['conversion'])
-            lead = leads.get(record['customer_id'])
-            if lead is None:
-                lead = Lead(**record)
-                db.add(lead)
-                db.flush()
-            else:
-                for key, value in record.items():
-                    setattr(lead, key, value)
-            prediction = predictions.get(lead.id)
-            if prediction is None:
-                prediction = MLPrediction(lead_id=lead.id)
-                db.add(prediction)
-            prediction.conversion_probability = float(probability)
-            prediction.lead_score = 'High' if probability >= .7 else 'Medium' if probability >= .4 else 'Low'
-            # Do not present explanations from a previous model as current ones.
-            prediction.shap_explanation = None
-        dataset = db.query(Dataset).filter(Dataset.name == name).first()
-        if dataset is None:
-            dataset = Dataset(name=name, created_at=time.time())
-            db.add(dataset)
-        dataset.columns = list(frame.columns)
-        dataset.rows = json.loads(frame.to_json(orient='records'))
+        summary.update(persist(db, frame, probabilities, explanations, (clusters, names)))
+    summary["ml_predictions"] = int(len(frame))
+
+    print(json.dumps(summary, indent=2))
+    return summary
 
 
-def train(csv_path=DEFAULT_CSV, output_dir=ROOT / 'backend' / 'artifacts', import_data=True):
-    frame = read_dataset(csv_path)
-    x, y = frame[FEATURES], frame.Conversion.astype(int)
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=.2, stratify=y, random_state=42)
-    model = make_model()
-    print(f'Training on {len(x_train)} rows; evaluating on {len(x_test)} held-out rows...', flush=True)
-    model.fit(x_train, y_train)
-    probability = model.predict_proba(x_test)[:, 1]
-    predicted = (probability >= .5).astype(int)
-    report = {
-        'model': 'GradientBoostingClassifier', 'random_seed': 42,
-        'dataset_sha256': hashlib.sha256(Path(csv_path).read_bytes()).hexdigest(),
-        'rows': len(frame), 'train_rows': len(x_train), 'test_rows': len(x_test),
-        'features': FEATURES, 'excluded_columns': ['CustomerID', 'Conversion', 'ConversionRate', 'AdvertisingPlatform', 'AdvertisingTool'],
-        'accuracy': accuracy_score(y_test, predicted),
-        'balanced_accuracy': balanced_accuracy_score(y_test, predicted),
-        'f1': f1_score(y_test, predicted), 'roc_auc': roc_auc_score(y_test, probability),
-        'confusion_matrix': confusion_matrix(y_test, predicted, labels=[0, 1]).tolist(),
-        'majority_baseline_accuracy': float(y_test.value_counts(normalize=True).max()),
-        'stored_predictions': 'Five-fold out-of-fold probabilities; each row scored by a model that did not train on it.',
-        'artifact': 'Pipeline refitted on all rows for future inference; metrics above come from the held-out evaluation.',
-    }
-    print('Generating out-of-fold lead predictions...', flush=True)
-    probabilities = cross_val_predict(make_model(), x, y,
-        cv=StratifiedKFold(n_splits=5, shuffle=True, random_state=42),
-        method='predict_proba', n_jobs=1)[:, 1]
-    model.fit(x, y)
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    joblib.dump(model, output_dir / 'conversion_model.joblib')
-    (output_dir / 'training_report.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
-    if import_data:
-        persist(frame, probabilities, Path(csv_path).name)
-    print(json.dumps(report, indent=2), flush=True)
-    return report
-
-
-if __name__ == '__main__':
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--csv', type=Path, default=DEFAULT_CSV)
-    parser.add_argument('--output-dir', type=Path, default=ROOT / 'backend' / 'artifacts')
-    parser.add_argument('--no-import', action='store_true', help='Train without changing the database')
+    parser.add_argument("--csv", type=Path, default=svc.DATASET_PATH)
+    parser.add_argument("--folds", type=int, default=CV_FOLDS)
+    parser.add_argument(
+        "--no-import", action="store_true", help="Score the dataset without writing to the database"
+    )
     args = parser.parse_args()
-    train(args.csv, args.output_dir, not args.no_import)
+    run(args.csv, not args.no_import, args.folds)
+
+
+if __name__ == "__main__":
+    main()

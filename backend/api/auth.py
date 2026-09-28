@@ -3,15 +3,18 @@ import hmac
 import secrets
 import time
 import os
+import re
+from datetime import date
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from database.connection import get_db
 from database.models import User, LoginSession
+
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 bearer = HTTPBearer(auto_error=False)
@@ -31,7 +34,9 @@ def token_hash(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
 def public_user(user):
-    return {key: getattr(user, key) for key in ("id", "name", "email", "role", "active")}
+    payload = {key: getattr(user, key) for key in ("id", "name", "email", "role", "active")}
+    payload["profile"] = getattr(user, "profile", None) or {}
+    return payload
 
 class Credentials(BaseModel):
     email: str = Field(min_length=3, max_length=254)
@@ -58,8 +63,102 @@ class NewUser(Credentials):
             raise ValueError("Name is required")
         return value.strip()
 
+Gender = Literal["female", "male", "other", "prefer_not_to_say"]
+PROFILE_TEXT = {
+    "door_no": "Door / house number",
+    "street": "Street",
+    "area": "Area or locality",
+    "city": "City",
+    "district": "District",
+    "state": "State",
+}
+
+class StudentRegistration(NewUser):
+    """Public sign-up contract. Every field is mandatory and the account is
+    always created with the student role: manager and administrator accounts
+    can only be issued by an administrator."""
+
+    date_of_birth: date
+    gender: Gender
+    mobile: str = Field(min_length=10, max_length=15)
+    door_no: str = Field(min_length=1, max_length=40)
+    street: str = Field(min_length=1, max_length=160)
+    area: str = Field(min_length=1, max_length=160)
+    city: str = Field(min_length=1, max_length=80)
+    district: str = Field(min_length=1, max_length=80)
+    state: str = Field(min_length=1, max_length=80)
+    pincode: str = Field(min_length=6, max_length=6)
+    qualification: str = Field(min_length=1, max_length=120)
+    institution: str = Field(min_length=1, max_length=160)
+    completion_year: int = Field(ge=1950, le=date.today().year + 1)
+    course_interested: str = Field(min_length=1, max_length=120)
+
+    @field_validator("gender", mode="before")
+    @classmethod
+    def normalise_gender(cls, value):
+        return str(value).strip().lower()
+
+    @field_validator("mobile")
+    @classmethod
+    def valid_mobile(cls, value):
+        digits = re.sub(r"\D", "", value)
+        if len(digits) != 10:
+            raise ValueError("Enter a 10 digit mobile number")
+        return digits
+
+    @field_validator("pincode")
+    @classmethod
+    def valid_pincode(cls, value):
+        if not re.fullmatch(r"\d{6}", value.strip()):
+            raise ValueError("Enter a valid 6 digit PIN code")
+        return value.strip()
+
+    @model_validator(mode="after")
+    def validate_details(self):
+        blanks = [label for field, label in PROFILE_TEXT.items() if not str(getattr(self, field)).strip()]
+        if blanks:
+            raise ValueError(f"{blanks[0]} is required")
+        if not str(self.qualification).strip() or not str(self.institution).strip():
+            raise ValueError("Qualification and institution are required")
+        if not str(self.course_interested).strip():
+            raise ValueError("Course interested is required")
+        if self.date_of_birth >= date.today():
+            raise ValueError("Date of birth must be in the past")
+        if (date.today() - self.date_of_birth).days < 3650:
+            raise ValueError("You must be at least 10 years old to register")
+        return self
+
+    @property
+    def profile(self) -> dict:
+        return {
+            "date_of_birth": self.date_of_birth.isoformat(),
+            "gender": self.gender,
+            "mobile": self.mobile,
+            "door_no": self.door_no.strip(),
+            "street": self.street.strip(),
+            "area": self.area.strip(),
+            "city": self.city.strip(),
+            "district": self.district.strip(),
+            "state": self.state.strip(),
+            "pincode": self.pincode,
+            "qualification": self.qualification.strip(),
+            "institution": self.institution.strip(),
+            "completion_year": self.completion_year,
+            "course_interested": self.course_interested.strip(),
+        }
+
 def create_user(data, db):
-    user = User(name=data.name, email=data.email, password_hash=hash_password(data.password), role=data.role)
+    profile = dict(getattr(data, "profile", None) or {})
+    institution = getattr(data, "institution", None)
+    if institution and not profile.get("institution"):
+        profile["institution"] = institution
+    user = User(
+        name=data.name,
+        email=data.email,
+        password_hash=hash_password(data.password),
+        role=data.role,
+        profile=profile or None,
+    )
     db.add(user)
     try:
         db.commit()
@@ -87,9 +186,10 @@ def require_manager(user: User = Depends(current_user)):
     return user
 
 @router.post("/register", status_code=201)
-def register(data: NewUser, db: Session = Depends(get_db)):
-    if data.role not in ("student", "admission_manager"):
-        raise HTTPException(403, "Only an administrator can create accounts for this role")
+def register(data: StudentRegistration, db: Session = Depends(get_db)):
+    # Public registration only ever produces a student account. Manager and
+    # administrator accounts are issued by an administrator.
+    data.role = "student"
     return public_user(create_user(data, db))
 
 @router.post("/login")

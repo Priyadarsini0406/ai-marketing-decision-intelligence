@@ -27,5 +27,5 @@
         <input type="file" accept=".csv,.zip,text/csv,application/zip,application/x-zip-compressed" bind:files required disabled={busy} aria-describedby="upload-limits" class="border border-white/20 rounded-lg p-3" />
     </label>
     <p id="upload-limits" class="text-sm text-text-secondary">CSV or ZIP containing one UTF-8 CSV with unique headers. Maximum 5 MB for both the upload and uncompressed CSV, 10,000 rows, and 100 columns.</p>
-    <button class="bg-cta text-black font-semibold rounded-lg p-3" disabled={busy}>{busy ? 'Uploading…' : 'Upload dataset'}</button>
+    <button class="bg-cta text-white font-semibold rounded-lg p-3" disabled={busy}>{busy ? 'Uploading…' : 'Upload dataset'}</button>
 </form>

@@ -1,0 +1,239 @@
+/* ------------------------------------------------------------------
+   Student portal design system — fixed light theme.
+   Loaded only by /student/* and scoped to .student-shell, so the
+   manager and admin dashboards keep their existing dark styling.
+   The Decision-Intel purple (--color-accent #6A31C4) stays untouched
+   and is the only accent colour used.
+   ------------------------------------------------------------------ */
+
+.student-shell {
+  /* Deeper, richer Decision-Intel purple — same family as --color-accent (#6A31C4),
+     tuned darker for a premium/glossy look on the light surface. */
+  --st-accent: #6A31C4;
+  --st-accent-ink: #4E1D93;
+  --st-accent-soft: #F3EBFC;
+  --st-accent-line: #E7D6FA;
+  --st-accent-glow: rgba(106, 49, 196, .30);
+  --st-accent-sheen: linear-gradient(180deg, #7E4ADA 0%, #6A31C4 52%, #5924AB 100%);
+
+  --st-bg: #F7F5F2;
+  --st-surface: #FFFFFF;
+  --st-surface-muted: #FBFAF7;
+  --st-border: #E9E4DC;
+  --st-border-strong: #DED6C9;
+  --st-text: #262230;
+  --st-text-muted: #6F6979;
+
+  --st-amber-ink: #4E1D93;
+  --st-amber-soft: #F3EBFC;
+  --st-green-ink: #256B4C;
+  --st-green-soft: #E7F2EC;
+
+  --st-radius: 16px;
+  --st-radius-sm: 12px;
+  --st-shadow: 0 1px 2px rgba(38, 34, 48, .04), 0 10px 28px -18px rgba(38, 34, 48, .32);
+  --st-shadow-lift: 0 2px 4px rgba(38, 34, 48, .05), 0 20px 38px -24px rgba(38, 34, 48, .45);
+
+  background-color: var(--st-bg);
+  color: var(--st-text);
+}
+
+.student-shell .st-icon { flex: none; }
+
+/* ---- Sidebar ---------------------------------------------------- */
+
+.student-shell .st-sidebar {
+  background-color: var(--st-surface);
+  border-right: 1px solid var(--st-border);
+}
+
+.student-shell .st-brand {
+  height: 5rem;
+  border-bottom: 1px solid var(--st-border);
+}
+
+.student-shell .st-brand-mark {
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 11px;
+  background-color: var(--st-accent);
+  color: #FFFFFF;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 14px -8px rgba(106, 49, 196, .9);
+}
+
+.student-shell .st-brand-name { font-size: 1.2rem; font-weight: 700; letter-spacing: .01em; color: var(--st-text); }
+.student-shell .st-brand-name em { font-family: Georgia, 'Times New Roman', serif; font-style: italic; color: var(--st-accent); }
+
+.student-shell .st-nav { padding: 1.25rem .875rem; display: flex; flex-direction: column; gap: 1.35rem; }
+.student-shell .st-nav-label {
+  padding: 0 .75rem;
+  margin-bottom: .35rem;
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--st-text-muted);
+  opacity: .85;
+}
+
+.student-shell .st-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .55rem .7rem;
+  margin-bottom: .15rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--st-text-muted);
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.student-shell .st-nav-link .st-icon { color: var(--st-accent); }
+
+.student-shell .st-nav-link:hover {
+  background-color: var(--st-accent-soft);
+  border-color: var(--st-accent-line);
+  color: var(--st-text);
+}
+
+.student-shell .st-nav-link.st-active {
+  background-color: var(--st-accent-soft);
+  border-color: var(--st-accent-line);
+  color: var(--st-accent-ink);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--st-accent), 0 8px 20px -16px var(--st-accent-glow);
+}
+
+/* ---- Header ----------------------------------------------------- */
+
+.student-shell .st-header {
+  position: relative;
+  z-index: 30;
+  height: 5rem;
+  border-bottom: 1px solid var(--st-border);
+  background-color: rgba(247, 245, 242, .88);
+  backdrop-filter: blur(10px);
+}
+
+.student-shell .st-header-title { font-size: 1.125rem; font-weight: 700; color: var(--st-text); }
+.student-shell .st-header-crumb { font-size: .75rem; color: var(--st-text-muted); }
+
+.student-shell .st-header-actions { position: relative; }
+
+.student-shell .st-icon-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--st-border);
+  background-color: var(--st-surface);
+  color: var(--st-accent);
+  display: grid;
+  place-items: center;
+  transition: color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.student-shell .st-icon-btn:hover { border-color: var(--st-accent-line); background-color: var(--st-accent-soft); box-shadow: 0 8px 18px -12px var(--st-accent-glow); }
+
+.student-shell .st-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background-color: var(--st-accent-soft);
+  border: 1px solid var(--st-accent-line);
+  color: var(--st-accent-ink);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: .875rem;
+}
+
+/* Minimal profile trigger + dropdown */
+
+.student-shell .st-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .2rem;
+  border: 0;
+  border-radius: 999px;
+  transition: background-color 160ms ease;
+}
+
+.student-shell .st-profile-name { font-size: .875rem; font-weight: 600; color: var(--st-text); white-space: nowrap; }
+.student-shell .st-profile-caret { color: var(--st-text-muted); margin-right: .1rem; }
+.student-shell .st-profile-btn:hover,
+.student-shell .st-profile-btn[aria-expanded='true'] { background-color: var(--st-accent-soft); }
+.student-shell .st-profile-btn:hover .st-profile-caret,
+.student-shell .st-profile-btn[aria-expanded='true'] .st-profile-caret { color: var(--st-accent); }
+
+.student-shell .st-menu {
+  position: absolute;
+  top: calc(100% + .55rem);
+  right: 0;
+  z-index: 40;
+  width: 15.5rem;
+  padding: .4rem;
+  background-color: var(--st-surface);
+  border: 1px solid var(--st-border);
+  border-radius: var(--st-radius);
+  box-shadow: 0 26px 50px -30px rgba(38, 34, 48, .55), 0 2px 6px rgba(38, 34, 48, .05);
+}
+
+.student-shell .st-menu-head { padding: .6rem .65rem .6rem; margin-bottom: .3rem; border-bottom: 1px solid var(--st-border); }
+.student-shell .st-menu-name { display: block; font-size: .875rem; font-weight: 650; color: var(--st-text); overflow-wrap: anywhere; }
+.student-shell .st-menu-mail { display: block; margin-top: .1rem; font-size: .75rem; color: var(--st-text-muted); overflow-wrap: anywhere; }
+
+.student-shell .st-menu-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  width: 100%;
+  padding: .55rem .6rem;
+  border-radius: 10px;
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--st-text-muted);
+  text-align: left;
+}
+
+.student-shell .st-menu-item .st-icon { color: var(--st-accent); }
+.student-shell .st-menu-item:hover { background-color: var(--st-accent-soft); color: var(--st-text); }
+.student-shell .st-menu-item.st-danger:hover { background-color: #FBEAEE; color: #A32B44; }
+.student-shell .st-menu-item.st-danger:hover .st-icon { color: #A32B44; }
+
+/* ---- Content canvas --------------------------------------------- */
+
+.student-shell .st-content { background-color: var(--st-bg); }
+.student-shell .st-canvas { width: 100%; max-width: 1340px; margin-inline: auto; }
+
+.student-shell .custom-scrollbar { scrollbar-color: var(--st-border-strong) transparent; scrollbar-width: thin; }
+.student-shell .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--st-border-strong); }
+.student-shell .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6F6979; }
+
+/* ---- Neutralise the dark-theme motion layer for the light shell -- */
+
+/* The shared purple glow reads as a neon outline on the light surface, so the
+   minimal header controls keep only their own quiet hover treatment. */
+.site-motion .student-shell .st-header-actions .st-profile-btn:hover,
+.site-motion .student-shell .st-header > div > button:hover,
+.site-motion .student-shell .st-menu .st-menu-item:hover {
+  border-color: transparent;
+  box-shadow: none;
+  translate: none;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .site-motion .student-shell :is(.nav-link, nav a):hover { translate: none; }
+  .site-motion .student-shell nav a:hover { color: var(--st-text); }
+  .site-motion .student-shell .st-nav-link:hover { color: var(--st-text); }
+  .site-motion .student-shell .st-nav-link.st-active:hover { color: var(--st-accent-ink); }
+  .site-motion .student-shell :is(a[class*="bg-"], .button, .action):not(:disabled):hover {
+    box-shadow: 0 10px 22px -14px rgba(38, 34, 48, .5);
+  }
+}

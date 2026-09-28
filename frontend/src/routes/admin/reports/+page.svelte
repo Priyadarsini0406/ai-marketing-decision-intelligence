@@ -31,10 +31,10 @@
         min-width: 0;
         container-type: inline-size;
         position: relative;
-        background: linear-gradient(145deg, #21192b, #17131f);
+        background: linear-gradient(145deg, #FFFFFF, #FFFFFF);
         border-radius: 20px;
         padding: 24px;
-        color: #d3c6e2;
+        color: #4E1D93;
         text-transform: capitalize;
         transition: transform 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
         animation: card-enter 550ms ease-out backwards;
@@ -46,7 +46,7 @@
         inset: 0;
         border-radius: inherit;
         pointer-events: none;
-        background: radial-gradient(ellipse at top right, #a47be024, transparent 70%);
+        background: radial-gradient(ellipse at top right, #6A31C424, transparent 70%);
         opacity: 0;
         transition: opacity 250ms ease;
     }
@@ -56,31 +56,31 @@
         line-height: 1.3;
         letter-spacing: -0.035em;
         font-variant-numeric: tabular-nums;
-        color: #f5efff;
+        color: #F3EBFC;
         overflow-wrap: anywhere;
         text-transform: none;
     }
     .report-page .panel {
         min-width: 0;
         border-radius: 20px;
-        background: linear-gradient(135deg, #1c1624, #17131f);
+        background: linear-gradient(135deg, #FFFFFF, #FFFFFF);
         transition: border-color 250ms ease, box-shadow 250ms ease;
         animation: card-enter 550ms ease-out backwards;
         animation-delay: var(--delay, 0ms);
     }
     .report-page .panel h2 { display: flex; align-items: center; gap: 12px; }
-    .report-page .panel h2::before { content: ''; width: 4px; height: 20px; border-radius: 4px; background: linear-gradient(#c7a4f0, #f2a62b); flex-shrink: 0; }
-    .report-page .table-wrap { max-width: 100%; border-radius: 12px; scrollbar-color: #584667 #17131f; }
-    .report-page th { background: #241b30; }
+    .report-page .panel h2::before { content: ''; width: 4px; height: 20px; border-radius: 4px; background: linear-gradient(#6A31C4, #6A31C4); flex-shrink: 0; }
+    .report-page .table-wrap { max-width: 100%; border-radius: 12px; scrollbar-color: #DED6C9 #FFFFFF; }
+    .report-page th { background: #FFFFFF; }
     .report-page tbody tr { transition: background-color 180ms ease; }
     .report-page button { transition: transform 180ms ease, box-shadow 180ms ease; }
-    .report-page button:focus-visible { outline: 2px solid #c7a4f0; outline-offset: 4px; }
+    .report-page button:focus-visible { outline: 2px solid #6A31C4; outline-offset: 4px; }
     @media (hover: hover) {
-        .report-page .stat:hover { transform: translateY(-6px); border-color: #a47be080; box-shadow: 0 14px 32px #00000030, 0 0 25px #a47be01c; }
+        .report-page .stat:hover { transform: translateY(-6px); border-color: #6A31C480; box-shadow: 0 14px 32px #26223030, 0 0 25px #6A31C41c; }
         .report-page .stat:hover::before { opacity: 1; }
-        .report-page .panel:hover { border-color: #a47be050; box-shadow: 0 0 25px #a47be010; }
-        .report-page tbody tr:hover { background: #a47be012; }
-        .report-page button:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 5px 18px #a47be025; }
+        .report-page .panel:hover { border-color: #6A31C450; box-shadow: 0 0 25px #6A31C410; }
+        .report-page tbody tr:hover { background: #6A31C412; }
+        .report-page button:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 5px 18px #6A31C425; }
     }
     @keyframes page-enter { from { opacity: 0; } to { opacity: 1; } }
     @keyframes card-enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }

@@ -11,3 +11,4 @@ gymnasium
 stable-baselines3
 python-multipart
 pydantic
+python-dotenv

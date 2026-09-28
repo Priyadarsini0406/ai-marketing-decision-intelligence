@@ -1,5 +1,8 @@
 export type LeadStatus = 'New' | 'Contacted' | 'Counselling' | 'Application' | 'Admitted' | 'Not Converted';
-export type PredictionType = 'High' | 'Medium' | 'Low';
+
+// Conversion probability, score band and segment are deliberately absent here.
+// They are model output, so they come from the API via $lib/ml-api rather than
+// from a hardcoded value that would look identical but mean nothing.
 
 export type ManagerLead = {
   id: string;
@@ -17,8 +20,6 @@ export type ManagerLead = {
   lead_source: string;
   remarks: string;
   lead_status: LeadStatus;
-  prediction: PredictionType;
-  probability: number;
   assigned_to: string;
   enquiry_date: string;
   source: string;
@@ -42,8 +43,6 @@ export const managerLeads: ManagerLead[] = [
     lead_source: 'Google Ads',
     remarks: 'Interested in AI and software engineering pathways.',
     lead_status: 'Counselling',
-    prediction: 'High',
-    probability: 86,
     assigned_to: 'Priya Nair',
     enquiry_date: '2026-08-12',
     source: 'Google Ads',
@@ -65,8 +64,6 @@ export const managerLeads: ManagerLead[] = [
     lead_source: 'Website',
     remarks: 'Strong interest in digital marketing and brand strategy.',
     lead_status: 'Application',
-    prediction: 'Medium',
-    probability: 72,
     assigned_to: 'Rahul Verma',
     enquiry_date: '2026-08-19',
     source: 'Website',
@@ -88,8 +85,6 @@ export const managerLeads: ManagerLead[] = [
     lead_source: 'Referral',
     remarks: 'Referred by alumni network and looking for strong placement support.',
     lead_status: 'Application',
-    prediction: 'High',
-    probability: 91,
     assigned_to: 'Aisha Khan',
     enquiry_date: '2026-08-07',
     source: 'Referral',
@@ -111,8 +106,6 @@ export const managerLeads: ManagerLead[] = [
     lead_source: 'Instagram',
     remarks: 'Interested in scholarships and finance-focused learning outcomes.',
     lead_status: 'Contacted',
-    prediction: 'Medium',
-    probability: 64,
     assigned_to: 'Nisha Thomas',
     enquiry_date: '2026-08-22',
     source: 'Instagram',
@@ -134,8 +127,6 @@ export const managerLeads: ManagerLead[] = [
     lead_source: 'Phone',
     remarks: 'Shows interest but requested more information on return on investment.',
     lead_status: 'New',
-    prediction: 'Low',
-    probability: 42,
     assigned_to: 'Surya Rao',
     enquiry_date: '2026-08-28',
     source: 'Phone',
@@ -157,8 +148,6 @@ export const managerLeads: ManagerLead[] = [
     lead_source: 'Education Portals',
     remarks: 'Career growth and infrastructure management were primary decision drivers.',
     lead_status: 'Admitted',
-    prediction: 'High',
-    probability: 88,
     assigned_to: 'Dhruv Mehta',
     enquiry_date: '2026-08-02',
     source: 'Education Portals',
@@ -190,21 +179,6 @@ export const managerCampaigns = [
   { name: 'Engineering Campaign', channel: 'Education Portals', budget: 220000, spend: 200000, leads: 382, applications: 118, admissions: 40, conversion: 10.5 },
   { name: 'Scholarship Campaign', channel: 'Instagram', budget: 90000, spend: 86000, leads: 214, applications: 89, admissions: 31, conversion: 14.5 },
   { name: 'Early Admission Campaign', channel: 'Email', budget: 70000, spend: 64000, leads: 182, applications: 92, admissions: 33, conversion: 18.1 }
-];
-
-export const dashboardStats = [
-  { label: 'Student Enquiries', value: '1,248', delta: '+12.4%' },
-  { label: 'Admission Leads', value: '864', delta: '+8.7%' },
-  { label: 'High-Potential Leads', value: '286', delta: '+14.2%' },
-  { label: 'Predicted Admissions', value: '192', delta: '+9.5%' },
-  { label: 'Conversion Rate', value: '22.2%', delta: '+3.4%' },
-  { label: 'Marketing Spend', value: '₹4.8L', delta: '₹1.2L used' }
-];
-
-export const managerSegments = [
-  { title: 'High-Intent Students', count: 286, avgProbability: 88, conversionRate: 31.4, characteristics: 'Strong academic fit, quick response, high application intent.' },
-  { title: 'Moderate-Intent Students', count: 412, avgProbability: 68, conversionRate: 21.0, characteristics: 'Prospective students with good fit but slower engagement.' },
-  { title: 'Low-Intent Students', count: 198, avgProbability: 41, conversionRate: 8.1, characteristics: 'Need more nurturing and program education support.' }
 ];
 
 export const managerRecommendations = [
@@ -288,20 +262,6 @@ export const whatIfScenario = {
   simulated: { leads: 1376, applications: 494, admissions: 224, conversionRate: 16.3, costPerAdmission: 3521 }
 };
 
-export const shapDemo = {
-  positive: [
-    { name: 'Academic Score', value: 0.28 },
-    { name: 'Course Interest', value: 0.21 },
-    { name: 'Counselling Status', value: 0.17 },
-    { name: 'Lead Source', value: 0.12 }
-  ],
-  negative: [
-    { name: 'Application Delay', value: -0.18 },
-    { name: 'Low Engagement', value: -0.11 }
-  ],
-  summary: 'Demo Explanation: This lead is likely to convert because of strong academic performance and consistent counselling engagement. Delayed application steps and lower engagement slightly reduce conversion likelihood.'
-};
-
 export function getLeadById(id: string) {
   return managerLeads.find((lead) => lead.id === id) ?? null;
 }
@@ -310,7 +270,6 @@ export function getLeadStatusCounts() {
   return {
     total: managerLeads.length,
     new: managerLeads.filter((lead) => lead.lead_status === 'New').length,
-    highPotential: managerLeads.filter((lead) => lead.prediction === 'High').length,
     inCounselling: managerLeads.filter((lead) => lead.lead_status === 'Counselling').length,
     applications: managerLeads.filter((lead) => lead.lead_status === 'Application').length,
     admitted: managerLeads.filter((lead) => lead.lead_status === 'Admitted').length
