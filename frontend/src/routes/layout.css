@@ -53,6 +53,13 @@
     --di-radius-lg: 22px;
     --di-shadow: 0 1px 2px rgba(0, 0, 0, .40), 0 12px 28px -18px rgba(0, 0, 0, .78);
     --di-shadow-lift: 0 2px 6px rgba(0, 0, 0, .46), 0 26px 46px -24px rgba(0, 0, 0, .92);
+
+    /* The pointer-following highlight inside motion cards. On a dark card a
+       wide, soft bloom reads as a lift; on a light card the same size reads
+       as a pale-purple bubble, so the light theme swaps in a much smaller,
+       quieter one. The layer stays decorative — the card's real hover state
+       is the border/elevation change below. */
+    --di-cursor-glow: radial-gradient(240px circle at var(--glow-x, 50%) var(--glow-y, 50%), #A47BE01C, transparent 75%);
   }
 
   body {
@@ -137,7 +144,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: radial-gradient(240px circle at var(--glow-x, 50%) var(--glow-y, 50%), #A47BE01C, transparent 75%);
+  background: var(--di-cursor-glow);
   opacity: 0;
   transition: opacity 240ms ease;
 }
@@ -471,16 +478,8 @@
   color: var(--di-accent);
 }
 
-/* Restrained purple wash behind hero panels. -------------------------- */
-
-.di-glow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(720px circle at 12% -10%, var(--di-accent-soft) 0%, transparent 62%),
-    radial-gradient(520px circle at 92% 4%, var(--di-accent-glow) 0%, transparent 60%);
-}
+/* The public pages now use AmbientBackdrop.svelte for their ambient wash, so
+   the old .di-glow utility no longer has any callers. */
 
 
 /* ==========================================================================
@@ -489,7 +488,7 @@
    The admin, manager and student pages predate the theme system and still
    carry literal light values: a #FFFFFF field fill (sometimes paired with
    `color: white`, which is invisible), a #DED6C9 border, #262230 body ink,
-   #6F6979 muted copy, #6A31C4 / #4E1D93 accent text, and a cream app-shell
+   #6F6979 muted copy, #6D28D9 / #5B21B6 accent text, and a cream app-shell
    header. On the dark background that produced white-on-white inputs,
    dark-on-dark headings and accent text at 1.7:1.
 
@@ -535,7 +534,7 @@ html:not(.di-light) :is(p, small, dt, dd, label, caption, figcaption, time, th, 
   color: var(--di-muted);
 }
 
-/* Accent copy and links: #6A31C4 / #4E1D93 sat at 1.7:1 on dark. */
+/* Accent copy and links: #6D28D9 / #5B21B6 sat at 1.7:1 on dark. */
 html:not(.di-light) :is(a, .eyebrow, [class*='eyebrow'], .badge, .action, .secondary, .chart-unit) {
   color: var(--di-accent-ink);
 }
@@ -557,19 +556,10 @@ html:not(.di-light) .sh-icon-btn {
   border-color: var(--di-accent-line);
 }
 
-/* The app-shell header was hard-coded to the light cream, which put white
-   headings on a light bar. */
-html:not(.di-light) .sh-header {
-  background-color: var(--di-navbar-bg);
-  border-bottom-color: var(--di-border);
-}
-
-html:not(.di-light) :is(.sh-title, .sh-crumb, .sh-brand-name, .sh-nav-label) {
-  color: var(--di-text);
-}
-
 html:not(.di-light) .sh-nav-label,
-html:not(.di-light) .sh-crumb { color: var(--di-muted); }
+html:not(.di-light) .sh-brand-name { color: var(--di-text); }
+
+html:not(.di-light) .sh-nav-label { color: var(--di-muted); }
 
 /* Chart surfaces and the empty-state dashes also assumed a light card. */
 html:not(.di-light) :is(.analytics-chart, .metric-control) { background-color: var(--di-surface); }

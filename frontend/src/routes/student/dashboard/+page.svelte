@@ -222,8 +222,8 @@
     .hero-text p { margin-top: .4rem; font-size: .95rem; color: var(--st-text-muted); }
 
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .7rem 1.15rem; border-radius: var(--st-radius-sm); font-size: .875rem; font-weight: 600; border: 1px solid transparent; }
-    .btn-primary { background-image: var(--st-accent-sheen); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 12px 24px -14px rgba(106, 49, 196, .95); }
-    .btn-primary:hover { border-color: var(--st-accent-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .38), 0 16px 28px -14px rgba(106, 49, 196, 1); }
+    .btn-primary { background-image: var(--st-accent-sheen); color: #FFFFFF; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 12px 24px -14px rgba(91, 33, 182, .95); }
+    .btn-primary:hover { border-color: var(--st-accent-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .38), 0 16px 28px -14px rgba(91, 33, 182, 1); }
 
     .card { background-color: var(--st-surface); border: 1px solid var(--st-border); border-radius: var(--st-radius); padding: 1.4rem; box-shadow: var(--st-shadow); }
     .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; }

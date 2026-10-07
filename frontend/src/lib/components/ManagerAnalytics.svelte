@@ -115,13 +115,13 @@
 </div>
 
 <style>
-    .panel { min-width:0; border:1px solid #6A31C41a; border-radius:1rem; background:var(--color-card,#FFFFFF); padding:1.25rem; }
+    .panel { min-width:0; border:1px solid #6D28D91a; border-radius:1rem; background:var(--color-card,#FFFFFF); padding:1.25rem; }
     h2 { color:#262230; font-size:1.25rem; font-weight:700; }
     .note { color:var(--color-text-secondary,#6F6979); font-size:.875rem; line-height:1.6; margin-top:.5rem; }
-    .track { height:.7rem; border-radius:999px; background:#6A31C40d; overflow:hidden; }
-    .bar { height:100%; border-radius:999px; background:var(--color-accent,#6A31C4); }
+    .track { height:.7rem; border-radius:999px; background:#6D28D90d; overflow:hidden; }
+    .bar { height:100%; border-radius:999px; background:var(--color-accent,#6D28D9); }
     select,input { color:#262230; background:#FFFFFF; border:1px solid #DED6C9; border-radius:.5rem; padding:.65rem .85rem; max-width:100%; }
-    .action { padding:.65rem 1rem; border:1px solid #E7D6FA; border-radius:.65rem; color:#4E1D93; cursor:pointer; }
-    .action:hover { background:#6A31C40d; }.action:disabled { opacity:.5; cursor:default; }
-    button:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid #6A31C4; outline-offset:3px; }
+    .action { padding:.65rem 1rem; border:1px solid #E7D6FA; border-radius:.65rem; color:#5B21B6; cursor:pointer; }
+    .action:hover { background:#6D28D90d; }.action:disabled { opacity:.5; cursor:default; }
+    button:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid #6D28D9; outline-offset:3px; }
 </style>

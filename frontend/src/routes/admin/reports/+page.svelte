@@ -34,7 +34,7 @@
         background: linear-gradient(145deg, #FFFFFF, #FFFFFF);
         border-radius: 20px;
         padding: 24px;
-        color: #4E1D93;
+        color: #5B21B6;
         text-transform: capitalize;
         transition: transform 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
         animation: card-enter 550ms ease-out backwards;
@@ -46,7 +46,7 @@
         inset: 0;
         border-radius: inherit;
         pointer-events: none;
-        background: radial-gradient(ellipse at top right, #6A31C424, transparent 70%);
+        background: radial-gradient(ellipse at top right, #6D28D924, transparent 70%);
         opacity: 0;
         transition: opacity 250ms ease;
     }
@@ -69,18 +69,18 @@
         animation-delay: var(--delay, 0ms);
     }
     .report-page .panel h2 { display: flex; align-items: center; gap: 12px; }
-    .report-page .panel h2::before { content: ''; width: 4px; height: 20px; border-radius: 4px; background: linear-gradient(#6A31C4, #6A31C4); flex-shrink: 0; }
+    .report-page .panel h2::before { content: ''; width: 4px; height: 20px; border-radius: 4px; background: linear-gradient(#6D28D9, #6D28D9); flex-shrink: 0; }
     .report-page .table-wrap { max-width: 100%; border-radius: 12px; scrollbar-color: #DED6C9 #FFFFFF; }
     .report-page th { background: #FFFFFF; }
     .report-page tbody tr { transition: background-color 180ms ease; }
     .report-page button { transition: transform 180ms ease, box-shadow 180ms ease; }
-    .report-page button:focus-visible { outline: 2px solid #6A31C4; outline-offset: 4px; }
+    .report-page button:focus-visible { outline: 2px solid #6D28D9; outline-offset: 4px; }
     @media (hover: hover) {
-        .report-page .stat:hover { transform: translateY(-6px); border-color: #6A31C480; box-shadow: 0 14px 32px #26223030, 0 0 25px #6A31C41c; }
+        .report-page .stat:hover { transform: translateY(-6px); border-color: #6D28D980; box-shadow: 0 14px 32px #26223030, 0 0 25px #6D28D91c; }
         .report-page .stat:hover::before { opacity: 1; }
-        .report-page .panel:hover { border-color: #6A31C450; box-shadow: 0 0 25px #6A31C410; }
-        .report-page tbody tr:hover { background: #6A31C412; }
-        .report-page button:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 5px 18px #6A31C425; }
+        .report-page .panel:hover { border-color: #6D28D950; box-shadow: 0 0 25px #6D28D910; }
+        .report-page tbody tr:hover { background: #6D28D912; }
+        .report-page button:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 5px 18px #6D28D925; }
     }
     @keyframes page-enter { from { opacity: 0; } to { opacity: 1; } }
     @keyframes card-enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }

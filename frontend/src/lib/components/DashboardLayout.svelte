@@ -3,9 +3,10 @@
     import { page } from '$app/state';
     import { api, signOut, type User } from '$lib/api';
     import OutlineIcon from '$lib/components/OutlineIcon.svelte';
-import ThemeToggle from '$lib/ThemeToggle.svelte';
+    import DashboardHeader from '$lib/components/DashboardHeader.svelte';
+    import type { ShellRole } from '$lib/dashboard-header';
 
-    let { role, children }: { role: 'student' | 'manager' | 'admin'; children: import('svelte').Snippet } = $props();
+    let { role, children }: { role: ShellRole; children: import('svelte').Snippet } = $props();
     type NavItem = { label: string; href: string; icon: string; outline?: string };
     type NavGroup = { label?: string; items: NavItem[] };
     const navigation: Record<typeof role, NavGroup[]> = {
@@ -35,18 +36,11 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
     };
     const destinations = { student: '/student/dashboard', manager: '/dashboard', admin: '/admin/dashboard' };
     const student = $derived(role === 'student');
-    const accountLinks = $derived(student
-        ? { notifications: '/student/notifications', profile: '/student/profile', settings: '/student/settings' }
-        : role === 'admin'
-            ? { notifications: '/admin/notifications', profile: '/admin/profile', settings: '/admin/settings' }
-            : { notifications: '/notifications', profile: '/profile', settings: '/settings' });
     let user = $state<User | null>(null);
     let error = $state('');
     let mobileOpen = $state(false);
-    let menuOpen = $state(false);
     const roleMatches = (value: string) => role === 'manager' ? value === 'admission_manager' || value === 'marketing_manager' : value === role;
     const isActiveLink = (href: string) => page.url.pathname === href || page.url.pathname.startsWith(`${href}/`);
-    const stop = (event: Event) => event.stopPropagation();
     let currentItem = $derived(navigation[role].flatMap(group => group.items).find(item => isActiveLink(item.href)));
     let title = $derived(currentItem?.label ?? (role === 'manager' ? 'Admission & Marketing Intelligence' : role === 'admin' ? 'Administration' : 'Student Portal'));
     onMount(async () => {
@@ -58,8 +52,6 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
     });
     async function logout() { try { await signOut(); window.location.assign('/login'); } catch (e) { error = (e as Error).message; } }
 </script>
-
-<svelte:window onclick={() => (menuOpen = false)} onkeydown={(event) => { if (event.key === 'Escape') menuOpen = false; }} />
 
 {#if user}
 <div class="role-effects flex h-screen bg-primary font-sans text-text-primary overflow-hidden" class:student-shell={student}>
@@ -77,60 +69,16 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
                 {#each group.items as item}<a href={item.href} onclick={() => mobileOpen = false} class:nav-active={!student && isActiveLink(item.href)} class:st-active={student && isActiveLink(item.href)} class="{student ? 'st-nav-link' : 'nav-link'}">{#if student}<OutlineIcon name={item.outline ?? 'dashboard'} size={19} />{:else}<span class="nav-icon"><OutlineIcon name={item.outline ?? 'dashboard'} size={19} /></span>{/if}{item.label}</a>{/each}</section>
             {/each}
         </nav>
-        {#if !student}<div class="sh-foot">
-            <a class="nav-link" href={accountLinks.notifications}><span class="nav-icon"><OutlineIcon name="notifications" size={19} /></span>Notifications</a>
-            <a class="nav-link" href={accountLinks.profile}><span class="nav-icon"><OutlineIcon name="profile" size={19} /></span>Profile</a>
-            <a class="nav-link" href={accountLinks.settings}><span class="nav-icon"><OutlineIcon name="settings" size={19} /></span>Settings</a>
-            <button class="nav-link danger w-full text-left" onclick={logout}><span class="nav-icon"><OutlineIcon name="logout" size={19} /></span>Logout</button>
-        </div>{/if}
     </aside>
-    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header class="shrink-0 flex items-center px-4 md:px-8 justify-between {student ? 'st-header' : 'sh-header'}">
-            <div class="flex items-center gap-3">
-                {#if student}<button class="md:hidden inline-flex" onclick={() => mobileOpen = true} aria-label="Open navigation"><span class="st-icon-btn"><OutlineIcon name="menu" size={20} /></span></button>{:else}<button class="md:hidden sh-icon-btn" onclick={() => mobileOpen = true} aria-label="Open navigation"><OutlineIcon name="menu" size={20} /></button>{/if}
-                <div>
-                    <h2 class="{student ? 'st-header-title' : 'sh-title'}">{title}</h2>
-                    <p class="hidden sm:block {student ? 'st-header-crumb' : 'sh-crumb'}">Decision-Intel / {title}</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3 {student ? 'st-header-actions' : ''}">
-                <ThemeToggle />
-                <a href={accountLinks.notifications} class="{student ? 'st-icon-btn' : 'sh-icon-btn'}" aria-label="Notifications"><OutlineIcon name="notifications" size={18} /></a>
-                {#if student}
-                    <button class="st-profile-btn" aria-haspopup="menu" aria-expanded={menuOpen} onclick={(event) => { event.stopPropagation(); menuOpen = !menuOpen; }}>
-                        <span class="st-avatar">{user.name.charAt(0).toUpperCase()}</span>
-                        <span class="st-profile-name">{user.name}</span>
-                        <span class="st-profile-caret"><OutlineIcon name="chevron-down" size={14} /></span>
-                    </button>
-                    {#if menuOpen}
-                        <div class="st-menu" role="menu" tabindex="-1" onclick={stop} onkeydown={stop}>
-                            <p class="st-menu-head"><span class="st-menu-name">{user.name}</span><span class="st-menu-mail">{user.email}</span></p>
-                            <a class="st-menu-item" role="menuitem" href={accountLinks.profile}><OutlineIcon name="profile" size={18} />Profile</a>
-                            <a class="st-menu-item" role="menuitem" href={accountLinks.notifications}><OutlineIcon name="notifications" size={18} />Notifications</a>
-                            <a class="st-menu-item" role="menuitem" href={accountLinks.settings}><OutlineIcon name="settings" size={18} />Settings</a>
-                            <button class="st-menu-item st-danger" role="menuitem" onclick={logout}><OutlineIcon name="logout" size={18} />Logout</button>
-                        </div>
-                    {/if}
-                {:else}
-                    <div class="sh-profile">
-                        <button class="sh-profile-btn" aria-haspopup="menu" aria-expanded={menuOpen} onclick={(event) => { event.stopPropagation(); menuOpen = !menuOpen; }}>
-                            <span class="sh-avatar">{user.name.charAt(0).toUpperCase()}</span>
-                            <span class="sh-profile-name">{user.name}</span>
-                            <span class="sh-caret"><OutlineIcon name="chevron-down" size={14} /></span>
-                        </button>
-                        {#if menuOpen}
-                            <div class="sh-menu" role="menu" tabindex="-1" onclick={stop} onkeydown={stop}>
-                                <p class="sh-menu-head"><span class="sh-menu-role">{role === 'manager' ? 'Manager' : 'Administrator'}</span><span class="sh-menu-name">{user.name}</span><span class="sh-menu-mail">{user.email}</span></p>
-                                <a class="sh-menu-item" role="menuitem" href={accountLinks.profile}><OutlineIcon name="profile" size={18} />Profile</a>
-                                <a class="sh-menu-item" role="menuitem" href={accountLinks.notifications}><OutlineIcon name="notifications" size={18} />Notifications</a>
-                                <a class="sh-menu-item" role="menuitem" href={accountLinks.settings}><OutlineIcon name="settings" size={18} />Settings</a>
-                                <button class="sh-menu-item sh-danger" role="menuitem" onclick={logout}><OutlineIcon name="logout" size={18} />Logout</button>
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-            </div>
-        </header>
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <DashboardHeader
+            {role}
+            {title}
+            name={user.name}
+            email={user.email}
+            onlogout={logout}
+            onopennav={() => (mobileOpen = true)}
+        />
         <div class="flex-1 overflow-auto relative custom-scrollbar {student ? 'st-content p-4 md:p-7 lg:p-8' : 'sh-content p-4 md:p-8'}">
             {#if !student}<div class="absolute top-0 right-0 w-125 h-125 bg-secondary/25 rounded-full blur-[100px] pointer-events-none z-0"></div>{/if}
             <div class="relative z-10 {student ? 'st-canvas' : ''}">{@render children()}</div>
@@ -141,69 +89,22 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
 
 <style>
     .nav-link { display:flex; align-items:center; gap:.7rem; padding:.6rem .75rem; border-radius:.55rem; color:var(--color-text-secondary, #6f6979); font-size:.85rem; font-weight:500; transition:.2s; }
-    .nav-link:hover { color:var(--di-accent-ink, #4E1D93); background:var(--di-accent-soft, #F3EBFC); }
-    .nav-link.danger:hover { color:#A32B44; background:#FBEAEE; }
-    .nav-active { color:var(--di-accent-ink, #4E1D93); background:var(--di-accent-soft, #F3EBFC); border:1px solid var(--di-accent-line, #E7D6FA); }
+    .nav-link:hover { color:var(--di-accent-ink, #5B21B6); background:var(--di-accent-soft, #F1EAFD); }
+    .nav-active { color:var(--di-accent-ink, #5B21B6); background:var(--di-accent-soft, #F1EAFD); border:1px solid var(--di-accent-line, #DDD0F7); }
     :global(.custom-scrollbar::-webkit-scrollbar) { width:6px; }
-    :global(.custom-scrollbar::-webkit-scrollbar-thumb) { background:rgba(106,49,196,.18); border-radius:10px; }
+    :global(.custom-scrollbar::-webkit-scrollbar-thumb) { background:rgba(91,33,182,.18); border-radius:10px; }
 
     /* ---- Manager / admin shell chrome (light theme) --------------- */
     .sh-sidebar { background-color:var(--di-surface, #fff); border-right:1px solid var(--di-border, #E9E4DC); }
     .sh-brand { height:5rem; padding:0 1.5rem; border-bottom:1px solid var(--di-border, #E9E4DC); }
     .sh-mark { width:2.125rem; height:2.125rem; border-radius:11px; }
     .sh-brand-name { font-size:1.2rem; font-weight:700; letter-spacing:.01em; color:var(--di-text, #262230); }
-    .sh-brand-name em { font-family:Georgia,'Times New Roman',serif; font-style:italic; color:var(--di-accent, #6A31C4); }
+    .sh-brand-name em { font-family:Georgia,'Times New Roman',serif; font-style:italic; color:var(--di-accent, #6D28D9); }
     .sh-nav { padding:1.25rem .875rem; display:flex; flex-direction:column; gap:1.35rem; }
     .sh-nav-label { padding:0 .75rem; margin-bottom:.375rem; font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--di-muted, #6F6979); }
     .nav-icon { display:inline-flex; flex:none; color:currentColor; opacity:.85; }
-    .sh-foot { padding:1rem .875rem; border-top:1px solid var(--di-border, #E9E4DC); display:grid; gap:.25rem; }
-
-    .sh-header { height:5rem; border-bottom:1px solid var(--di-border, #E9E4DC); background-color:rgba(247,245,242,.85); backdrop-filter:blur(12px); }
-    .sh-title { font-size:1.125rem; font-weight:700; color:var(--di-text, #262230); }
-    .sh-crumb { font-size:.75rem; color:var(--di-muted, #6F6979); }
-    .sh-icon-btn {
-        display:grid; place-items:center; width:2.25rem; height:2.25rem; flex:none;
-        border-radius:10px; background-color:var(--di-surface, #fff);
-        border:1px solid var(--di-border, #E9E4DC); color:var(--di-muted, #6F6979);
-    }
-    .sh-icon-btn:hover { color:var(--di-accent-ink, #4E1D93); background-color:var(--di-accent-soft, #F3EBFC); }
-
-    .sh-profile { position:relative; }
-    .sh-profile-btn {
-        display:flex; align-items:center; gap:.5rem; padding:.3125rem .625rem .3125rem .3125rem;
-        border-radius:999px; border:1px solid var(--di-border, #E9E4DC);
-        background-color:var(--di-surface, #fff); font:inherit; cursor:pointer;
-    }
-    .sh-profile-btn:hover { border-color:var(--di-accent-line, #E7D6FA); background-color:var(--di-accent-soft, #F3EBFC); }
-    .sh-avatar {
-        display:grid; place-items:center; width:1.75rem; height:1.75rem; flex:none;
-        border-radius:999px; background-image:var(--di-accent-sheen);
-        color:#fff; font-size:.75rem; font-weight:700;
-    }
-    .sh-profile-name { font-size:.8125rem; font-weight:600; color:var(--di-text, #262230); max-width:9rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .sh-caret { display:inline-flex; color:var(--di-muted, #6F6979); }
-
-    .sh-menu {
-        position:absolute; right:0; top:calc(100% + .5rem); z-index:50; min-width:15rem;
-        padding:.375rem; background-color:var(--di-surface, #fff);
-        border:1px solid var(--di-border, #E9E4DC); border-radius:var(--di-radius, 16px);
-        box-shadow:var(--di-shadow-lift, 0 20px 38px -24px rgba(38,34,48,.45));
-    }
-    .sh-menu-head { display:grid; gap:.125rem; padding:.625rem .75rem .75rem; border-bottom:1px solid var(--di-border, #E9E4DC); margin-bottom:.25rem; }
-    .sh-menu-role { font-size:.625rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--di-accent, #6A31C4); }
-    .sh-menu-name { font-size:.875rem; font-weight:650; color:var(--di-text, #262230); }
-    .sh-menu-mail { font-size:.75rem; color:var(--di-muted, #6F6979); overflow:hidden; text-overflow:ellipsis; }
-    .sh-menu-item {
-        display:flex; align-items:center; gap:.625rem; width:100%; padding:.5rem .75rem;
-        border-radius:.5rem; font:inherit; font-size:.8125rem; font-weight:600;
-        color:var(--di-text, #262230); background:none; border:0; cursor:pointer; text-align:left; text-decoration:none;
-    }
-    .sh-menu-item:hover { background-color:var(--di-accent-soft, #F3EBFC); color:var(--di-accent-ink, #4E1D93); }
-    .sh-menu-item.sh-danger { color:#A32B44; }
-    .sh-menu-item.sh-danger:hover { background-color:#FBEAEE; }
 
     @media (max-width: 640px) {
-        .sh-profile-name, .sh-caret { display:none; }
         .sh-brand { padding:0 1.25rem; }
     }
 </style>

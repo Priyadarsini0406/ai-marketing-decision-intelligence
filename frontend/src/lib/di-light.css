@@ -5,21 +5,27 @@
    screens, and every signed-in role shell. Scoped to `.di-light`, so a
    page opts in by adding that class to its outermost element.
 
-   The official Decision-Intel purple (--color-accent #6A31C4 in
-   layout.css) is left untouched; inside this scope the accent is
-   remapped to a deeper, richer purple that reads as premium on the
-   light surface, and the dark theme tokens are remapped so existing
-   Tailwind utilities (bg-card, text-text-secondary, ...) follow along.
+   The dark palette in routes/layout.css is the design of record and is
+   left untouched. Inside this scope the accent is remapped to the deep,
+   rich Decision-Intel purple (#5B21B6 / #6D28D9) so every control,
+   link, icon and focus state reads with real contrast on a light
+   surface, and the dark theme tokens are remapped so existing Tailwind
+   utilities (bg-card, text-text-secondary, ...) follow along.
+
+   Measured against #FFFFFF the deep purple clears 7.1:1 as a fill
+   (#6D28D9) and 8.9:1 as text/ink (#5B21B6), so a white button label
+   and purple link copy are both comfortably AA.
    ------------------------------------------------------------------ */
 
 .di-light {
-  /* Richer Decision-Intel purple (same family as #6A31C4). */
-  --di-accent: #6A31C4;
-  --di-accent-ink: #4E1D93;
-  --di-accent-soft: #F3EBFC;
-  --di-accent-line: #E7D6FA;
-  --di-accent-glow: rgba(106, 49, 196, .30);
-  --di-accent-sheen: linear-gradient(180deg, #7E4ADA 0%, #6A31C4 52%, #5924AB 100%);
+  /* Deep, rich Decision-Intel purple. */
+  --di-accent: #6D28D9;          /* fills: buttons, bars, active states */
+  --di-accent-ink: #5B21B6;      /* copy: links, labels, icon tints */
+  --di-accent-deep: #4C1D95;     /* highest-contrast text, hover inks */
+  --di-accent-soft: #F1EAFD;     /* lavender wash */
+  --di-accent-line: #DDD0F7;     /* lavender hairline */
+  --di-accent-glow: rgba(91, 33, 182, .34);
+  --di-accent-sheen: linear-gradient(180deg, #7C3AED 0%, #6D28D9 46%, #5B21B6 100%);
 
   /* Warm neutral light surface. */
   --di-bg: #F7F5F2;
@@ -49,8 +55,14 @@
   --color-text-primary: var(--di-text);
   --color-text-secondary: var(--di-muted);
   --color-accent: var(--di-accent);
-  /* Warm accent. Dark enough that a white label clears 4.5:1 (6.8:1). */
+  /* Deep purple. A white label on #6D28D9 clears 7.1:1. */
   --color-cta: var(--di-accent);
+
+  /* A small, quiet pointer highlight. The dark theme uses a wide bloom that
+     suits a near-black card; the same footprint on a light card looked like
+     an oversized pale-purple bubble, so light gets a third of the radius and
+     a lower alpha — a highlight, not a spotlight. */
+  --di-cursor-glow: radial-gradient(96px circle at var(--glow-x, 50%) var(--glow-y, 50%), #5B21B61F, transparent 72%);
 
   background-color: var(--di-bg);
   color: var(--di-text);
@@ -80,8 +92,8 @@
 .di-light .border-white\/20,
 .di-light .border-white\/5 { border-color: var(--di-border); }
 
-.di-light .bg-white\/5 { background-color: rgba(106, 49, 196, .04); }
-.di-light .bg-white\/10 { background-color: rgba(106, 49, 196, .07); }
+.di-light .bg-white\/5 { background-color: rgba(91, 33, 182, .04); }
+.di-light .bg-white\/10 { background-color: rgba(91, 33, 182, .07); }
 
 .di-light ::selection { background-color: var(--di-accent); color: #FFFFFF; }
 
@@ -183,12 +195,18 @@
 .di-light .di-btn-primary {
   background-image: var(--di-accent-sheen);
   color: #FFFFFF;
-  box-shadow: 0 10px 22px -12px rgba(106, 49, 196, .85), inset 0 1px 0 rgba(255, 255, 255, .28);
+  border-color: transparent;
+  box-shadow: 0 10px 22px -12px rgba(91, 33, 182, .85), inset 0 1px 0 rgba(255, 255, 255, .28);
 }
 
 .di-light .di-btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 16px 30px -14px rgba(106, 49, 196, .9), inset 0 1px 0 rgba(255, 255, 255, .34);
+  background-image: linear-gradient(180deg, #8B5CF6 0%, #7C3AED 46%, #6D28D9 100%);
+  box-shadow: 0 16px 30px -14px rgba(91, 33, 182, .9), inset 0 1px 0 rgba(255, 255, 255, .34);
+}
+
+.di-light .di-btn-primary:active:not(:disabled) {
+  background-image: linear-gradient(180deg, #6D28D9 0%, #5B21B6 100%);
 }
 
 .di-light .di-btn-secondary {
@@ -197,7 +215,7 @@
   border-color: var(--di-accent-line);
 }
 
-.di-light .di-btn-secondary:hover:not(:disabled) { background-color: var(--di-accent-soft); }
+.di-light .di-btn-secondary:hover:not(:disabled) { background-color: var(--di-accent-soft); color: var(--di-accent-deep); }
 
 .di-light .di-btn-ghost {
   background-color: transparent;
@@ -208,6 +226,19 @@
 .di-light .di-btn-ghost:hover:not(:disabled) { background-color: var(--di-accent-soft); color: var(--di-accent-ink); }
 
 .di-light .di-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+/* ---- Link + accent-copy contrast --------------------------------
+   Pale purple link copy was the main light-theme contrast failure.
+   Anchors, eyebrows, badges, chart units and secondary actions all
+   carry real ink weight in the deep purple, and a visited link stays
+   in the same family rather than turning grey. */
+
+.di-light a { color: var(--di-accent-ink); }
+.di-light a:hover { color: var(--di-accent-deep); }
+.di-light a:visited { color: var(--di-accent-ink); }
+.di-light :is(.eyebrow, [class*='eyebrow'], .chart-eyebrow) { color: var(--di-accent-ink); }
+.di-light :is(.badge, .chart-unit) { color: var(--di-accent-ink); }
+.di-light :is(summary, .secondary, .action):not(button) { color: var(--di-accent-ink); }
 
 .di-light .di-alert {
   padding: .75rem .875rem;
@@ -284,7 +315,7 @@
   appearance: none !important;
   -webkit-appearance: none !important;
   padding-right: 2.25rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236A31C4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235B21B6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right .625rem center !important;
 }
@@ -325,7 +356,7 @@
   margin: 0;
   flex: none;
   cursor: pointer;
-  accent-color: var(--di-accent, #6A31C4);
+  accent-color: var(--di-accent, #6D28D9);
   border-width: 1px;
   border-style: solid;
   border-color: var(--di-border-strong, #DED6C9);
@@ -407,7 +438,7 @@
   border-radius: 12px;
   background-image: var(--di-accent-sheen);
   color: #FFFFFF;
-  box-shadow: 0 8px 18px -10px rgba(106, 49, 196, .9);
+  box-shadow: 0 8px 18px -10px rgba(91, 33, 182, .9);
 }
 
 .di-light .di-brand-name {
@@ -424,15 +455,8 @@
   color: var(--di-accent);
 }
 
-/* ---- Soft purple glow used behind hero panels --------------------- */
-
-.di-light .di-glow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(720px circle at 12% -10%, var(--di-accent-soft) 0%, transparent 62%),
-    radial-gradient(520px circle at 92% 4%, rgba(106, 49, 196, .18) 0%, transparent 60%);
-}
+/* The public pages now use AmbientBackdrop.svelte, which themes its own wash,
+   so the old .di-glow utility has no callers left in either theme. */
 
 /* ------------------------------------------------------------------
    Dark surface + motion layer, re-pointed at the light palette.
@@ -450,15 +474,26 @@
 
 html.di-light { color-scheme: light; }
 
+/* The light theme is not a blank sheet. A single, very quiet lavender
+   bloom in the top-left and a cooler one bottom-right keep large empty
+   areas from reading as "unfinished", without tinting cards or text.
+   The AmbientBackdrop component layers the waves, dots and abstract
+   data motif on top of this. */
 html.di-light body {
   background-color: var(--di-bg);
-  background-image: none;
+  background-image:
+    radial-gradient(1100px circle at 6% -8%, rgba(109, 40, 217, .10) 0%, transparent 58%),
+    radial-gradient(900px circle at 104% 8%, rgba(76, 29, 149, .07) 0%, transparent 56%),
+    radial-gradient(760px circle at 50% 112%, rgba(124, 58, 237, .07) 0%, transparent 60%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--di-text);
 }
 
-/* Surfaces: flat light panels, matching the pre-toggle light build. */
+/* Surfaces: light panels. The base layer is left transparent so the body
+   bloom above reaches the page; the card colour itself is unchanged. */
 html.di-light .bg-primary {
-  background-color: var(--di-bg);
+  background-color: transparent;
   background-image: linear-gradient(180deg, color-mix(in srgb, var(--di-accent) 4%, transparent), transparent 18%);
 }
 
@@ -487,56 +522,55 @@ html.di-light .dashboard-card {
   }
 }
 
-/* role-effects motion colours. */
-.di-light .role-effects .motion-card::after {
-  background: radial-gradient(240px circle at var(--glow-x, 50%) var(--glow-y, 50%), #6A31C41C, transparent 75%);
-}
+/* role-effects motion colours. The cursor-follow layer itself is
+   token-driven (--di-cursor-glow) so light only gets a small, quiet
+   highlight instead of a large pale-purple bubble. */
 .di-light .role-effects .motion-card:focus-within {
-  border-color: #6A31C466;
-  box-shadow: 0 0 20px #6A31C415;
+  border-color: #5B21B666;
+  box-shadow: 0 0 20px #5B21B615;
 }
 .di-light .role-effects .bar::after {
-  background: linear-gradient(100deg, transparent 15%, #6A31C466 50%, transparent 85%);
+  background: linear-gradient(100deg, transparent 15%, #6D28D966 50%, transparent 85%);
 }
 
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .di-light .site-motion .role-effects .motion-card:hover {
-    border-color: #6A31C49C;
-    box-shadow: 0 12px 32px #26223044, 0 0 22px #6A31C426, inset 0 1px 0 #6A31C422;
+    border-color: #6D28D99C;
+    box-shadow: 0 12px 32px #26223044, 0 0 22px #6D28D926, inset 0 1px 0 #6D28D922;
   }
   .di-light .site-motion .role-effects :is(button, .button, .action):not(:disabled):hover {
-    border-color: #4E1D93;
-    box-shadow: 0 0 16px #6A31C440, 0 4px 16px #26223022;
+    border-color: #5B21B6;
+    box-shadow: 0 0 16px #6D28D940, 0 4px 16px #26223022;
   }
   .di-light .site-motion .role-effects :is(.primary, .bg-cta):not(:disabled):hover {
-    border-color: #4E1D93;
-    box-shadow: 0 0 18px #6A31C438;
+    border-color: #5B21B6;
+    box-shadow: 0 0 18px #6D28D938;
   }
   .di-light .site-motion .role-effects .nav-link:hover {
-    background-color: #6A31C414;
-    box-shadow: inset 3px 0 0 #6A31C4;
-    color: #4E1D93;
+    background-color: #6D28D914;
+    box-shadow: inset 3px 0 0 #6D28D9;
+    color: #5B21B6;
   }
-  .di-light .site-motion .role-effects .nav-active:hover { box-shadow: inset 3px 0 0 #6A31C4, 0 0 18px #6A31C426; }
-  .di-light .site-motion .role-effects tbody tr:hover { background-color: #6A31C414; }
+  .di-light .site-motion .role-effects .nav-active:hover { box-shadow: inset 3px 0 0 #6D28D9, 0 0 18px #6D28D926; }
+  .di-light .site-motion .role-effects tbody tr:hover { background-color: #6D28D914; }
 }
 
 .di-light .site-motion :is(input, select, textarea):focus-visible {
-  box-shadow: 0 0 0 5px #6A31C416;
+  box-shadow: 0 0 0 5px #6D28D916;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .di-light .site-motion .motion-card:hover {
-    border-color: #6A31C452;
-    box-shadow: 0 10px 28px #26223026, 0 0 0 1px #6A31C40c;
+    border-color: #6D28D952;
+    box-shadow: 0 10px 28px #26223026, 0 0 0 1px #6D28D90c;
   }
   .di-light .site-motion :is(button, .button, .action, a[class*="bg-"]):not(:disabled):hover {
-    box-shadow: 0 5px 18px #6A31C426;
+    box-shadow: 0 5px 18px #6D28D926;
   }
-  .di-light .site-motion nav a:hover { color: #4E1D93; }
-  .di-light .site-motion tbody tr:hover { background-color: #6A31C40c; }
+  .di-light .site-motion nav a:hover { color: #5B21B6; }
+  .di-light .site-motion tbody tr:hover { background-color: #6D28D90c; }
   .di-light .site-motion :is(input, select, textarea):not(:disabled):not([readonly]):hover {
-    border-color: #6A31C466;
+    border-color: #6D28D966;
   }
 }
 
@@ -545,6 +579,6 @@ html.di-light .dashboard-card {
 }
 
 @keyframes di-light-active-navigation {
-  from { box-shadow: 0 0 0 #6A31C400; }
-  to { box-shadow: 0 0 15px #6A31C41f; }
+  from { box-shadow: 0 0 0 #6D28D900; }
+  to { box-shadow: 0 0 15px #6D28D91f; }
 }

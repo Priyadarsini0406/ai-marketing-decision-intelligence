@@ -50,15 +50,15 @@
 
 /* Decision-Intel light palette. */
 html.di-light .student-shell {
-  /* Deeper, richer Decision-Intel purple — same family as --color-accent (#6A31C4),
+  /* Deeper, richer Decision-Intel purple — same family as --color-accent (#6D28D9),
      tuned darker for a premium/glossy look on the light surface. */
-  --st-accent: #6A31C4;
-  --st-accent-ink: #4E1D93;
+  --st-accent: #6D28D9;
+  --st-accent-ink: #5B21B6;
   --st-accent-soft: #F3EBFC;
   --st-accent-line: #E7D6FA;
-  --st-accent-glow: rgba(106, 49, 196, .30);
-  --st-accent-sheen: linear-gradient(180deg, #7E4ADA 0%, #6A31C4 52%, #5924AB 100%);
-  --st-accent-shadow: rgba(106, 49, 196, .9);
+  --st-accent-glow: rgba(91, 33, 182, .30);
+  --st-accent-sheen: linear-gradient(180deg, #7C3AED 0%, #6D28D9 52%, #4C1D95 100%);
+  --st-accent-shadow: rgba(91, 33, 182, .9);
 
   --st-bg: #F7F5F2;
   --st-surface: #FFFFFF;
@@ -70,7 +70,7 @@ html.di-light .student-shell {
   --st-header-veil: rgba(247, 245, 242, .88);
   --st-scrollbar-hover: #6F6979;
 
-  --st-amber-ink: #4E1D93;
+  --st-amber-ink: #5B21B6;
   --st-amber-soft: #F3EBFC;
   --st-green-ink: #256B4C;
   --st-green-soft: #E7F2EC;
@@ -156,104 +156,13 @@ html.di-light .student-shell {
   box-shadow: inset 3px 0 0 var(--st-accent), 0 8px 20px -16px var(--st-accent-glow);
 }
 
-/* ---- Header ----------------------------------------------------- */
-
-.student-shell .st-header {
-  position: relative;
-  z-index: 30;
-  height: 5rem;
-  border-bottom: 1px solid var(--st-border);
-  background-color: var(--st-header-veil);
-  backdrop-filter: blur(10px);
-}
-
-.student-shell .st-header-title { font-size: 1.125rem; font-weight: 700; color: var(--st-text); }
-.student-shell .st-header-crumb { font-size: .75rem; color: var(--st-text-muted); }
-
-.student-shell .st-header-actions { position: relative; }
-
-.student-shell .st-icon-btn {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 10px;
-  border: 1px solid var(--st-border);
-  background-color: var(--st-surface);
-  color: var(--st-accent);
-  display: grid;
-  place-items: center;
-  transition: color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.student-shell .st-icon-btn:hover { border-color: var(--st-accent-line); background-color: var(--st-accent-soft); box-shadow: 0 8px 18px -12px var(--st-accent-glow); }
-
-.student-shell .st-avatar {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 999px;
-  background-color: var(--st-accent-soft);
-  border: 1px solid var(--st-accent-line);
-  color: var(--st-accent-ink);
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  font-size: .875rem;
-}
-
-/* Minimal profile trigger + dropdown */
-
-.student-shell .st-profile-btn {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .2rem;
-  border: 0;
-  border-radius: 999px;
-  transition: background-color 160ms ease;
-}
-
-.student-shell .st-profile-name { font-size: .875rem; font-weight: 600; color: var(--st-text); white-space: nowrap; }
-.student-shell .st-profile-caret { color: var(--st-text-muted); margin-right: .1rem; }
-.student-shell .st-profile-btn:hover,
-.student-shell .st-profile-btn[aria-expanded='true'] { background-color: var(--st-accent-soft); }
-.student-shell .st-profile-btn:hover .st-profile-caret,
-.student-shell .st-profile-btn[aria-expanded='true'] .st-profile-caret { color: var(--st-accent); }
-
-.student-shell .st-menu {
-  position: absolute;
-  top: calc(100% + .55rem);
-  right: 0;
-  z-index: 40;
-  width: 15.5rem;
-  padding: .4rem;
-  background-color: var(--st-surface);
-  border: 1px solid var(--st-border);
-  border-radius: var(--st-radius);
-  box-shadow: var(--st-shadow-float);
-}
-
-.student-shell .st-menu-head { padding: .6rem .65rem .6rem; margin-bottom: .3rem; border-bottom: 1px solid var(--st-border); }
-.student-shell .st-menu-name { display: block; font-size: .875rem; font-weight: 650; color: var(--st-text); overflow-wrap: anywhere; }
-.student-shell .st-menu-mail { display: block; margin-top: .1rem; font-size: .75rem; color: var(--st-text-muted); overflow-wrap: anywhere; }
-
-.student-shell .st-menu-item {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  width: 100%;
-  padding: .55rem .6rem;
-  border-radius: 10px;
-  font-size: .875rem;
-  font-weight: 500;
-  color: var(--st-text-muted);
-  text-align: left;
-}
-
-.student-shell .st-menu-item .st-icon { color: var(--st-accent); }
-.student-shell .st-menu-item:hover { background-color: var(--st-accent-soft); color: var(--st-text); }
-.student-shell .st-menu-item.st-danger:hover { background-color: var(--st-danger-soft); color: var(--st-danger-ink); }
-.student-shell .st-menu-item.st-danger:hover .st-icon { color: var(--st-danger-ink); }
-
 /* ---- Content canvas --------------------------------------------- */
+
+/* The light shell and its scroll container stay transparent so the shared
+   lavender body bloom reaches the student portal too; only the sidebar,
+   header veil and cards carry a fill. */
+html.di-light .student-shell,
+html.di-light .student-shell .st-content { background-color: transparent; }
 
 .student-shell .st-content { background-color: var(--st-bg); }
 .student-shell .st-canvas { width: 100%; max-width: 1340px; margin-inline: auto; }
@@ -265,12 +174,8 @@ html.di-light .student-shell {
 /* ---- Neutralise the dark-theme motion layer for the light shell -- */
 
 /* The shared purple glow reads as a neon outline on the light surface, so the
-   minimal header controls keep only their own quiet hover treatment. */
-.site-motion .student-shell .st-header-actions .st-profile-btn:hover,
-.site-motion .student-shell .st-header > div > button:hover,
-.site-motion .student-shell .st-menu .st-menu-item:hover {
-  border-color: transparent;
-  box-shadow: none;
+   minimal sidebar controls keep only their own quiet hover treatment. */
+.site-motion .student-shell :is(.nav-link, nav a):hover {
   translate: none;
 }
 

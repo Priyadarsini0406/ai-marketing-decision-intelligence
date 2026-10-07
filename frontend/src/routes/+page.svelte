@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import OutlineIcon from '$lib/components/OutlineIcon.svelte';
+	import AmbientBackdrop from '$lib/components/AmbientBackdrop.svelte';
 	import ThemeToggle from '$lib/ThemeToggle.svelte';
 
 	let visible = $state(false);
@@ -81,7 +82,10 @@
 </svelte:head>
 
 <div class="landing">
-	<div class="di-glow" aria-hidden="true"></div>
+	<!-- Shared decorative background: soft purple wash, slow wave bands, a
+	     masked dot field and a faint analytics motif. Themed by tokens, so it
+	     reads as a violet atmosphere in dark and a pale lavender one in light. -->
+	<AmbientBackdrop />
 
 	<!-- Navbar -->
 	<header class="navbar">
@@ -306,7 +310,13 @@
 </div>
 
 <style>
-	.landing { position: relative; overflow-x: clip; }
+	.landing {
+		position: relative;
+		overflow-x: clip;
+		/* Opaque page base so the fixed backdrop always has something to sit
+		   on; the ambient colour comes from the backdrop itself, not the body. */
+		background-color: var(--di-bg);
+	}
 	.shell { width: 100%; max-width: 78rem; margin-inline: auto; padding-inline: 1.5rem; }
 
 	/* ---- Navbar ---------------------------------------------------- */
@@ -335,11 +345,10 @@
 	}
 	.nav a:hover { color: var(--di-accent-ink); background-color: var(--di-accent-soft); }
 
-	/* The "Get started" CTA sits inside .nav, and the `.nav a` rule above is
-	   scoped, so it outranks `.di-btn-primary` and was painting the label
-	   muted. The button keeps its own background, padding, radius and hover
-	   behaviour; only the label colour is pinned back to pure white. */
-	.nav a.nav-cta { color: #FFFFFF; }
+	/* The "Get started" CTA is a sibling of `.nav`, not one of its links, so
+	   `.nav a` never touched its label. Pinning white here keeps it legible on
+	   the deep purple fill in both themes. */
+	.nav-cta { display: none; padding: .5rem 1.125rem; min-height: 2.25rem; color: #FFFFFF; }
 
 	.nav-actions { display: flex; align-items: center; gap: .5rem; flex: none; }
 	.nav-login {
@@ -354,9 +363,6 @@
 		transition: color 160ms ease, background-color 160ms ease;
 	}
 	.nav-login:hover { color: var(--di-accent-ink); background-color: var(--di-accent-soft); }
-	/* Below 34rem the bar only carries brand + theme + burger; the sign-in and
-	   get-started actions live in the mobile panel, so nothing is clipped. */
-	.nav-cta { display: none; padding: .5rem 1.125rem; min-height: 2.25rem; }
 
 	.nav-burger {
 		display: inline-grid;
@@ -484,7 +490,9 @@
 
 	/* ---- Sections -------------------------------------------------- */
 	.section { position: relative; padding: 4.5rem 0; scroll-margin-top: 5rem; }
-	.section-muted { background-color: var(--di-surface-muted); border-block: 1px solid var(--di-border); }
+	/* The tint is translucent so the fixed ambient backdrop reads straight
+	   through these bands instead of stopping at a hard seam. */
+	.section-muted { background-color: color-mix(in srgb, var(--di-surface-muted) 82%, transparent); border-block: 1px solid var(--di-border); }
 	.section-head { max-width: 42rem; margin: 0 auto 2.75rem; text-align: center; }
 	.section-head h2 { font-size: clamp(1.625rem, 1.2rem + 1.8vw, 2.5rem); font-weight: 800; letter-spacing: -.025em; line-height: 1.15; margin: 0 0 .875rem; text-wrap: balance; }
 	.section-head p { font-size: 1.0625rem; line-height: 1.65; color: var(--di-muted); margin: 0; text-wrap: pretty; }
@@ -541,7 +549,7 @@
 	.stars { margin-top: 1.25rem; color: var(--di-accent); letter-spacing: .1em; }
 
 	/* ---- Closing --------------------------------------------------- */
-	.closing { position: relative; padding: 4.5rem 0 0; background-color: var(--di-surface-muted); border-top: 1px solid var(--di-border); }
+	.closing { position: relative; padding: 4.5rem 0 0; background-color: color-mix(in srgb, var(--di-surface-muted) 82%, transparent); border-top: 1px solid var(--di-border); }
 	.closing-inner { text-align: center; padding-bottom: 3.5rem; }
 	.closing h2 { font-size: clamp(1.875rem, 1.3rem + 2.2vw, 3rem); font-weight: 800; letter-spacing: -.03em; margin: 0 0 .875rem; text-wrap: balance; }
 	.closing p { font-size: 1.0625rem; color: var(--di-muted); margin: 0 auto 2rem; max-width: 34rem; }

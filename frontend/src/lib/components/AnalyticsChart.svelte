@@ -10,7 +10,7 @@
     let chart: ECharts | undefined;
     const hasData = $derived(categories.length > 0 && series.some(item => item.values.some(value => value != null && Number.isFinite(value))));
     const options = $derived.by((): EChartsOption => {
-        const palette = ['#6A31C4', '#7E4ADA', '#5924AB', '#4E1D93', '#7E4ADA', '#5924AB'];
+        const palette = ['#6D28D9', '#7C3AED', '#4C1D95', '#5B21B6', '#7C3AED', '#4C1D95'];
         const common: EChartsOption = {
             color: palette, backgroundColor: 'transparent', animation: !reduced, animationDuration: 650, animationDurationUpdate: reduced ? 0 : 350,
             textStyle: { color: '#6F6979', fontFamily: 'Inter, sans-serif' },
@@ -21,9 +21,9 @@
         if (kind === 'line') return { ...common,
             grid: { left: 15, right: 25, top: 35, bottom: 75, containLabel: true },
             xAxis: { type: 'category', data: categories, boundaryGap: categories.length === 1,
-                axisLine: { lineStyle: { color: '#6A31C420' } }, axisTick: { show: false },
+                axisLine: { lineStyle: { color: '#6D28D920' } }, axisTick: { show: false },
                 axisLabel: { color: '#6F6979', fontSize: 10, width: 100, overflow: 'truncate', hideOverlap: true } },
-            yAxis: { type: 'value', name: unit, nameTextStyle: { color: '#6F6979' }, splitLine: { lineStyle: { color: '#6A31C40D', type: 'dashed' } }, axisLabel: { color: '#6F6979' } },
+            yAxis: { type: 'value', name: unit, nameTextStyle: { color: '#6F6979' }, splitLine: { lineStyle: { color: '#6D28D90D', type: 'dashed' } }, axisLabel: { color: '#6F6979' } },
             series: series.map((item, index) => ({ name: item.name, type: 'line', data: item.values,
                 smooth: 0.25, smoothMonotone: 'x', connectNulls: false, showSymbol: true, symbol: 'circle', symbolSize: 7,
                 lineStyle: { width: 3, color: palette[index % palette.length], shadowBlur: 9, shadowColor: palette[index % palette.length] + '70' },
@@ -38,11 +38,11 @@
             data: categories.map((name, index) => ({ name, value: series[0]?.values[index] ?? 0 })),
             label: { show: kind === 'funnel', color: '#FFFFFF', formatter: '{b}: {c}' },
             itemStyle: { borderColor: '#FFFFFF', borderWidth: 2 },
-            emphasis: { itemStyle: { shadowBlur: 18, shadowColor: '#6A31C460' }, label: { show: true, color: '#FFFFFF' } }
+            emphasis: { itemStyle: { shadowBlur: 18, shadowColor: '#6D28D960' }, label: { show: true, color: '#FFFFFF' } }
         }] };
         return { ...common,
             grid: { left: 12, right: 30, top: unit ? 35 : 15, bottom: 55, containLabel: true },
-            xAxis: { type: 'value', name: unit, nameLocation: 'middle', nameGap: 28, splitLine: { lineStyle: { color: '#6A31C40D' } }, axisLabel: { color: '#6F6979' } },
+            xAxis: { type: 'value', name: unit, nameLocation: 'middle', nameGap: 28, splitLine: { lineStyle: { color: '#6D28D90D' } }, axisLabel: { color: '#6F6979' } },
             yAxis: { type: 'category', data: categories, inverse: true, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: '#6F6979', width: 125, overflow: 'truncate', fontSize: 11 } },
             series: series.map((item, index) => ({ name: item.name, type: 'bar', data: item.values, barMaxWidth: 22,
                 itemStyle: { borderRadius: [0, 5, 5, 0], color: { type: 'linear', x: 0, y: 0, x2: 1, y2: 0, colorStops: [{ offset: 0, color: palette[index % palette.length] + '80' }, { offset: 1, color: palette[index % palette.length] }] } },
@@ -76,5 +76,5 @@
     <details><summary>View chart data</summary><div class="chart-table"><table><thead><tr><th>Category</th>{#each series as item}<th>{item.name}{unit ? ` (${unit})` : ''}</th>{/each}</tr></thead><tbody>{#each categories as category, index}<tr><th>{category}</th>{#each series as item}<td>{item.values[index] == null ? 'Unavailable' : item.values[index]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>{/each}</tr>{/each}</tbody></table></div></details>
 </section>
 <style>
-    .analytics-chart{min-width:0;padding:22px;border:1px solid #E9E4DC;border-radius:16px;background:#FFFFFF;margin:20px 0;box-shadow:0 10px 30px -22px #26223033}.chart-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.chart-eyebrow{font-size:9px;letter-spacing:.18em;color:#6A31C4;margin:0 0 7px}h2{font-size:16px;font-weight:650;color:#262230}.chart-unit{font-size:10px;color:#4E1D93;background:#F3EBFC;border:1px solid #E7D6FA;border-radius:6px;padding:5px 8px}.chart-description,.chart-empty{font-size:12px;color:#6F6979;line-height:1.6;margin-top:12px}.chart-canvas{width:100%;min-width:0;margin-top:15px}.chart-canvas.empty{display:none}summary{cursor:pointer;font-size:11px;color:#4E1D93;padding-top:12px;border-top:1px solid #E9E4DC}.chart-table{overflow:auto}table{width:100%;text-align:left;font-size:12px;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #E9E4DC;color:#6F6979}summary:focus-visible{outline:2px solid #6A31C4;outline-offset:4px}@media(max-width:600px){.analytics-chart{padding:14px}.chart-heading{align-items:start}h2{font-size:14px}}
+    .analytics-chart{min-width:0;padding:22px;border:1px solid #E9E4DC;border-radius:16px;background:#FFFFFF;margin:20px 0;box-shadow:0 10px 30px -22px #26223033}.chart-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.chart-eyebrow{font-size:9px;letter-spacing:.18em;color:#6D28D9;margin:0 0 7px}h2{font-size:16px;font-weight:650;color:#262230}.chart-unit{font-size:10px;color:#5B21B6;background:#F3EBFC;border:1px solid #E7D6FA;border-radius:6px;padding:5px 8px}.chart-description,.chart-empty{font-size:12px;color:#6F6979;line-height:1.6;margin-top:12px}.chart-canvas{width:100%;min-width:0;margin-top:15px}.chart-canvas.empty{display:none}summary{cursor:pointer;font-size:11px;color:#5B21B6;padding-top:12px;border-top:1px solid #E9E4DC}.chart-table{overflow:auto}table{width:100%;text-align:left;font-size:12px;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #E9E4DC;color:#6F6979}summary:focus-visible{outline:2px solid #6D28D9;outline-offset:4px}@media(max-width:600px){.analytics-chart{padding:14px}.chart-heading{align-items:start}h2{font-size:14px}}
 </style>

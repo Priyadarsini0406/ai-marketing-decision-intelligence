@@ -2,6 +2,7 @@
     import { tick, untrack } from 'svelte';
     import { signIn, api } from '$lib/api';
     import OutlineIcon from './OutlineIcon.svelte';
+import AmbientBackdrop from './AmbientBackdrop.svelte';
 import ThemeToggle from '$lib/ThemeToggle.svelte';
 
     let { face = 'login' }: { face?: 'login' | 'register' } = $props();
@@ -205,8 +206,10 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
 </script>
 
 <div class="auth">
-    <div class="glow glow-a" aria-hidden="true"></div>
-    <div class="glow glow-b" aria-hidden="true"></div>
+    <!-- Shared decorative background (waves, dot field, analytics motif) so the
+         sign-in and registration faces sit in the same atmosphere as the
+         landing page. Themed by tokens. -->
+    <AmbientBackdrop data={false} />
 
     <a class="back" href="/">
         <OutlineIcon name="chevron-right" size={16} />
@@ -798,16 +801,6 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         overflow: hidden;
     }
 
-    .glow {
-        position: absolute;
-        border-radius: 999px;
-        filter: blur(110px);
-        pointer-events: none;
-        z-index: 0;
-    }
-    .glow-a { top: -8rem; right: -6rem; width: 30rem; height: 30rem; background: rgba(106, 49, 196, 0.14); }
-    .glow-b { bottom: -10rem; left: -8rem; width: 32rem; height: 32rem; background: rgba(106, 49, 196, 0.18); }
-
     .back {
         position: relative;
         z-index: 2;
@@ -898,16 +891,16 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
        leaving the background, size, spacing and layout untouched. Light mode
        needs no change, so the whole block is gated on `:not(.di-light)`. */
     :global(html:not(.di-light)) .brand-pane :global(.di-brand-name) { color: #1E1A26; }
-    :global(html:not(.di-light)) .brand-pane :global(.di-brand-name) :global(em) { color: #6A31C4; }
-    :global(html:not(.di-light)) .brand-pane :global(.di-eyebrow) { color: #6A31C4; }
+    :global(html:not(.di-light)) .brand-pane :global(.di-brand-name) :global(em) { color: #6D28D9; }
+    :global(html:not(.di-light)) .brand-pane :global(.di-eyebrow) { color: #6D28D9; }
     :global(html:not(.di-light)) .brand-pane .pitch { color: #1E1A26; }
-    :global(html:not(.di-light)) .brand-pane .pitch :global(em) { color: #6A31C4; }
+    :global(html:not(.di-light)) .brand-pane .pitch :global(em) { color: #6D28D9; }
     :global(html:not(.di-light)) .brand-pane .pitch-copy { color: #4A4454; }
     :global(html:not(.di-light)) .brand-pane .points li { color: #2A2434; }
     :global(html:not(.di-light)) .brand-pane .point-icon {
         color: #5B21B6;
-        background-color: rgba(106, 49, 196, .10);
-        border-color: rgba(106, 49, 196, .22);
+        background-color: rgba(91, 33, 182, .10);
+        border-color: rgba(91, 33, 182, .22);
     }
     /* The logo tile keeps its purple sheen, but the dark theme's sheen is a
        light purple, so a white glyph would vanish. Dark purple reads on it. */
@@ -957,7 +950,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         border-radius: 18px;
         color: #ffffff;
         background-image: var(--di-accent-sheen);
-        box-shadow: 0 14px 26px -14px rgba(106, 49, 196, 0.95);
+        box-shadow: 0 14px 26px -14px rgba(91, 33, 182, 0.95);
     }
 
     /* ---------------- form pane ---------------- */
@@ -1029,7 +1022,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         background-color: var(--di-accent-soft);
     }
 
-    :global(.di-input:focus-visible) { outline: none; border-color: var(--di-accent); box-shadow: 0 0 0 3px rgba(106, 49, 196, 0.18); }
+    :global(.di-input:focus-visible) { outline: none; border-color: var(--di-accent); box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.18); }
     :global(.di-input.invalid) { border-color: #FBEAEE; }
     select.di-input { appearance: none; }
 
