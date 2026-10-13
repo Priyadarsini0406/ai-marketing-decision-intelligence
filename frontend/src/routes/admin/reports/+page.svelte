@@ -2,7 +2,7 @@
     import RecordChart from '$lib/components/RecordChart.svelte';
     import { onMount } from 'svelte';
     import { api } from '$lib/api';
-    type Report = {generated_at: number; configuration: {organization_name: string; currency: string}; summary: Record<string, number>; channels: Record<string, unknown>[]; simulations: Record<string, unknown>[]; predictions: Record<string, unknown>[]; leads: Record<string, unknown>[]; datasets: Record<string, unknown>[]};
+    type Report = {generated_at: number; configuration: {organization_name: string; currency: string}; summary: Record<string, number>; channels: Record<string, unknown>[]; simulations: Record<string, unknown>[]; predictions: Record<string, unknown>[]; leads: Record<string, unknown>[]; students: Record<string, unknown>[]; student_enquiries: Record<string, unknown>[]; datasets: Record<string, unknown>[]};
     let report = $state<Report | null>(null), error = $state(''), busy = $state(false);
     async function load() { busy = true; error = ''; try { report = await api('/admin/reports'); } catch(e) { error = (e as Error).message; } finally { busy = false; } }
     onMount(load);
@@ -11,12 +11,12 @@
 </script>
 <svelte:head><title>Analytics & reports | DecisionIntel</title></svelte:head>
 <div class="report-page">
-<h1>Analytics & reports</h1><p>All stored leads, predictions, channel metrics, budget simulations, and dataset summaries.</p>
+<h1>Analytics & reports</h1><p>Stored student accounts and enquiries, leads, predictions, channel metrics, budget simulations, and datasets.</p>
 <div class="actions"><button onclick={load} disabled={busy}>{busy ? 'Loading…' : 'Refresh'}</button><button class="secondary" onclick={download} disabled={!report || busy}>Download full report (JSON)</button></div>
 {#if error}<p role="alert">{error}</p>{/if}
 {#if report}<p>{report.configuration.organization_name} · Generated {new Date(report.generated_at * 1000).toLocaleString()}</p>
 <div class="grid">{#each Object.entries(report.summary) as [label, value]}<div class="stat">{label.replaceAll('_', ' ')}<strong>{label === 'ad_spend' ? new Intl.NumberFormat(undefined, {style:'currency', currency:report.configuration.currency}).format(value) : value.toLocaleString()}</strong></div>{/each}</div>
-{#each [['Channel analytics', report.channels], ['Budget simulations', report.simulations], ['Lead predictions and segments', report.predictions], ['Admission leads', report.leads], ['Dataset inventory', report.datasets]] as section, index}
+{#each [['Student accounts', report.students], ['Student enquiries', report.student_enquiries], ['Channel analytics', report.channels], ['Budget simulations', report.simulations], ['Lead predictions and segments', report.predictions], ['Admission leads', report.leads], ['Dataset inventory', report.datasets]] as section, index}
 {@const rows = section[1] as Record<string, unknown>[]}
 <RecordChart {rows} title={String(section[0])} />
 <section class="panel" style:--delay={`${180 + index * 70}ms`}><h2>{section[0]}</h2>{#if rows.length}<p>{rows.length} records. Showing up to 100; the download includes all records.</p><div class="table-wrap"><table><thead><tr>{#each Object.keys(rows[0]) as key}<th>{key.replaceAll('_', ' ')}</th>{/each}</tr></thead><tbody>{#each rows.slice(0,100) as row}<tr>{#each Object.values(row) as value}<td>{display(value)}</td>{/each}</tr>{/each}</tbody></table></div>{:else}<p>No stored records available.</p>{/if}</section>
@@ -34,7 +34,7 @@
         background: linear-gradient(145deg, #FFFFFF, #FFFFFF);
         border-radius: 20px;
         padding: 24px;
-        color: #5B21B6;
+        color: var(--di-accent-ink);
         text-transform: capitalize;
         transition: transform 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
         animation: card-enter 550ms ease-out backwards;
@@ -56,7 +56,7 @@
         line-height: 1.3;
         letter-spacing: -0.035em;
         font-variant-numeric: tabular-nums;
-        color: #F3EBFC;
+        color: var(--di-accent-soft);
         overflow-wrap: anywhere;
         text-transform: none;
     }
@@ -70,8 +70,8 @@
     }
     .report-page .panel h2 { display: flex; align-items: center; gap: 12px; }
     .report-page .panel h2::before { content: ''; width: 4px; height: 20px; border-radius: 4px; background: linear-gradient(#6D28D9, #6D28D9); flex-shrink: 0; }
-    .report-page .table-wrap { max-width: 100%; border-radius: 12px; scrollbar-color: #DED6C9 #FFFFFF; }
-    .report-page th { background: #FFFFFF; }
+    .report-page .table-wrap { max-width: 100%; border-radius: 12px; scrollbar-color: var(--di-border-strong) #FFFFFF; }
+    .report-page th { background: var(--di-surface); }
     .report-page tbody tr { transition: background-color 180ms ease; }
     .report-page button { transition: transform 180ms ease, box-shadow 180ms ease; }
     .report-page button:focus-visible { outline: 2px solid #6D28D9; outline-offset: 4px; }

@@ -1,9 +1,9 @@
 import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
 	plugins: [
 		tailwindcss(),
 		sveltekit({
@@ -21,10 +21,10 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'http://127.0.0.1:8000',
+				target: loadEnv(mode, '.', 'BACKEND_URL').BACKEND_URL || 'http://127.0.0.1:8000',
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, '')
 			}
 		}
 	}
-});
+}));

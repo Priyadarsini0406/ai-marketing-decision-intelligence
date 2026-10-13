@@ -191,7 +191,7 @@
 		top: calc(100% + .6rem);
 		right: 0;
 		z-index: 60;
-		width: 16.5rem;
+		width: min(16.5rem, calc(100vw - 1.5rem));
 		padding: .4rem;
 		background-color: var(--di-surface);
 		border: 1px solid var(--di-border-strong);
@@ -298,8 +298,8 @@
 
 	.hprofile-danger:hover {
 		color: #FFFFFF;
-		background-color: var(--di-red-ink);
-		border-color: var(--di-red-ink);
+		background-color: #A32B44;
+		border-color: #A32B44;
 		box-shadow: 0 8px 18px -12px var(--di-red-ink);
 	}
 

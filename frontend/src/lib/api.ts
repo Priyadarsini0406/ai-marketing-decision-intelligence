@@ -1,6 +1,6 @@
 import { adminDestination, dashboardDestination, loginDestination } from './admin-navigation';
 
-export type User = { id: string; name: string; email: string; role: string; active: boolean };
+export type User = { id: string; name: string; email: string; role: string; active: boolean; profile?: Record<string, unknown> };
 
 export async function api(path: string, options: RequestInit = {}) {
     const headers = new Headers(options.headers);

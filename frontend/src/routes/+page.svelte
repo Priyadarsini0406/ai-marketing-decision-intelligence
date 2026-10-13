@@ -346,8 +346,8 @@
 	.nav a:hover { color: var(--di-accent-ink); background-color: var(--di-accent-soft); }
 
 	/* The "Get started" CTA is a sibling of `.nav`, not one of its links, so
-	   `.nav a` never touched its label. Pinning white here keeps it legible on
-	   the deep purple fill in both themes. */
+	   `.nav a` never touched its label. The shared contrast rules pair its label
+	   with the primary button fill in each theme. */
 	.nav-cta { display: none; padding: .5rem 1.125rem; min-height: 2.25rem; color: #FFFFFF; }
 
 	.nav-actions { display: flex; align-items: center; gap: .5rem; flex: none; }
@@ -481,7 +481,7 @@
 	.float-head { display: flex; align-items: center; gap: .5rem; font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--di-muted); }
 	.dot { width: .5rem; height: .5rem; flex: none; border-radius: 999px; }
 	.dot-green { background-color: var(--di-green-ink); box-shadow: 0 0 0 3px var(--di-green-soft); }
-	.dot-purple { background-color: var(--di-accent); box-shadow: 0 0 0 3px var(--di-accent-soft); }
+	.dot-purple { background-color: var(--di-accent-fill); box-shadow: 0 0 0 3px var(--di-accent-soft); }
 	.float-title { margin: .625rem 0 0; font-size: 1.0625rem; font-weight: 700; color: var(--di-text); }
 	.float-accent { margin: .125rem 0 0; font-size: .875rem; font-weight: 600; color: var(--di-green-ink); }
 	.float-muted { margin: .125rem 0 0; font-size: .875rem; color: var(--di-muted); }

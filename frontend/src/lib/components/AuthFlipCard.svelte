@@ -265,7 +265,6 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
                         <div class="intro">
                             <p class="di-eyebrow">Sign in</p>
                             <h1 class="di-title">Welcome back</h1>
-                            <p class="di-muted">Use the email and password for your DecisionIntel workspace.</p>
                         </div>
 
                         {#if loginError}
@@ -363,9 +362,6 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
                             <div class="intro">
                                 <p class="di-eyebrow">Student registration</p>
                                 <h1 class="di-title">Create your account</h1>
-                                <p class="di-muted">
-                                    Tell us a little about yourself. This form scrolls inside the card.
-                                </p>
                             </div>
 
                             {#if regError}
@@ -801,7 +797,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         overflow: hidden;
     }
 
-    .back {
+    a.back {
         position: relative;
         z-index: 2;
         display: inline-flex;
@@ -813,7 +809,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         text-decoration: none;
         transition: color 150ms ease;
     }
-    .back :global(svg) { transform: rotate(180deg); }
+    a.back :global(svg) { transform: rotate(180deg); }
 
     /* Theme toggle parked in the same top-right corner as the back link, so
        the flip-card layout below is untouched. */
@@ -826,8 +822,8 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
     @media (max-width: 40rem) {
         .auth-theme { top: 1rem; right: 1rem; }
     }
-    .back:hover { color: var(--di-accent); }
-    .back:focus-visible { outline: 2px solid var(--di-accent); outline-offset: 3px; border-radius: 6px; }
+    a.back:hover { color: var(--di-accent); }
+    a.back:focus-visible { outline: 2px solid var(--di-accent); outline-offset: 3px; border-radius: 6px; }
 
     /* ---------------- 3D flip ---------------- */
     .stage {
@@ -860,6 +856,26 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
     }
     .face.back { transform: rotateY(180deg); }
 
+    /* Stronger supporting ink on the registration form in either theme. */
+    .face.back {
+        --di-muted: color-mix(in srgb, var(--di-text) 82%, var(--di-surface));
+    }
+    .face.back :global(.di-label) {
+        font-size: 0.875rem;
+        font-weight: 650;
+        color: var(--di-text);
+    }
+    .face.back .group {
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        color: var(--di-accent-ink);
+    }
+    .face.back :global(.di-muted),
+    .face.back .switch {
+        font-weight: 500;
+        line-height: 1.6;
+    }
+
     /* ---------------- brand pane ---------------- */
     .brand-pane {
         display: none;
@@ -868,7 +884,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         justify-content: space-between;
         gap: 1.5rem;
         padding: clamp(1.5rem, 2.6vw, 2.5rem);
-        background-image: linear-gradient(165deg, #F6F0FE 0%, #FFFFFF 58%, #F3EBFC 100%);
+        background-image: linear-gradient(165deg, var(--di-accent-soft) 0%, var(--di-surface) 58%, var(--di-surface-muted) 100%);
         border-right: 1px solid var(--di-border);
     }
     /* The registration panel sits on the right of the flipped face. It keeps
@@ -883,28 +899,6 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         height: 100%;
     }
     @media (min-width: 62rem) { .brand-pane { display: flex; } }
-
-    /* The brand pane keeps its light gradient in *both* themes, so it must
-       never inherit the dark-theme ink tokens: --di-text is #FFFFFF and
-       --di-muted is #C9C5CE there, which is white-on-cream. The rules below
-       repoint only the text/foreground colours onto the light-pane palette,
-       leaving the background, size, spacing and layout untouched. Light mode
-       needs no change, so the whole block is gated on `:not(.di-light)`. */
-    :global(html:not(.di-light)) .brand-pane :global(.di-brand-name) { color: #1E1A26; }
-    :global(html:not(.di-light)) .brand-pane :global(.di-brand-name) :global(em) { color: #6D28D9; }
-    :global(html:not(.di-light)) .brand-pane :global(.di-eyebrow) { color: #6D28D9; }
-    :global(html:not(.di-light)) .brand-pane .pitch { color: #1E1A26; }
-    :global(html:not(.di-light)) .brand-pane .pitch :global(em) { color: #6D28D9; }
-    :global(html:not(.di-light)) .brand-pane .pitch-copy { color: #4A4454; }
-    :global(html:not(.di-light)) .brand-pane .points li { color: #2A2434; }
-    :global(html:not(.di-light)) .brand-pane .point-icon {
-        color: #5B21B6;
-        background-color: rgba(91, 33, 182, .10);
-        border-color: rgba(91, 33, 182, .22);
-    }
-    /* The logo tile keeps its purple sheen, but the dark theme's sheen is a
-       light purple, so a white glyph would vanish. Dark purple reads on it. */
-    :global(html:not(.di-light)) .brand-pane .art { color: #3B0F73; }
 
     .brand { display: flex; align-items: center; gap: 0.65rem; }
     .brand :global(em) { font-style: normal; color: var(--di-accent); }
@@ -981,7 +975,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
     }
     .form-scroll::-webkit-scrollbar { width: 10px; }
     .form-scroll::-webkit-scrollbar-track { background: transparent; }
-    .form-scroll::-webkit-scrollbar-thumb { background-color: #6F6979; border-radius: 999px; border: 3px solid var(--di-surface); }
+    .form-scroll::-webkit-scrollbar-thumb { background-color: var(--di-muted); border-radius: 999px; border: 3px solid var(--di-surface); }
 
     .mobile-brand { display: flex; align-items: center; gap: 0.6rem; }
     @media (min-width: 62rem) { .mobile-brand { display: none; } }
@@ -1023,7 +1017,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
     }
 
     :global(.di-input:focus-visible) { outline: none; border-color: var(--di-accent); box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.18); }
-    :global(.di-input.invalid) { border-color: #FBEAEE; }
+    :global(.di-input.invalid) { border-color: var(--di-red-soft); }
     select.di-input { appearance: none; }
 
     .input-wrap { position: relative; display: flex; align-items: center; }
@@ -1103,7 +1097,7 @@ import ThemeToggle from '$lib/ThemeToggle.svelte';
         border-radius: 20px;
         color: var(--di-green-ink);
         background-color: var(--di-green-soft);
-        border: 1px solid #E7F2EC;
+        border: 1px solid var(--di-green-soft);
         margin-bottom: 0.5rem;
     }
     .done .submit { margin-top: 1rem; }

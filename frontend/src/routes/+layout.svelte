@@ -1,6 +1,8 @@
 <script lang="ts">
 	import './layout.css';
 	import '$lib/di-light.css';
+	import '$lib/contrast.css';
+	import '$lib/responsive.css';
 	import { siteMotion } from '$lib/site-motion';
 	import { initTheme } from '$lib/theme.svelte';
 	import { onMount } from 'svelte';

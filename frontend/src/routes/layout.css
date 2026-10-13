@@ -1,13 +1,13 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-primary: #09080d;
-  --color-secondary: #1b1325;
-  --color-accent: #A47BE0;
+  --color-primary: #080C18;
+  --color-secondary: #201A36;
+  --color-accent: #B56AF2;
   --color-text-primary: #FFFFFF;
-  --color-text-secondary: #C9C5CE;
-  --color-cta: #F2A62B;
-  --color-card: #120f18;
+  --color-text-secondary: #BFC0D4;
+  --color-cta: #F4BC65;
+  --color-card: #111426;
 }
 
 @layer base {
@@ -21,21 +21,28 @@
      tokens above, so components that read --di-* follow the theme without
      being rewritten. */
   :root {
-    --di-accent: #A47BE0;
-    --di-accent-ink: #C8A5F0;
+    --di-accent: #B56AF2;
+    --di-accent-fill: #7C3AED;
+    --di-on-accent: #FFFFFF;
+    --di-on-cta: #17101F;
+    --di-accent-ink: #D5AEFF;
     --di-accent-pale: #E7D6FA;
-    --di-accent-soft: #1b1325;
-    --di-accent-line: rgba(164, 123, 224, 0.18);
-    --di-accent-glow: rgba(164, 123, 224, 0.22);
-    --di-accent-sheen: linear-gradient(180deg, #C8A5F0 0%, #A47BE0 52%, #8B5FC9 100%);
+    --di-accent-soft: #201A36;
+    --di-accent-line: rgba(181, 106, 242, 0.18);
+    --di-accent-glow: rgba(181, 106, 242, 0.22);
+    --di-accent-sheen: linear-gradient(180deg, #7C3AED 0%, #6D28D9 52%, #5B21B6 100%);
 
-    --di-bg: #09080d;
-    --di-surface: #120f18;
-    --di-surface-muted: #1b1325;
+    --di-gold: #F4BC65;
+    --di-gold-ink: #FFD58A;
+    --di-gold-soft: rgba(244, 188, 101, .12);
+    --di-gold-sheen: linear-gradient(135deg, #FFD58A, #F4BC65 55%, #DA9345);
+    --di-bg: #080C18;
+    --di-surface: #111426;
+    --di-surface-muted: #201A36;
     --di-border: rgba(255, 255, 255, 0.10);
-    --di-border-strong: rgba(164, 123, 224, 0.28);
+    --di-border-strong: rgba(181, 106, 242, 0.28);
     --di-text: #FFFFFF;
-    --di-muted: #C9C5CE;
+    --di-muted: #BFC0D4;
 
     /* Semantic inks stay in the same hue families; lightened so labels keep
        their contrast against the dark surfaces. */
@@ -59,16 +66,16 @@
        as a pale-purple bubble, so the light theme swaps in a much smaller,
        quieter one. The layer stays decorative — the card's real hover state
        is the border/elevation change below. */
-    --di-cursor-glow: radial-gradient(240px circle at var(--glow-x, 50%) var(--glow-y, 50%), #A47BE01C, transparent 75%);
+    --di-cursor-glow: radial-gradient(240px circle at var(--glow-x, 50%) var(--glow-y, 50%), #B56AF21C, transparent 75%);
   }
 
   body {
     background-color: var(--color-primary);
     background-image:
-      radial-gradient(circle at 12% 0%, rgba(164, 123, 224, 0.22), transparent 22%),
-      radial-gradient(circle at 82% 12%, rgba(164, 123, 224, 0.12), transparent 24%),
-      radial-gradient(circle at 50% 100%, rgba(164, 123, 224, 0.08), transparent 30%),
-      linear-gradient(180deg, #09080d 0%, #0d0b12 48%, #09080d 100%);
+      radial-gradient(circle at 12% 0%, rgba(181, 106, 242, 0.22), transparent 22%),
+      radial-gradient(circle at 82% 12%, rgba(244, 188, 101, 0.08), transparent 24%),
+      radial-gradient(circle at 50% 100%, rgba(181, 106, 242, 0.08), transparent 30%),
+      linear-gradient(180deg, #080C18 0%, #0D1224 48%, #080C18 100%);
     color: var(--color-text-primary);
     font-family: 'Inter', sans-serif;
     background-attachment: fixed;
@@ -87,17 +94,17 @@
 @layer components {
   .bg-primary {
     background-color: var(--color-primary);
-    background-image: linear-gradient(180deg, rgba(164, 123, 224, 0.04), transparent 18%), var(--color-primary);
+    background-image: linear-gradient(180deg, rgba(181, 106, 242, 0.04), transparent 18%), var(--color-primary);
   }
 
   .bg-secondary {
-    background: linear-gradient(135deg, rgba(164, 123, 224, 0.14), rgba(33, 21, 47, 0.82));
+    background: linear-gradient(135deg, rgba(181, 106, 242, 0.14), rgba(33, 21, 47, 0.82));
   }
 
   .bg-card {
-    background: linear-gradient(180deg, rgba(20, 17, 24, 0.96), rgba(12, 10, 16, 0.98));
+    background: linear-gradient(180deg, rgba(17, 20, 38, 0.96), rgba(11, 14, 28, 0.98));
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 28px rgba(7, 5, 10, 0.32);
-    border-color: rgba(164, 123, 224, 0.18);
+    border-color: rgba(181, 106, 242, 0.18);
     transition:
       border-color 220ms ease-out,
       box-shadow 220ms ease-out,
@@ -108,7 +115,7 @@
 
   .dashboard-card {
     border: 1px solid rgba(255, 255, 255, 0.10);
-    background: linear-gradient(180deg, rgba(20, 17, 24, 0.96), rgba(12, 10, 16, 0.98));
+    background: linear-gradient(180deg, rgba(17, 20, 38, 0.96), rgba(11, 14, 28, 0.98));
     border-radius: 1rem;
     transition:
       border-color 220ms ease-out,
@@ -121,9 +128,9 @@
   @media (hover: hover) and (pointer: fine) {
     .bg-card:hover,
     .dashboard-card:hover {
-      border-color: rgba(164, 123, 224, 0.9);
-      background: linear-gradient(180deg, rgba(164, 123, 224, 0.07), rgba(12, 10, 16, 0.98));
-      box-shadow: 0 0 0 1px rgba(164, 123, 224, 0.18), 0 0 18px rgba(164, 123, 224, 0.14), 0 18px 28px rgba(7, 5, 10, 0.32);
+      border-color: rgba(181, 106, 242, 0.9);
+      background: linear-gradient(180deg, rgba(181, 106, 242, 0.07), rgba(11, 14, 28, 0.98));
+      box-shadow: 0 0 0 1px rgba(181, 106, 242, 0.18), 0 0 18px rgba(181, 106, 242, 0.14), 0 18px 28px rgba(7, 5, 10, 0.32);
       transform: translateY(-2px);
     }
   }
@@ -149,8 +156,8 @@
   transition: opacity 240ms ease;
 }
 .role-effects .motion-card:focus-within {
-  border-color: #A47BE066;
-  box-shadow: 0 0 20px #A47BE015;
+  border-color: #B56AF266;
+  box-shadow: 0 0 20px #B56AF215;
 }
 .role-effects :is(.bar, .track) { position: relative; overflow: hidden; }
 .role-effects .bar::after {
@@ -164,26 +171,26 @@
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .site-motion .role-effects .motion-card:hover {
     translate: 0 -4px;
-    border-color: #A47BE09C;
-    box-shadow: 0 12px 32px #00000044, 0 0 22px #A47BE026, inset 0 1px 0 #F2A62B22;
+    border-color: #B56AF29C;
+    box-shadow: 0 12px 32px #00000044, 0 0 22px #B56AF226, inset 0 1px 0 #F4BC6522;
   }
   .role-effects .motion-card:hover::after { opacity: 1; }
   .role-effects .motion-card:hover .bar::after { animation: dashboard-shimmer 1.2s ease-in-out 2; }
   .site-motion .role-effects :is(button, .button, .action):not(:disabled):hover {
-    border-color: #C8A5F0;
-    box-shadow: 0 0 16px #A47BE040, 0 4px 16px #00000022;
+    border-color: #D5AEFF;
+    box-shadow: 0 0 16px #B56AF240, 0 4px 16px #00000022;
   }
   .site-motion .role-effects :is(.primary, .bg-cta):not(:disabled):hover {
-    border-color: #F5C674;
-    box-shadow: 0 0 18px #F2A62B38;
+    border-color: #FFD58A;
+    box-shadow: 0 0 18px #F4BC6538;
   }
   .site-motion .role-effects .nav-link:hover {
-    background-color: #A47BE014;
-    box-shadow: inset 3px 0 0 #A47BE0;
+    background-color: #B56AF214;
+    box-shadow: inset 3px 0 0 #B56AF2;
     color: #E7D6FA;
   }
-  .site-motion .role-effects .nav-active:hover { box-shadow: inset 3px 0 0 #F2A62B, 0 0 18px #A47BE026; }
-  .site-motion .role-effects tbody tr:hover { background-color: #A47BE014; }
+  .site-motion .role-effects .nav-active:hover { box-shadow: inset 3px 0 0 #F4BC65, 0 0 18px #B56AF226; }
+  .site-motion .role-effects tbody tr:hover { background-color: #B56AF214; }
 }
 @keyframes dashboard-shimmer {
   to { translate: 120% 0; }
@@ -206,7 +213,7 @@
 .site-motion :is(input, select, textarea):focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 3px;
-  box-shadow: 0 0 0 5px #a47be016;
+  box-shadow: 0 0 0 5px #B56AF216;
 }
 .site-motion :is(button, a):focus-visible {
   outline: 2px solid var(--color-accent);
@@ -216,12 +223,12 @@
 @media (hover: hover) and (pointer: fine) {
   .site-motion .motion-card:hover {
     translate: 0 -3px;
-    border-color: #a47be052;
-    box-shadow: 0 10px 28px #00000026, 0 0 0 1px #a47be00c;
+    border-color: #B56AF252;
+    box-shadow: 0 10px 28px #00000026, 0 0 0 1px #B56AF20c;
   }
   .site-motion :is(button, .button, .action, a[class*="bg-"]):not(:disabled):hover {
     translate: 0 -2px;
-    box-shadow: 0 5px 18px #a47be026;
+    box-shadow: 0 5px 18px #B56AF226;
   }
   .site-motion :is(button, .button, .action):not(:disabled):active {
     translate: 0 0;
@@ -229,9 +236,9 @@
   }
   .site-motion :is(.nav-link, nav a):hover { translate: 3px 0; }
   .site-motion nav a:hover { color: #e3cdfc; }
-  .site-motion tbody tr:hover { background-color: #a47be00c; }
+  .site-motion tbody tr:hover { background-color: #B56AF20c; }
   .site-motion :is(input, select, textarea):not(:disabled):not([readonly]):hover {
-    border-color: #a47be066;
+    border-color: #B56AF266;
   }
 }
 
@@ -247,8 +254,8 @@
   to { opacity: 1; translate: 0 0; }
 }
 @keyframes active-navigation {
-  from { box-shadow: 0 0 0 #a47be000; }
-  to { box-shadow: 0 0 15px #a47be01f; }
+  from { box-shadow: 0 0 0 #B56AF200; }
+  to { box-shadow: 0 0 15px #B56AF21f; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -525,17 +532,17 @@ html:not(.di-light) :is(input[type='checkbox'], input[type='radio']) + label {
 }
 
 /* Headings and strong text were pinned to the light-theme ink #262230. */
-html:not(.di-light) :is(h1, h2, h3, h4, h5, h6, strong, b, legend) {
+html:not(.di-light) :where(:is(h1, h2, h3, h4, h5, h6, strong, b, legend)) {
   color: var(--di-text);
 }
 
 /* Secondary copy: #6F6979 only reached 3.6:1 on the dark surfaces. */
-html:not(.di-light) :is(p, small, dt, dd, label, caption, figcaption, time, th, dt) {
+html:not(.di-light) :where(:is(p, small, dt, dd, label, caption, figcaption, time, th, dt)) {
   color: var(--di-muted);
 }
 
 /* Accent copy and links: #6D28D9 / #5B21B6 sat at 1.7:1 on dark. */
-html:not(.di-light) :is(a, .eyebrow, [class*='eyebrow'], .badge, .action, .secondary, .chart-unit) {
+html:not(.di-light) :where(:is(a, .eyebrow, [class*='eyebrow'], .badge, .action, .secondary, .chart-unit)) {
   color: var(--di-accent-ink);
 }
 
@@ -564,3 +571,23 @@ html:not(.di-light) .sh-nav-label { color: var(--di-muted); }
 /* Chart surfaces and the empty-state dashes also assumed a light card. */
 html:not(.di-light) :is(.analytics-chart, .metric-control) { background-color: var(--di-surface); }
 html:not(.di-light) .empty { border-color: var(--di-border-strong); }
+
+/* Reference-image accents: violet identity, gold calls to action. */
+html:not(.di-light) .di-btn-primary,
+html:not(.di-light) :is(button, a).primary,
+html:not(.di-light) .bg-cta {
+  background: var(--di-gold-sheen);
+  color: #17101F;
+  border-color: var(--di-gold);
+  box-shadow: 0 0 18px rgba(244, 188, 101, .16), inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+html:not(.di-light) .bg-cta :is(span, svg) { color: inherit; }
+html:not(.di-light) .di-brand-mark {
+  background-image: linear-gradient(145deg, #B56AF2, #7C3AED);
+}
+html:not(.di-light) :is(.di-brand-name, .sh-brand-name, .st-brand-name) em {
+  color: var(--di-accent);
+}
+html:not(.di-light) ::selection { background: #7C3AED; color: #FFFFFF; }
+html:not(.di-light) * { scrollbar-color: #53406F transparent; }
+html:not(.di-light) progress { accent-color: var(--di-accent); }

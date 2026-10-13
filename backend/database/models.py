@@ -38,6 +38,25 @@ class Dataset(Base):
     rows = Column(JSON, nullable=False)
     created_at = Column(Float, nullable=False)
 
+class StudentEnquiry(Base):
+    __tablename__ = "student_enquiries"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    student_user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    course_interested = Column(String, nullable=False)
+    preferred_intake = Column(String, nullable=True)
+    preferred_mode = Column(String, nullable=True)
+    qualification = Column(String, nullable=True)
+    institution = Column(String, nullable=True)
+    academic_score = Column(Float, nullable=True)
+    phone = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    interest_area = Column(String, nullable=True)
+    contact_method = Column(String, nullable=True)
+    remarks = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="Submitted")
+    created_at = Column(Float, nullable=False)
+    updated_at = Column(Float, nullable=False)
+
 class SystemConfig(Base):
     __tablename__ = "system_config"
     id = Column(Integer, primary_key=True)

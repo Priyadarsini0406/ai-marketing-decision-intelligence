@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="760" viewBox="0 0 1080 760" role="img" aria-labelledby="title desc">
+  <title id="title">Decision-Intel System Architecture</title>
+  <desc id="desc">Architecture flow from user through SvelteKit, FastAPI, model services, database and analytics.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#333"/></marker>
+    <style>
+      .box{fill:#fff;stroke:#222;stroke-width:2}.db{fill:#fff;stroke:#222;stroke-width:2}
+      .t{font-family:Arial,sans-serif;fill:#111;text-anchor:middle}.head{font-size:19px;font-weight:700}.sub{font-size:15px}
+      .line{fill:none;stroke:#333;stroke-width:2;marker-end:url(#arrow)}.label{font-family:Arial,sans-serif;font-size:13px;fill:#333;text-anchor:middle}
+    </style>
+  </defs>
+  <rect width="1080" height="760" fill="#fff"/>
+  <text class="t" x="540" y="34" font-size="24" font-weight="700">Decision-Intel System Architecture</text>
+
+  <rect class="box" x="390" y="55" width="300" height="62"/>
+  <text class="t head" x="540" y="81">User / Marketing Staff</text><text class="t sub" x="540" y="103">Lead review and campaign planning</text>
+  <path class="line" d="M540 117 V150"/><text class="label" x="625" y="139">HTTPS requests</text>
+
+  <rect class="box" x="350" y="152" width="380" height="72"/>
+  <text class="t head" x="540" y="181">SvelteKit Frontend</text><text class="t sub" x="540" y="204">Dashboard · predictions · analytics · scenarios</text>
+  <path class="line" d="M540 224 V258"/><text class="label" x="625" y="246">REST API</text>
+
+  <rect class="box" x="350" y="260" width="380" height="72"/>
+  <text class="t head" x="540" y="289">FastAPI Backend</text><text class="t sub" x="540" y="312">Validation · data access · inference · responses</text>
+
+  <path class="line" d="M420 332 V374 H240 V404"/><path class="line" d="M540 332 V404"/><path class="line" d="M660 332 V374 H840 V404"/>
+  <rect class="box" x="80" y="406" width="320" height="100"/>
+  <text class="t head" x="240" y="438">Lead Data &amp; Storage</text><text class="t sub" x="240" y="463">Leads X Education · lead records</text><text class="t sub" x="240" y="485">Historical channel and conversion data</text>
+  <rect class="box" x="430" y="406" width="220" height="100"/>
+  <text class="t head" x="540" y="438">XGBoost</text><text class="t sub" x="540" y="463">Conversion probability</text><text class="t sub" x="540" y="485">Lead scoring</text>
+  <rect class="box" x="680" y="406" width="320" height="100"/>
+  <text class="t head" x="840" y="438">SHAP + K-Means</text><text class="t sub" x="840" y="463">Prediction explanations</text><text class="t sub" x="840" y="485">Engagement-based segments</text>
+
+  <path class="line" d="M240 506 V551 H540 V573"/><path class="line" d="M540 506 V573"/><path class="line" d="M840 506 V551 H540 V573"/>
+  <rect class="box" x="300" y="575" width="480" height="74"/>
+  <text class="t head" x="540" y="604">Decision Support Outputs</text><text class="t sub" x="540" y="628">Scores · explanations · segments · channel summaries · budget scenarios</text>
+  <path class="line" d="M540 649 V687"/>
+  <rect class="box" x="350" y="689" width="380" height="54"/>
+  <text class="t head" x="540" y="713">Dashboard for Review and Planning</text><text class="t sub" x="540" y="733">Scenarios assume constant historical efficiency</text>
+</svg>

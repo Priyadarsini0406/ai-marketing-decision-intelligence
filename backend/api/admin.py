@@ -7,8 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from database.connection import get_db
-from database.models import User, LoginSession, Dataset, SystemConfig, Lead, MLPrediction, ChannelMetric, BudgetSimulation
+from database.models import User, LoginSession, Dataset, SystemConfig, Lead, MLPrediction, ChannelMetric, BudgetSimulation, StudentEnquiry
 from api.auth import require_admin, NewUser, Role, create_user, public_user, hash_password
+from api.student_records import student_directory
 
 router = APIRouter(prefix="/admin", tags=["administration"], dependencies=[Depends(require_admin)])
 
@@ -21,6 +22,10 @@ class UserUpdate(BaseModel):
 @router.get("/users")
 def users(db: Session = Depends(get_db)):
     return [public_user(u) for u in db.query(User).order_by(User.email).all()]
+
+@router.get("/students")
+def students(db: Session = Depends(get_db)):
+    return student_directory(db)
 
 @router.post("/users", status_code=201)
 def add_user(data: NewUser, db: Session = Depends(get_db)):
@@ -158,9 +163,14 @@ def reports(db: Session = Depends(get_db)):
     leads = db.query(Lead).all()
     predictions = db.query(MLPrediction).all()
     datasets = db.query(Dataset).all()
+    students = student_directory(db)
+    student_enquiries = db.query(StudentEnquiry).order_by(StudentEnquiry.created_at.desc()).all()
     return {
         "generated_at": time.time(), "configuration": config,
-        "summary": {"users": db.query(User).count(), "datasets": len(datasets),
+        "summary": {"users": db.query(User).count(),
+                    "students": db.query(User).filter(User.role == "student").count(),
+                    "managers": db.query(User).filter(User.role.in_(["admission_manager", "marketing_manager"])).count(),
+                    "student_enquiries": db.query(StudentEnquiry).count(), "datasets": len(datasets),
                     "dataset_rows": sum(len(d.rows) for d in datasets), "leads": len(leads),
                     "admissions": sum(bool(l.admission_status) for l in leads),
                     "ad_spend": sum(l.ad_spend or 0 for l in leads),
@@ -169,5 +179,7 @@ def reports(db: Session = Depends(get_db)):
         "simulations": [serialize(s) for s in db.query(BudgetSimulation).all()],
         "predictions": [serialize(p) for p in predictions],
         "leads": [serialize(l) for l in leads],
+        "students": students,
+        "student_enquiries": [serialize(item) for item in student_enquiries],
         "datasets": [dataset_summary(d) for d in datasets],
     }

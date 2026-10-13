@@ -3,17 +3,41 @@ from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
 import math
+import time
 import numpy as np
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from api.auth import current_user
 from database.connection import get_db
-from database.models import Lead, ChannelMetric, BudgetSimulation, MLPrediction
+from database.models import Lead, ChannelMetric, BudgetSimulation, MLPrediction, StudentEnquiry
 from database.models import UserPreference
+from api.student_records import student_directory
 from typing import Literal
 
 router = APIRouter(prefix="/workspace", tags=["marketing workspace"], dependencies=[Depends(current_user)])
+
+@router.get("/students")
+def students(user=Depends(current_user), db: Session = Depends(get_db)):
+    if user.role not in ("admin", "admission_manager", "marketing_manager"):
+        raise HTTPException(403, "Manager access required")
+    return student_directory(db)
+
+class StudentEnquiryUpdate(BaseModel):
+    status: Literal["Submitted", "Under Review", "Counselling", "Application", "Admitted", "Not Converted"]
+
+@router.put("/student-enquiries/{enquiry_id}")
+def update_student_enquiry(enquiry_id: str, data: StudentEnquiryUpdate,
+                           user=Depends(current_user), db: Session = Depends(get_db)):
+    if user.role not in ("admin", "admission_manager", "marketing_manager"):
+        raise HTTPException(403, "Manager access required")
+    enquiry = db.get(StudentEnquiry, enquiry_id)
+    if enquiry is None:
+        raise HTTPException(404, "Student enquiry not found")
+    enquiry.status = data.status
+    enquiry.updated_at = time.time()
+    db.commit()
+    return {column.name: getattr(enquiry, column.name) for column in enquiry.__table__.columns}
 
 class Preferences(BaseModel):
     currency: Literal['USD', 'INR', 'EUR', 'GBP'] = 'USD'

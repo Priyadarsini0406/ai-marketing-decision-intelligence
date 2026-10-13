@@ -98,16 +98,16 @@
 <style>
     .workspace-page { max-width:1200px; animation:enter .35s ease-out; }
     h1 {font-size:30px;font-weight:700;margin-bottom:12px} h2 {font-size:20px;font-weight:600;margin-bottom:16px}
-    p {color:#6F6979;margin:12px 0;line-height:1.7}.intro {margin-bottom:28px;max-width:850px}
-    .workspace-panel {min-width:0;background:#FFFFFF;border:1px solid #E9E4DC;border-radius:18px;padding:24px;margin:20px 0;transition:border-color .2s,box-shadow .2s}
+    p {color:var(--di-muted);margin:12px 0;line-height:1.7}.intro {margin-bottom:28px;max-width:850px}
+    .workspace-panel {min-width:0;background:var(--di-surface);border:1px solid var(--di-border);border-radius:18px;padding:24px;margin:20px 0;transition:border-color .2s,box-shadow .2s}
     .workspace-panel:hover {border-color:#6D28D955;box-shadow:0 10px 30px -18px #6D28D940}
     .summary-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:18px}.summary-grid strong{font-size:25px;overflow-wrap:anywhere}
-    form {display:grid;gap:18px;max-width:640px} label {display:grid;gap:8px;margin:12px 0;color:#6F6979}
-    input,select {background:#FFFFFF;border:1px solid #E9E4DC;border-radius:8px;padding:12px;color:#262230;min-width:0}
+    form {display:grid;gap:18px;max-width:640px} label {display:grid;gap:8px;margin:12px 0;color:var(--di-muted)}
+    input,select {background:var(--di-surface);border:1px solid var(--di-border);border-radius:8px;padding:12px;color:var(--di-text);min-width:0}
     button {background:#6D28D9;color:#FFFFFF;border-radius:9px;padding:10px 18px;font-weight:600;cursor:pointer}button:disabled{opacity:.5;cursor:default}
     button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #6D28D9;outline-offset:3px}
     .controls {display:flex;gap:12px;align-items:center;flex-wrap:wrap}.checkbox {display:flex;align-items:center}.checkbox input{width:auto}
-    [role=alert]{color:#A32B44}[role=status]{color:#256B4C}.funnel-stage{display:grid;gap:8px;margin:20px 0}meter{width:100%;height:24px;accent-color:#6D28D9}
+    [role=alert]{color:var(--di-red-ink)}[role=status]{color:var(--di-green-ink)}.funnel-stage{display:grid;gap:8px;margin:20px 0}meter{width:100%;height:24px;accent-color:var(--di-accent-ink)}
     @keyframes enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
     @media(prefers-reduced-motion:reduce){.workspace-page{animation:none}.workspace-panel{transition:none}}
 </style>

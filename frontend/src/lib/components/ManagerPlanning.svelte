@@ -134,13 +134,13 @@
 
 <style>
     .panel{min-width:0;border:1px solid #6D28D91a;border-radius:1rem;background:var(--color-card,#FFFFFF);padding:1.25rem}
-    h2{font-size:1.25rem;font-weight:700;color:#262230}strong{display:block;font-size:1.6rem;color:#262230;margin-top:.6rem;overflow-wrap:anywhere}
-    .caption{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary,#6F6979)}
-    .note{font-size:.875rem;line-height:1.6;color:var(--color-text-secondary,#6F6979);margin-top:.75rem}
-    .field{display:grid;gap:.5rem;font-size:.875rem;color:var(--color-text-secondary,#6F6979)}
-    input,select{min-width:0;width:100%;padding:.7rem .85rem;border:1px solid #DED6C9;border-radius:.5rem;background:#FFFFFF;color:#262230}
-    .action{padding:.65rem 1rem;border:1px solid #E7D6FA;border-radius:.65rem;color:#5B21B6;cursor:pointer;font-size:.875rem}.action:hover{background:#6D28D90d}.primary{background:var(--color-accent,#6D28D9);color:#FFFFFF;font-weight:600}
-    .track{height:.7rem;background:#6D28D90d;border-radius:999px;overflow:hidden}.bar{height:100%;background:var(--color-accent,#6D28D9);border-radius:999px}
+    h2{font-size:1.25rem;font-weight:700;color:var(--di-text)}strong{display:block;font-size:1.6rem;color:var(--di-text);margin-top:.6rem;overflow-wrap:anywhere}
+    .caption{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-secondary,var(--di-muted))}
+    .note{font-size:.875rem;line-height:1.6;color:var(--color-text-secondary,var(--di-muted));margin-top:.75rem}
+    .field{display:grid;gap:.5rem;font-size:.875rem;color:var(--color-text-secondary,var(--di-muted))}
+    input,select{min-width:0;width:100%;padding:.7rem .85rem;border:1px solid var(--di-border-strong);border-radius:.5rem;background:var(--di-surface);color:var(--di-text)}
+    .action{padding:.65rem 1rem;border:1px solid var(--di-accent-line);border-radius:.65rem;color:var(--di-accent-ink);cursor:pointer;font-size:.875rem}.action:hover{background:#6D28D90d}.primary{background:var(--di-accent-fill);color:#FFFFFF;font-weight:600}
+    .track{height:.7rem;background:#6D28D90d;border-radius:999px;overflow:hidden}.bar{height:100%;background:var(--di-accent-fill);border-radius:999px}
     .badge{padding:.25rem .7rem;border-radius:999px;background:#6D28D91a;color:var(--color-accent,#6D28D9);font-size:.75rem;font-weight:600}
     button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #6D28D9;outline-offset:3px}
 </style>

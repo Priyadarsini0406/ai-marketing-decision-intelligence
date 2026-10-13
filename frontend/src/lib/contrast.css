@@ -1,0 +1,45 @@
+/* Explicit foregrounds prevent link states and utility classes from repainting
+   labels on filled controls. Keep the violet identity in both themes. */
+html .bg-accent {
+  background-color: var(--di-accent-fill);
+  color: var(--di-on-accent);
+}
+html :is(button, a, [role='button']):is(.di-btn-primary, .btn-primary, .primary, .bg-cta) {
+  color: var(--di-on-cta);
+}
+html.di-light :is(button, a, [role='button']):is(.di-btn-primary, .btn-primary, .primary, .bg-cta) {
+  background-image: var(--di-accent-sheen);
+  background-color: var(--di-accent-fill);
+}
+html:not(.di-light) :is(button, a, [role='button']):is(.di-btn-primary, .btn-primary, .primary, .bg-cta) {
+  background-image: var(--di-gold-sheen);
+  background-color: var(--di-gold);
+}
+html :is(.di-btn-primary, .btn-primary, .primary, .bg-cta, .bg-accent) :is(span, strong, b, small, svg) {
+  color: inherit;
+}
+html :is(input, select, textarea):not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']) {
+  color: var(--di-text);
+  caret-color: var(--di-text);
+}
+html :is(input, textarea)::placeholder {
+  color: var(--di-muted);
+  opacity: 1;
+}
+html :is(input, textarea, select):-webkit-autofill {
+  -webkit-text-fill-color: var(--di-text);
+  box-shadow: 0 0 0 1000px var(--di-surface) inset;
+}
+html :is(button, .di-btn, .btn):disabled,
+html:is(.di-light, :not(.di-light)) :is(button, .di-btn, .btn):disabled {
+  opacity: 1;
+  color: var(--di-muted);
+  background: var(--di-surface-muted);
+  border-color: var(--di-border-strong);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+html :is(.di-brand-mark, .st-brand-mark) {
+  background: var(--di-accent-sheen);
+  color: var(--di-on-accent);
+}

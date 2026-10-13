@@ -271,4 +271,5 @@
 	@media (prefers-reduced-motion: reduce) {
 		.hbell-panel { animation: none; }
 	}
+@media (max-width: 29.99rem) { .hbell-panel { position: fixed; top: 5.25rem; right: .75rem; width: calc(100vw - 1.5rem); max-height: calc(100dvh - 6rem); overflow-y: auto; } }
 </style>

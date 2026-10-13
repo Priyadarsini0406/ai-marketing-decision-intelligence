@@ -73,4 +73,5 @@
 			display: inline;
 		}
 	}
+@media (max-width: 29.99rem) { .di-theme-toggle { min-width: 2.75rem; min-height: 2.75rem; padding: .5rem; } }
 </style>

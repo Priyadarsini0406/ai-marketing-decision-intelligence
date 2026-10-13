@@ -53,15 +53,18 @@
     async function logout() { try { await signOut(); window.location.assign('/login'); } catch (e) { error = (e as Error).message; } }
 </script>
 
+<svelte:window onkeydown={event => { if (event.key === 'Escape') mobileOpen = false; }} />
+
 {#if user}
-<div class="role-effects flex h-screen bg-primary font-sans text-text-primary overflow-hidden" class:student-shell={student}>
-    {#if mobileOpen}<button class="fixed inset-0 z-30 bg-black/30 md:hidden" aria-label="Close navigation" onclick={() => mobileOpen = false}></button>{/if}
-    <aside class:translate-x-0={mobileOpen} class="fixed md:static inset-y-0 left-0 z-40 w-72 md:w-64 -translate-x-full md:translate-x-0 flex flex-col transition-transform duration-200 shrink-0 {student ? 'st-sidebar' : 'sh-sidebar'}">
-        <div class="flex items-center {student ? 'st-brand px-5' : 'sh-brand'}">
+<div class="role-effects flex h-dvh bg-primary font-sans text-text-primary overflow-hidden" class:student-shell={student}>
+    {#if mobileOpen}<button class="fixed inset-0 z-30 bg-black/30 lg:hidden" aria-label="Close navigation" onclick={() => mobileOpen = false}></button>{/if}
+    <aside class:translate-x-0={mobileOpen} class="fixed lg:static inset-y-0 left-0 z-50 w-[min(18rem,calc(100vw-3rem))] lg:w-64 -translate-x-full lg:translate-x-0 flex flex-col transition-transform duration-200 shrink-0 {student ? 'st-sidebar' : 'sh-sidebar'}">
+        <div class="flex items-center justify-between {student ? 'st-brand px-5' : 'sh-brand'}">
             <a href="/" class="flex items-center gap-2.5">
                 {#if student}<span class="st-brand-mark"><OutlineIcon name="cap" size={19} /></span><span class="st-brand-name">Decision<em>Intel</em></span>
                 {:else}<span class="di-brand-mark sh-mark"><OutlineIcon name="cap" size={20} strokeWidth={1.8} /></span><span class="sh-brand-name">Decision<em>Intel</em></span>{/if}
             </a>
+            <button type="button" class="lg:hidden p-3" aria-label="Close navigation" onclick={() => mobileOpen = false}><OutlineIcon name="close" size={20} /></button>
         </div>
         <nav class="flex-1 overflow-y-auto custom-scrollbar {student ? 'st-nav' : 'sh-nav'}" aria-label="Role navigation">
             {#each navigation[role] as group}
@@ -88,20 +91,20 @@
 {:else}<p class="p-8 text-text-secondary" role="status">{error || 'Authenticating…'} {#if error}<a href="/login" class="text-accent ml-2 hover:underline">Sign in</a>{/if}</p>{/if}
 
 <style>
-    .nav-link { display:flex; align-items:center; gap:.7rem; padding:.6rem .75rem; border-radius:.55rem; color:var(--color-text-secondary, #6f6979); font-size:.85rem; font-weight:500; transition:.2s; }
-    .nav-link:hover { color:var(--di-accent-ink, #5B21B6); background:var(--di-accent-soft, #F1EAFD); }
-    .nav-active { color:var(--di-accent-ink, #5B21B6); background:var(--di-accent-soft, #F1EAFD); border:1px solid var(--di-accent-line, #DDD0F7); }
+    .nav-link { display:flex; align-items:center; gap:.7rem; padding:.6rem .75rem; border-radius:.55rem; color:var(--color-text-secondary, var(--di-muted)); font-size:.85rem; font-weight:500; transition:.2s; }
+    .nav-link:hover { color:var(--di-accent-ink); background:var(--di-accent-soft); }
+    .nav-active { color:var(--di-accent-ink); background:var(--di-accent-soft); border:1px solid var(--di-accent-line); }
     :global(.custom-scrollbar::-webkit-scrollbar) { width:6px; }
     :global(.custom-scrollbar::-webkit-scrollbar-thumb) { background:rgba(91,33,182,.18); border-radius:10px; }
 
     /* ---- Manager / admin shell chrome (light theme) --------------- */
-    .sh-sidebar { background-color:var(--di-surface, #fff); border-right:1px solid var(--di-border, #E9E4DC); }
-    .sh-brand { height:5rem; padding:0 1.5rem; border-bottom:1px solid var(--di-border, #E9E4DC); }
+    .sh-sidebar { background-color:var(--di-surface, #fff); border-right:1px solid var(--di-border); }
+    .sh-brand { height:5rem; padding:0 1.5rem; border-bottom:1px solid var(--di-border); }
     .sh-mark { width:2.125rem; height:2.125rem; border-radius:11px; }
-    .sh-brand-name { font-size:1.2rem; font-weight:700; letter-spacing:.01em; color:var(--di-text, #262230); }
+    .sh-brand-name { font-size:1.2rem; font-weight:700; letter-spacing:.01em; color:var(--di-text); }
     .sh-brand-name em { font-family:Georgia,'Times New Roman',serif; font-style:italic; color:var(--di-accent, #6D28D9); }
     .sh-nav { padding:1.25rem .875rem; display:flex; flex-direction:column; gap:1.35rem; }
-    .sh-nav-label { padding:0 .75rem; margin-bottom:.375rem; font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--di-muted, #6F6979); }
+    .sh-nav-label { padding:0 .75rem; margin-bottom:.375rem; font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--di-muted); }
     .nav-icon { display:inline-flex; flex:none; color:currentColor; opacity:.85; }
 
     @media (max-width: 640px) {

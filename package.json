@@ -4,14 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "concurrently -n api,web -c magenta,cyan -k \"npm:dev:backend\" \"npm:dev:frontend\"",
-    "dev:backend": ".\\.venv\\Scripts\\python.exe -m uvicorn main:app --app-dir backend --host 127.0.0.1 --port 8000",
+    "dev:backend": "node scripts/run-python.mjs -m uvicorn main:app --app-dir backend --host 127.0.0.1 --port 8000",
     "dev:frontend": "npm --prefix frontend run dev",
-    "start": "npm --prefix frontend run dev",
+    "start": "npm run dev",
     "build": "npm --prefix frontend run build",
     "preview": "npm --prefix frontend run preview",
     "check": "npm --prefix frontend run check",
     "test:admin": "npm --prefix frontend run test:admin",
-    "install:frontend": "npm --prefix frontend install"
+    "install:frontend": "npm --prefix frontend install",
+    "python": "node scripts/run-python.mjs",
+    "install:backend": "node scripts/run-python.mjs -m pip install -r backend/requirements.txt",
+    "test:responsive": "npm --prefix frontend run test:responsive"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

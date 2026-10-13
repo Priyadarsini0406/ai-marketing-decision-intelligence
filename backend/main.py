@@ -24,11 +24,12 @@ def read_root():
     return {"message": "Welcome to the Student Admission Marketing Intelligence API"}
 
 from api import leads, analytics, budget
-from api import auth, admin
+from api import auth, admin, student
 from api import datasets
 from api import workspace
 
 app.include_router(auth.router)
+app.include_router(student.router)
 app.include_router(admin.router)
 app.include_router(datasets.router)
 app.include_router(workspace.router)

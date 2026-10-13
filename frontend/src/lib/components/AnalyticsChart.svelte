@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
+    import { theme } from '$lib/theme.svelte';
     import type { ECharts, EChartsOption } from 'echarts';
     type Series = { name: string; values: (number | null)[] };
     let { title, categories, series, kind = 'bar', unit = '', description = '' }: {
@@ -10,24 +11,31 @@
     let chart: ECharts | undefined;
     const hasData = $derived(categories.length > 0 && series.some(item => item.values.some(value => value != null && Number.isFinite(value))));
     const options = $derived.by((): EChartsOption => {
-        const palette = ['#6D28D9', '#7C3AED', '#4C1D95', '#5B21B6', '#7C3AED', '#4C1D95'];
+        const light = theme.current === 'light';
+        const palette = light
+            ? ['#7C3AED', '#A15C16', '#B13BC9', '#256B4C', '#5B21B6', '#A32B44']
+            : ['#B56AF2', '#F4BC65', '#E67DDB', '#8DE8B1', '#8C6CFF', '#F18A9D'];
+        const muted = light ? '#61516F' : '#BFC0D4';
+        const surface = light ? '#FFFFFF' : '#111426';
+        const ink = light ? '#241735' : '#F5F1FF';
+        const gridLine = light ? '#7C3AED18' : '#D5AEFF24';
         const common: EChartsOption = {
             color: palette, backgroundColor: 'transparent', animation: !reduced, animationDuration: 650, animationDurationUpdate: reduced ? 0 : 350,
-            textStyle: { color: '#6F6979', fontFamily: 'Inter, sans-serif' },
+            textStyle: { color: muted, fontFamily: 'Inter, sans-serif' },
             aria: { enabled: true },
-            tooltip: { trigger: kind === 'bar' || kind === 'line' ? 'axis' : 'item', confine: true, backgroundColor: '#FFFFFF', borderColor: '#E7D6FA', borderWidth: 1, textStyle: { color: '#262230' }, extraCssText: 'box-shadow: 0 10px 30px -18px rgba(38,34,48,.45); border-radius: 12px;' },
-            legend: { type: 'scroll', bottom: 0, textStyle: { color: '#6F6979' } }
+            tooltip: { trigger: kind === 'bar' || kind === 'line' ? 'axis' : 'item', confine: true, backgroundColor: surface, borderColor: gridLine, borderWidth: 1, textStyle: { color: ink }, extraCssText: 'box-shadow: 0 10px 30px -18px rgba(38,34,48,.45); border-radius: 12px;' },
+            legend: { type: 'scroll', bottom: 0, textStyle: { color: muted } }
         };
         if (kind === 'line') return { ...common,
             grid: { left: 15, right: 25, top: 35, bottom: 75, containLabel: true },
             xAxis: { type: 'category', data: categories, boundaryGap: categories.length === 1,
-                axisLine: { lineStyle: { color: '#6D28D920' } }, axisTick: { show: false },
-                axisLabel: { color: '#6F6979', fontSize: 10, width: 100, overflow: 'truncate', hideOverlap: true } },
-            yAxis: { type: 'value', name: unit, nameTextStyle: { color: '#6F6979' }, splitLine: { lineStyle: { color: '#6D28D90D', type: 'dashed' } }, axisLabel: { color: '#6F6979' } },
+                axisLine: { lineStyle: { color: gridLine } }, axisTick: { show: false },
+                axisLabel: { color: muted, fontSize: 10, width: 100, overflow: 'truncate', hideOverlap: true } },
+            yAxis: { type: 'value', name: unit, nameTextStyle: { color: muted }, splitLine: { lineStyle: { color: gridLine, type: 'dashed' } }, axisLabel: { color: muted } },
             series: series.map((item, index) => ({ name: item.name, type: 'line', data: item.values,
                 smooth: 0.25, smoothMonotone: 'x', connectNulls: false, showSymbol: true, symbol: 'circle', symbolSize: 7,
                 lineStyle: { width: 3, color: palette[index % palette.length], shadowBlur: 9, shadowColor: palette[index % palette.length] + '70' },
-                itemStyle: { color: palette[index % palette.length], borderColor: '#F3EBFC', borderWidth: 2 },
+                itemStyle: { color: palette[index % palette.length], borderColor: surface, borderWidth: 2 },
                 areaStyle: { opacity: 1, color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: palette[index % palette.length] + '24' }, { offset: 1, color: palette[index % palette.length] + '00' }] } },
                 emphasis: { focus: 'series', scale: 1.7, lineStyle: { width: 4 } }
             }))
@@ -36,14 +44,14 @@
             name: series[0]?.name,
             ...(kind === 'donut' ? { type: 'pie' as const, radius: ['42%', '68%'], center: ['50%', '44%'] } : { type: 'funnel' as const, left: '12%', top: 10, bottom: 50, width: '76%', gap: 5, sort: 'none' as const }),
             data: categories.map((name, index) => ({ name, value: series[0]?.values[index] ?? 0 })),
-            label: { show: kind === 'funnel', color: '#FFFFFF', formatter: '{b}: {c}' },
-            itemStyle: { borderColor: '#FFFFFF', borderWidth: 2 },
-            emphasis: { itemStyle: { shadowBlur: 18, shadowColor: '#6D28D960' }, label: { show: true, color: '#FFFFFF' } }
+            label: { show: kind === 'funnel', color: ink, backgroundColor: surface, padding: [4, 6], borderRadius: 4, formatter: '{b}: {c}' },
+            itemStyle: { borderColor: surface, borderWidth: 2 },
+            emphasis: { itemStyle: { shadowBlur: 18, shadowColor: '#6D28D960' }, label: { show: true, color: ink, backgroundColor: surface, padding: [4, 6], borderRadius: 4 } }
         }] };
         return { ...common,
             grid: { left: 12, right: 30, top: unit ? 35 : 15, bottom: 55, containLabel: true },
-            xAxis: { type: 'value', name: unit, nameLocation: 'middle', nameGap: 28, splitLine: { lineStyle: { color: '#6D28D90D' } }, axisLabel: { color: '#6F6979' } },
-            yAxis: { type: 'category', data: categories, inverse: true, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: '#6F6979', width: 125, overflow: 'truncate', fontSize: 11 } },
+            xAxis: { type: 'value', name: unit, nameLocation: 'middle', nameGap: 28, splitLine: { lineStyle: { color: gridLine } }, axisLabel: { color: muted } },
+            yAxis: { type: 'category', data: categories, inverse: true, axisTick: { show: false }, axisLine: { show: false }, axisLabel: { color: muted, width: 125, overflow: 'truncate', fontSize: 11 } },
             series: series.map((item, index) => ({ name: item.name, type: 'bar', data: item.values, barMaxWidth: 22,
                 itemStyle: { borderRadius: [0, 5, 5, 0], color: { type: 'linear', x: 0, y: 0, x2: 1, y2: 0, colorStops: [{ offset: 0, color: palette[index % palette.length] + '80' }, { offset: 1, color: palette[index % palette.length] }] } },
                 emphasis: { focus: 'series', itemStyle: { shadowBlur: 12, shadowColor: palette[index % palette.length] + '60' } }
@@ -76,5 +84,5 @@
     <details><summary>View chart data</summary><div class="chart-table"><table><thead><tr><th>Category</th>{#each series as item}<th>{item.name}{unit ? ` (${unit})` : ''}</th>{/each}</tr></thead><tbody>{#each categories as category, index}<tr><th>{category}</th>{#each series as item}<td>{item.values[index] == null ? 'Unavailable' : item.values[index]?.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>{/each}</tr>{/each}</tbody></table></div></details>
 </section>
 <style>
-    .analytics-chart{min-width:0;padding:22px;border:1px solid #E9E4DC;border-radius:16px;background:#FFFFFF;margin:20px 0;box-shadow:0 10px 30px -22px #26223033}.chart-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.chart-eyebrow{font-size:9px;letter-spacing:.18em;color:#6D28D9;margin:0 0 7px}h2{font-size:16px;font-weight:650;color:#262230}.chart-unit{font-size:10px;color:#5B21B6;background:#F3EBFC;border:1px solid #E7D6FA;border-radius:6px;padding:5px 8px}.chart-description,.chart-empty{font-size:12px;color:#6F6979;line-height:1.6;margin-top:12px}.chart-canvas{width:100%;min-width:0;margin-top:15px}.chart-canvas.empty{display:none}summary{cursor:pointer;font-size:11px;color:#5B21B6;padding-top:12px;border-top:1px solid #E9E4DC}.chart-table{overflow:auto}table{width:100%;text-align:left;font-size:12px;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #E9E4DC;color:#6F6979}summary:focus-visible{outline:2px solid #6D28D9;outline-offset:4px}@media(max-width:600px){.analytics-chart{padding:14px}.chart-heading{align-items:start}h2{font-size:14px}}
+    .analytics-chart{min-width:0;padding:22px;border:1px solid var(--di-border);border-radius:16px;background:var(--di-surface);margin:20px 0;box-shadow:0 10px 30px -22px #26223033}.chart-heading{display:flex;justify-content:space-between;gap:12px;align-items:center}.chart-eyebrow{font-size:9px;letter-spacing:.18em;color:var(--di-accent-ink);margin:0 0 7px}h2{font-size:16px;font-weight:650;color:var(--di-text)}.chart-unit{font-size:10px;color:var(--di-accent-ink);background:var(--di-accent-soft);border:1px solid var(--di-accent-line);border-radius:6px;padding:5px 8px}.chart-description,.chart-empty{font-size:12px;color:var(--di-muted);line-height:1.6;margin-top:12px}.chart-canvas{width:100%;min-width:0;margin-top:15px}.chart-canvas.empty{display:none}summary{cursor:pointer;font-size:11px;color:var(--di-accent-ink);padding-top:12px;border-top:1px solid var(--di-border)}.chart-table{overflow:auto}table{width:100%;text-align:left;font-size:12px;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--di-border);color:var(--di-muted)}summary:focus-visible{outline:2px solid #6D28D9;outline-offset:4px}@media(max-width:600px){.analytics-chart{padding:14px}.chart-heading{align-items:start}h2{font-size:14px}}
 </style>

@@ -19,23 +19,30 @@
 
 .di-light {
   /* Deep, rich Decision-Intel purple. */
+  --di-accent-fill: #6D28D9;
+  --di-on-accent: #FFFFFF;
+  --di-on-cta: #FFFFFF;
   --di-accent: #6D28D9;          /* fills: buttons, bars, active states */
   --di-accent-ink: #5B21B6;      /* copy: links, labels, icon tints */
   --di-accent-deep: #4C1D95;     /* highest-contrast text, hover inks */
-  --di-accent-soft: #F1EAFD;     /* lavender wash */
-  --di-accent-line: #DDD0F7;     /* lavender hairline */
+  --di-accent-soft: #EDE2FF;     /* lavender wash */
+  --di-accent-line: #CEB5F6;     /* lavender hairline */
   --di-accent-glow: rgba(91, 33, 182, .34);
-  --di-accent-sheen: linear-gradient(180deg, #7C3AED 0%, #6D28D9 46%, #5B21B6 100%);
+  --di-accent-sheen: linear-gradient(135deg, #7C3AED 0%, #6D28D9 48%, #9225B8 100%);
 
-  /* Warm neutral light surface. */
-  --di-bg: #F7F5F2;
+  /* Lavender canvas with crisp white panels and saturated violet accents. */
+  --di-bg: #F5F2FF;
   --di-surface: #FFFFFF;
-  --di-surface-muted: #FBFAF7;
-  --di-border: #E9E4DC;
-  --di-border-strong: #DED6C9;
-  --di-text: #262230;
-  --di-muted: #6F6979;
+  --di-surface-muted: #F0EAFB;
+  --di-border: #DDD2EF;
+  --di-border-strong: #BFAAD9;
+  --di-text: #241735;
+  --di-muted: #61516F;
 
+  --di-gold: #A15C16;
+  --di-gold-ink: #854A10;
+  --di-gold-soft: #FFF2DB;
+  --di-gold-sheen: linear-gradient(135deg, #B87726, #A15C16);
   --di-green-ink: #256B4C;
   --di-green-soft: #E7F2EC;
   --di-red-ink: #A32B44;
@@ -44,8 +51,8 @@
   --di-radius: 16px;
   --di-radius-sm: 12px;
   --di-radius-lg: 22px;
-  --di-shadow: 0 1px 2px rgba(38, 34, 48, .04), 0 10px 28px -18px rgba(38, 34, 48, .32);
-  --di-shadow-lift: 0 2px 4px rgba(38, 34, 48, .05), 0 20px 38px -24px rgba(38, 34, 48, .45);
+  --di-shadow: 0 2px 5px rgba(76, 29, 149, .06), 0 14px 32px -20px rgba(91, 33, 182, .30);
+  --di-shadow-lift: 0 4px 10px rgba(76, 29, 149, .08), 0 24px 44px -22px rgba(91, 33, 182, .32);
 
   /* Remap the app tokens for this scope so shared components inherit
      the light theme without being rewritten one class at a time. */
@@ -150,7 +157,7 @@
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
-.di-light .di-input::placeholder { color: color-mix(in srgb, var(--di-muted) 58%, var(--di-surface)); }
+.di-light .di-input::placeholder { color: var(--di-muted); }
 
 .di-light .di-input:hover { border-color: var(--di-accent-line); }
 
@@ -201,7 +208,7 @@
 
 .di-light .di-btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
-  background-image: linear-gradient(180deg, #8B5CF6 0%, #7C3AED 46%, #6D28D9 100%);
+  background-image: linear-gradient(135deg, #7C3AED 0%, #6D28D9 48%, #9225B8 100%);
   box-shadow: 0 16px 30px -14px rgba(91, 33, 182, .9), inset 0 1px 0 rgba(255, 255, 255, .34);
 }
 
@@ -233,9 +240,9 @@
    carry real ink weight in the deep purple, and a visited link stays
    in the same family rather than turning grey. */
 
-.di-light a { color: var(--di-accent-ink); }
-.di-light a:hover { color: var(--di-accent-deep); }
-.di-light a:visited { color: var(--di-accent-ink); }
+.di-light :where(a) { color: var(--di-accent-ink); }
+.di-light :where(a:hover) { color: var(--di-accent-deep); }
+.di-light :where(a:visited) { color: var(--di-accent-ink); }
 .di-light :is(.eyebrow, [class*='eyebrow'], .chart-eyebrow) { color: var(--di-accent-ink); }
 .di-light :is(.badge, .chart-unit) { color: var(--di-accent-ink); }
 .di-light :is(summary, .secondary, .action):not(button) { color: var(--di-accent-ink); }
@@ -306,7 +313,7 @@
   color-scheme: light;
 }
 
-.di-light :is(input, textarea)::placeholder { color: color-mix(in srgb, var(--di-muted) 58%, var(--di-surface)); }
+.di-light :is(input, textarea)::placeholder { color: var(--di-muted); }
 
 /* Selects: no native grey widget, purple chevron, themed option list.
    The chevron is !important because a component `background` shorthand would
@@ -482,9 +489,9 @@ html.di-light { color-scheme: light; }
 html.di-light body {
   background-color: var(--di-bg);
   background-image:
-    radial-gradient(1100px circle at 6% -8%, rgba(109, 40, 217, .10) 0%, transparent 58%),
-    radial-gradient(900px circle at 104% 8%, rgba(76, 29, 149, .07) 0%, transparent 56%),
-    radial-gradient(760px circle at 50% 112%, rgba(124, 58, 237, .07) 0%, transparent 60%);
+    radial-gradient(1000px circle at 2% -10%, rgba(124, 58, 237, .17) 0%, transparent 60%),
+    radial-gradient(820px circle at 104% 12%, rgba(244, 188, 101, .18) 0%, transparent 56%),
+    radial-gradient(900px circle at 50% 110%, rgba(180, 72, 220, .11) 0%, transparent 60%);
   background-repeat: no-repeat;
   background-attachment: fixed;
   color: var(--di-text);
@@ -581,4 +588,35 @@ html.di-light .dashboard-card {
 @keyframes di-light-active-navigation {
   from { box-shadow: 0 0 0 #6D28D900; }
   to { box-shadow: 0 0 15px #6D28D91f; }
+}
+
+/* More color and depth across light-mode surfaces, with opaque text areas. */
+html.di-light :is(.di-card, .bg-card, .dashboard-card) {
+  background: linear-gradient(155deg, #FFFFFF 30%, #FAF7FF 100%);
+  box-shadow: var(--di-shadow);
+}
+html.di-light :is(.sh-sidebar, .st-sidebar) {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F4EDFF 100%);
+}
+html.di-light :is(.sh-brand, .st-brand) {
+  background: linear-gradient(120deg, #F3EAFF, #FFFFFF 75%);
+  border-bottom-color: var(--di-accent-line);
+}
+html.di-light :is(.nav-active, .st-nav-link.st-active) {
+  background: linear-gradient(110deg, #E6D5FF, #F4EAFF);
+  border-color: #BFA1EA;
+  color: #4C1D95;
+  box-shadow: inset 3px 0 0 #7C3AED, 0 5px 14px -10px rgba(109, 40, 217, .45);
+}
+html.di-light :is(.di-eyebrow, .chart-eyebrow) {
+  color: var(--di-accent-ink);
+}
+html.di-light thead {
+  background-color: #F1E9FC;
+}
+@media (hover: hover) and (pointer: fine) {
+  html.di-light :is(.di-card, .bg-card, .dashboard-card):hover {
+    border-color: var(--di-accent-line);
+    box-shadow: var(--di-shadow-lift);
+  }
 }

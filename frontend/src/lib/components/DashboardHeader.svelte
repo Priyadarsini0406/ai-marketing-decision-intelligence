@@ -141,7 +141,7 @@
 		outline-offset: 3px;
 	}
 
-	@media (min-width: 48rem) {
+	@media (min-width: 64rem) {
 		.di-header-burger { display: none; }
 	}
 
@@ -151,4 +151,11 @@
 		gap: .625rem;
 		flex: none;
 	}
+@media (max-width: 29.99rem) {
+        .di-header { gap: .5rem; padding-inline: .75rem; }
+        .di-header-lead { gap: .5rem; flex: 1; }
+        .di-header-title { font-size: .9375rem; }
+        .di-header-actions { gap: .375rem; }
+        .di-header-burger { width: 2.75rem; height: 2.75rem; }
+    }
 </style>

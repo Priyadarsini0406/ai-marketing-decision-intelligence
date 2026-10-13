@@ -4,6 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
+		"test:responsive": "playwright test --config playwright.contrast.config.ts",
 		"test:admin": "playwright test",
 		"dev": "vite dev",
 		"build": "vite build",

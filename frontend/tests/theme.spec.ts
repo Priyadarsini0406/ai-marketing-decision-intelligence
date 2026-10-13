@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
-const DARK_BG = 'rgb(9, 8, 13)';       // #09080d, design of record
-const LIGHT_BG = 'rgb(247, 245, 242)'; // #F7F5F2
+const DARK_BG = 'rgb(8, 12, 24)';       // #080C18, design of record
+const LIGHT_BG = 'rgb(245, 242, 255)'; // #F5F2FF
 
 /**
  * Navigates and waits for hydration. The theme class is applied pre-paint by

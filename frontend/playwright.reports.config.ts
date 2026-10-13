@@ -6,9 +6,9 @@ export default defineConfig({
     testMatch: 'reports.spec.ts',
     workers: 1,
     timeout: 60000,
-    use: { baseURL: 'http://127.0.0.1:5177', channel: 'chrome', trace: 'retain-on-failure' },
+    use: { baseURL: 'http://127.0.0.1:5177', channel: process.env.PLAYWRIGHT_CHANNEL || 'chrome', trace: 'retain-on-failure' },
     webServer: {
-        command: 'npm.cmd run dev -- --host 127.0.0.1 --port 5177 --strictPort',
+        command: 'node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5177 --strictPort',
         url: 'http://127.0.0.1:5177',
         reuseExistingServer: false
     }

@@ -104,23 +104,23 @@
 		user-select: none;
 
 		/* Dark theme (the design of record): a violet atmosphere. */
-		--di-amb-wash-a: rgba(164, 123, 224, 0.20);
+		--di-amb-wash-a: rgba(181, 106, 242, 0.20);
 		--di-amb-wash-b: rgba(124, 58, 237, 0.13);
-		--di-amb-wave: #A47BE0;
+		--di-amb-wave: #B56AF2;
 		--di-amb-line: rgba(200, 165, 240, 0.55);
 		--di-amb-dot: rgba(201, 170, 245, 0.9);
-		--di-amb-dot-field: rgba(164, 123, 224, 0.30);
-		--di-amb-data-bar: rgba(164, 123, 224, 0.22);
+		--di-amb-dot-field: rgba(181, 106, 242, 0.30);
+		--di-amb-data-bar: rgba(181, 106, 242, 0.22);
 		--di-amb-data-bar-strong: rgba(196, 160, 245, 0.34);
-		--di-amb-data-line: rgba(164, 123, 224, 0.18);
+		--di-amb-data-line: rgba(181, 106, 242, 0.18);
 		--di-amb-data-line-strong: rgba(201, 170, 245, 0.55);
 	}
 
 	/* Light theme: the same composition, remapped to a pale lavender so the
 	   page reads as a lit surface rather than a blank sheet. */
 	:global(html.di-light) .ambient {
-		--di-amb-wash-a: rgba(109, 40, 217, 0.13);
-		--di-amb-wash-b: rgba(91, 33, 182, 0.09);
+		--di-amb-wash-a: rgba(124, 58, 237, 0.18);
+		--di-amb-wash-b: rgba(244, 188, 101, 0.15);
 		--di-amb-wave: #6D28D9;
 		--di-amb-line: rgba(91, 33, 182, 0.30);
 		--di-amb-dot: rgba(109, 40, 217, 0.5);

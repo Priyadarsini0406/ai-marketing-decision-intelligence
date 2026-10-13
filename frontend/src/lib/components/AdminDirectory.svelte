@@ -1,6 +1,5 @@
 <script lang="ts">
     import { tick } from 'svelte';
-    import { managerLeads } from '$lib/manager-demo';
     import { api, type User } from '$lib/api';
     import DataTable from '$lib/DataTable.svelte';
     import OutlineIcon from '$lib/components/OutlineIcon.svelte';
@@ -8,10 +7,12 @@
     let { view }: { view: 'students' | 'managers' } = $props();
     const MANAGER_ROLES = ['admission_manager', 'marketing_manager'];
     const ROLE_LABEL: Record<string, string> = { admission_manager: 'Admission Manager', marketing_manager: 'Marketing Manager' };
+    type StudentRecord = { id: string; name: string; email: string; active: boolean; profile: Record<string, string | number>; enquiry_count: number; latest_enquiry: { course_interested?: string; preferred_intake?: string; qualification?: string; institution?: string; academic_score?: number; location?: string; status?: string; created_at?: number } | null };
 
     let search = $state('');
     let status = $state('All statuses');
     let accounts = $state<User[]>([]);
+    let studentRecords = $state<StudentRecord[]>([]);
     let loadError = $state('');
     let name = $state('');
     let email = $state('');
@@ -26,9 +27,9 @@
     let firstInput = $state<HTMLInputElement>();
 
     async function loadAccounts() {
-        if (view !== 'managers') return;
         try {
-            accounts = await api('/admin/users');
+            if (view === 'students') studentRecords = await api('/admin/students');
+            else accounts = await api('/admin/users');
             loadError = '';
         } catch (e) {
             loadError = (e as Error).message;
@@ -38,15 +39,6 @@
         void view;
         void loadAccounts();
     });
-
-    function assignmentsFor(person: string) {
-        const leads = managerLeads.filter((item) => item.assigned_to === person);
-        return {
-            assigned_students: leads.length,
-            programs: [...new Set(leads.map((item) => item.course_interested))].join(', ') || 'No assignments',
-            students: leads.map((item) => item.student_name).join(', ') || 'No assignments'
-        };
-    }
 
     const managerAccounts = $derived(
         accounts
@@ -60,33 +52,35 @@
             Email: account.email,
             Role: ROLE_LABEL[account.role] ?? account.role,
             Status: account.active ? 'Active' : 'Inactive',
-            ...assignmentsFor(account.name)
+            assigned_students: 0,
+            programs: 'No assignments',
+            students: 'No assignments'
         }))
     );
 
-    const students = $derived(
-        managerLeads.filter(
-            (item) =>
-                (status === 'All statuses' || item.lead_status === status) &&
-                [item.student_name, item.email, item.course_interested, item.assigned_to, item.location].some((value) =>
-                    value.toLowerCase().includes(search.trim().toLowerCase())
-                )
-        )
-    );
+    const students = $derived(studentRecords.filter((item) => {
+        const enquiry = item.latest_enquiry;
+        const currentStatus = enquiry?.status ?? 'Registered';
+        const profile = item.profile ?? {};
+        return (status === 'All statuses' || currentStatus === status) &&
+            [item.name, item.email, enquiry?.course_interested, enquiry?.qualification ?? profile.qualification,
+             enquiry?.location ?? profile.city, enquiry?.institution ?? profile.institution]
+                .some((value) => String(value ?? '').toLowerCase().includes(search.trim().toLowerCase()));
+    }));
 
     const cards = $derived(
         view === 'students'
             ? [
-                  { label: 'Student records', value: managerLeads.length },
-                  { label: 'Applications', value: managerLeads.filter((item) => item.lead_status === 'Application').length },
-                  { label: 'Admitted', value: managerLeads.filter((item) => item.lead_status === 'Admitted').length },
-                  { label: 'Programs covered', value: new Set(managerLeads.map((item) => item.course_interested)).size }
+                  { label: 'Student records', value: studentRecords.length },
+                  { label: 'Enquiries submitted', value: studentRecords.reduce((sum, item) => sum + item.enquiry_count, 0) },
+                  { label: 'Active accounts', value: studentRecords.filter((item) => item.active).length },
+                  { label: 'Programs covered', value: new Set(studentRecords.map((item) => item.latest_enquiry?.course_interested ?? item.profile.course_interested).filter(Boolean)).size }
               ]
             : [
                   { label: 'Manager accounts', value: accounts.filter((account) => MANAGER_ROLES.includes(account.role)).length },
                   { label: 'Active managers', value: accounts.filter((account) => MANAGER_ROLES.includes(account.role) && account.active).length },
-                  { label: 'Assigned students', value: managerLeads.length },
-                  { label: 'Programs covered', value: new Set(managerLeads.map((item) => item.course_interested)).size }
+                  { label: 'Assigned students', value: 0 },
+                  { label: 'Programs covered', value: 0 }
               ]
     );
 
@@ -151,7 +145,7 @@
             <h1>{view === 'students' ? 'Students' : 'Managers'}</h1>
             <p>
                 {view === 'students'
-                    ? 'Student enquiries, program interests, and admission progress.'
+                ? 'Registered student accounts and their saved admission enquiries.'
                     : 'Manager sign-in accounts, student assignments, and program coverage.'}
             </p>
         </div>
@@ -228,8 +222,7 @@
                 <div class="field">
                     <label for="student-status">Admission status</label>
                     <select id="student-status" bind:value={status}>
-                        <option>All statuses</option>
-                        {#each [...new Set(managerLeads.map((item) => item.lead_status))] as value}<option>{value}</option>{/each}
+                        <option>All statuses</option><option>Registered</option><option>Submitted</option><option>Under Review</option><option>Counselling</option><option>Application</option><option>Admitted</option><option>Not Converted</option>
                     </select>
                 </div>
             {/if}
@@ -242,9 +235,9 @@
             <p class="note">Showing {managerRows.length} of {accounts.filter((account) => MANAGER_ROLES.includes(account.role)).length} manager accounts</p>
             <DataTable rows={managerRows} empty="No manager accounts yet. Use Add manager to create the first one." />
         {:else}
-            <p class="note">Directory records from the supplied admission data. Sign-in accounts are managed separately under User Accounts.</p>
-            <p class="note">Showing {students.length} of {managerLeads.length} records</p>
-            <DataTable rows={students.map((item) => ({ Student: item.student_name, Email: item.email, Phone: item.phone, Program: item.course_interested, Intake: item.preferred_intake, Location: item.location, Qualification: item.qualification, 'Academic score (%)': item.academic_score, Status: item.lead_status, Manager: item.assigned_to, Source: item.lead_source, 'Enquiry date': item.enquiry_date }))} empty="No records match these filters." />
+            <p class="note">Student registrations and enquiry details are loaded from the shared database. Enquiry details are saved from the student portal.</p>
+            <p class="note">Showing {students.length} of {studentRecords.length} student accounts and saved lead records</p>
+            <DataTable rows={students.map((item) => ({ Student: item.name, Email: item.email, Phone: item.profile.mobile ?? '—', Program: item.latest_enquiry?.course_interested ?? item.profile.course_interested ?? '—', Intake: item.latest_enquiry?.preferred_intake ?? '—', Location: item.latest_enquiry?.location ?? item.profile.city ?? '—', Qualification: item.latest_enquiry?.qualification ?? item.profile.qualification ?? '—', 'Academic score (%)': item.latest_enquiry?.academic_score ?? '—', Status: item.latest_enquiry?.status ?? 'Registered', Enquiries: item.enquiry_count, Account: item.active ? 'Active' : 'Inactive' }))} empty="No student accounts match these filters." />
         {/if}
     </section>
 </div>
@@ -252,39 +245,39 @@
 <style>
     .directory { max-width:1300px; }
     header { display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; align-items:center; }
-    h1 { font-size:30px; font-weight:700; margin:8px 0; color:var(--di-text, #262230); }
-    h2 { font-size:18px; font-weight:650; margin:0 0 4px; color:var(--di-text, #262230); }
-    p { font-size:14px; color:var(--di-muted, #6F6979); line-height:1.7; }
+    h1 { font-size:30px; font-weight:700; margin:8px 0; color:var(--di-text); }
+    h2 { font-size:18px; font-weight:650; margin:0 0 4px; color:var(--di-text); }
+    p { font-size:14px; color:var(--di-muted); line-height:1.7; }
     .eyebrow { font-size:10px; color:var(--di-accent, #6D28D9); letter-spacing:.18em; font-weight:700; text-transform:uppercase; }
     .stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; margin:24px 0; }
-    .panel { min-width:0; padding:22px; border:1px solid var(--di-border, #E9E4DC); border-radius:16px; background-color:var(--di-surface, #fff); box-shadow:var(--di-shadow, 0 1px 2px rgba(38,34,48,.04)); }
+    .panel { min-width:0; padding:22px; border:1px solid var(--di-border); border-radius:16px; background-color:var(--di-surface, #fff); box-shadow:var(--di-shadow, 0 1px 2px rgba(38,34,48,.04)); }
     .panel + .panel { margin-top:22px; }
-    .stats span { font-size:12px; color:var(--di-muted, #6F6979); }
-    .stats strong { display:block; font-size:28px; margin-top:10px; color:var(--di-text, #262230); }
+    .stats span { font-size:12px; color:var(--di-muted); }
+    .stats strong { display:block; font-size:28px; margin-top:10px; color:var(--di-text); }
     .toolbar { display:flex; gap:16px; flex-wrap:wrap; align-items:end; }
-    .toolbar label, .field { display:grid; gap:8px; font-size:12px; color:var(--di-muted, #6F6979); }
+    .toolbar label, .field { display:grid; gap:8px; font-size:12px; color:var(--di-muted); }
     .toolbar > label { flex:1; min-width:220px; }
-    .toolbar input, .toolbar select { min-width:0; width:100%; background-color:var(--di-surface, #fff); border:1px solid var(--di-border-strong, #DED6C9); border-radius:12px; padding:11px 13px; color:var(--di-text, #262230); font:inherit; font-size:14px; }
+    .toolbar input, .toolbar select { min-width:0; width:100%; background-color:var(--di-surface, #fff); border:1px solid var(--di-border-strong); border-radius:12px; padding:11px 13px; color:var(--di-text); font:inherit; font-size:14px; }
 
     .editor { scroll-margin-top:20px; }
     .editor-head { display:flex; align-items:flex-start; gap:.75rem; margin-bottom:1.25rem; }
     .editor-head p { font-size:13px; margin:0; }
-    .editor-icon { display:grid; place-items:center; width:2.5rem; height:2.5rem; flex:none; border-radius:12px; background-color:var(--di-accent-soft, #F3EBFC); border:1px solid var(--di-accent-line, #E7D6FA); color:var(--di-accent-ink, #5B21B6); }
+    .editor-icon { display:grid; place-items:center; width:2.5rem; height:2.5rem; flex:none; border-radius:12px; background-color:var(--di-accent-soft); border:1px solid var(--di-accent-line); color:var(--di-accent-ink); }
     form { display:grid; gap:1.125rem; }
     .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.125rem; }
     .di-hint.inline { display:inline; font-weight:400; }
     .password { position:relative; }
     .password .di-input { padding-right:2.875rem; }
-    .reveal { position:absolute; right:.5rem; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:2rem; height:2rem; border:0; border-radius:8px; background:transparent; color:var(--di-muted, #6F6979); cursor:pointer; }
-    .reveal:hover { color:var(--di-accent-ink, #5B21B6); background:var(--di-accent-soft, #F3EBFC); }
+    .reveal { position:absolute; right:.5rem; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:2rem; height:2rem; border:0; border-radius:8px; background:transparent; color:var(--di-muted); cursor:pointer; }
+    .reveal:hover { color:var(--di-accent-ink); background:var(--di-accent-soft); }
     .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
     button, .button { display:inline-flex; align-items:center; gap:.5rem; padding:10px 14px; border-radius:12px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
     .button { text-decoration:none; }
     .primary { background-image:var(--di-accent-sheen); color:#fff; border:1px solid transparent; box-shadow:0 10px 22px -12px rgba(91,33,182,.85); }
     .primary:hover:not(:disabled) { background-image:var(--di-accent-sheen); filter:brightness(1.06); }
-    .ghost { background-color:transparent; color:var(--di-muted, #6F6979); border:1px solid var(--di-border-strong, #DED6C9); }
-    .ghost:hover { background-color:var(--di-accent-soft, #F3EBFC); color:var(--di-accent-ink, #5B21B6); }
+    .ghost { background-color:transparent; color:var(--di-muted); border:1px solid var(--di-border-strong); }
+    .ghost:hover { background-color:var(--di-accent-soft); color:var(--di-accent-ink); }
     button:disabled { opacity:.5; cursor:not-allowed; }
     .note { font-size:11px; margin:16px 0 0; }
 

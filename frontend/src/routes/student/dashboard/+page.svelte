@@ -5,30 +5,21 @@
     import OutlineIcon from '$lib/components/OutlineIcon.svelte';
 
     let user = $state<User | null>(null);
-    onMount(async () => { try { user = await api('/auth/me'); } catch { window.location.assign('/login'); } });
-
-    type Enquiry = { program: string; date: string; status: string; updated: string };
-
-    const enquiries: Enquiry[] = [
-        { program: 'MCA', date: '12 Sep 2026', status: 'Application Started', updated: 'Today' },
-        { program: 'MBA', date: '05 Sep 2026', status: 'Counselling', updated: 'Yesterday' }
-    ];
-    const stages = [
-        { label: 'Enquiry Submitted', done: true },
-        { label: 'Counselling Completed', done: true },
-        { label: 'Application In Progress', done: true },
-        { label: 'Admission', done: false }
-    ];
-    const currentStage = 2;
-    const programme = 'MCA · 2027 Intake';
-    const applicationStatus = 'Application in progress';
-    const upcoming = { title: 'Counselling Session', when: '18 September 2026 · 11:00 AM', state: 'Confirmed' };
-
-    const activity = [
-        { text: 'Application details updated', when: 'Today' },
-        { text: 'Counselling session scheduled', when: 'This week' },
-        { text: 'MCA enquiry submitted', when: 'This week' }
-    ];
+    type Enquiry = { id: string; course_interested: string; preferred_intake?: string | null; status: string; created_at: number; updated_at: number };
+    let enquiries = $state<Enquiry[]>([]), loadError = $state('');
+    onMount(async () => {
+        try { user = await api('/auth/me'); enquiries = await api('/student/enquiries'); }
+        catch (e) { loadError = (e as Error).message; }
+    });
+    const date = (value: number) => new Date(value * 1000).toLocaleDateString();
+    const enquiryRows = $derived(enquiries.map((item) => ({ program: item.course_interested, date: date(item.created_at), status: item.status, updated: date(item.updated_at) })));
+    const latest = $derived(enquiries[0] ?? null);
+    const stages = ['Submitted', 'Under Review', 'Counselling', 'Application', 'Admitted'].map((label, index) => ({ label, done: index < Math.max(0, ['Submitted', 'Under Review', 'Counselling', 'Application', 'Admitted'].indexOf(latest?.status ?? 'Submitted')) }));
+    const currentStage = $derived(Math.max(0, ['Submitted', 'Under Review', 'Counselling', 'Application', 'Admitted'].indexOf(latest?.status ?? 'Submitted')));
+    const programme = $derived(latest ? `${latest.course_interested}${latest.preferred_intake ? ` · ${latest.preferred_intake}` : ''}` : String(user?.profile?.course_interested ?? 'No enquiry yet'));
+    const applicationStatus = $derived(latest?.status ?? 'No enquiry submitted');
+    const upcoming = $derived({ title: latest ? 'Latest enquiry' : 'Start your admission enquiry', when: latest ? `Submitted ${date(latest.created_at)}` : 'Your submitted enquiries will appear here', state: latest?.status ?? 'Not started' });
+    const activity = $derived(enquiries.slice(0, 3).map((item) => ({ text: `${item.course_interested} enquiry · ${item.status}`, when: date(item.updated_at) })));
 
     const quickActions = [
         { label: 'Submit Enquiry', hint: 'Start a new admission enquiry', href: '/student/enquiries/new', icon: 'new-enquiry' },
@@ -38,24 +29,26 @@
         { label: 'My Profile', hint: 'Keep your contact details current', href: '/student/profile', icon: 'profile' }
     ];
 
-    const tones: Record<string, string> = { 'Application Started': 'accent', Counselling: 'amber', 'Under Review': 'neutral', 'Admission Confirmed': 'green' };
+    const tones: Record<string, string> = { Submitted: 'accent', Counselling: 'amber', 'Under Review': 'neutral', Admitted: 'green' };
     const nextActions: Record<string, string> = {
-        'Application Started': 'Complete your application',
+        Submitted: 'Await review from admissions',
+        'Application': 'Complete your application',
         Counselling: 'Attend counselling session',
         'Under Review': 'Await review update',
-        'Admission Confirmed': 'Complete admission formalities'
+        Admitted: 'Complete admission formalities'
     };
     const toneOf = (status: string) => tones[status] ?? 'neutral';
     const actionFor = (status: string) => nextActions[status] ?? 'Await update from admissions';
 
     let firstName = $derived(user?.name.split(' ')[0] ?? '');
-    const activeEnquiries = enquiries.filter(item => item.status !== 'Admission Confirmed').length;
+    const activeEnquiries = $derived(enquiries.filter(item => !['Admitted', 'Not Converted'].includes(item.status)).length);
 </script>
 
 <svelte:head><title>Student Dashboard | DecisionIntel</title></svelte:head>
 
 {#if user}
 <div class="page" in:fly={{ y: 12, duration: 400 }}>
+    {#if loadError}<p role="alert" class="text-red-400">{loadError}</p>{/if}
 
     <header class="hero">
         <div class="hero-text">
@@ -170,6 +163,7 @@
                             </span>
                         </li>
                     {/each}
+                    {#if !activity.length}<li class="text-sm text-text-muted">No saved enquiry activity yet.</li>{/if}
                 </ul>
             </section>
         </div>
@@ -196,7 +190,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each enquiries as enquiry}
+                    {#each enquiryRows as enquiry}
                         <tr>
                             <td class="cell-strong">{enquiry.program}</td>
                             <td>{enquiry.date}</td>
@@ -205,6 +199,7 @@
                             <td class="cell-action"><a class="link" href="/student/enquiries/status" aria-label="View {enquiry.program} enquiry">View</a></td>
                         </tr>
                     {/each}
+                    {#if !enquiryRows.length}<tr><td colspan="5" class="text-text-muted">No enquiries yet. Start a new enquiry to see it here.</td></tr>{/if}
                 </tbody>
             </table>
         </div>
@@ -274,18 +269,18 @@
     .eyebrow { display: flex; align-items: center; gap: .4rem; font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--st-accent); }
     .stack-title { margin-top: .6rem; font-size: 1.0625rem; font-weight: 650; color: var(--st-text); }
     .stack-meta { margin-top: .4rem; display: flex; align-items: center; gap: .4rem; font-size: .8125rem; color: var(--st-text-muted); }
-    .confirmed { margin-top: .6rem; display: inline-block; font-size: .75rem; font-weight: 600; color: var(--st-green-ink); background-color: var(--st-green-soft); border: 1px solid #E7F2EC; border-radius: 999px; padding: .15rem .6rem; }
+    .confirmed { margin-top: .6rem; display: inline-block; font-size: .75rem; font-weight: 600; color: var(--st-green-ink); background-color: var(--st-green-soft); border: 1px solid var(--di-green-soft); border-radius: 999px; padding: .15rem .6rem; }
 
     .activity { list-style: none; margin: 0; padding: 0; display: grid; gap: .9rem; }
     .activity li { display: flex; gap: .7rem; align-items: flex-start; }
-    .activity-dot { width: .5rem; height: .5rem; margin-top: .4rem; flex: none; border-radius: 999px; background-color: var(--st-accent); }
+    .activity-dot { width: .5rem; height: .5rem; margin-top: .4rem; flex: none; border-radius: 999px; background-color: var(--di-accent-fill); }
     .activity-line { display: block; font-size: .875rem; color: var(--st-text); }
     .activity-when { display: block; margin-top: .1rem; font-size: .75rem; color: var(--st-text-muted); }
 
     .badge { display: inline-block; font-size: .75rem; font-weight: 600; padding: .2rem .6rem; border-radius: 999px; border: 1px solid transparent; white-space: nowrap; }
     .badge.accent { background-color: var(--st-accent-soft); border-color: var(--st-accent-line); color: var(--st-accent-ink); }
-    .badge.amber { background-color: var(--st-amber-soft); border-color: #F3EBFC; color: var(--st-amber-ink); }
-    .badge.green { background-color: var(--st-green-soft); border-color: #E7F2EC; color: var(--st-green-ink); }
+    .badge.amber { background-color: var(--st-amber-soft); border-color: var(--di-accent-soft); color: var(--st-amber-ink); }
+    .badge.green { background-color: var(--st-green-soft); border-color: var(--di-green-soft); color: var(--st-green-ink); }
     .badge.neutral { background-color: var(--st-surface-muted); border-color: var(--st-border); color: var(--st-text-muted); }
 
     .link { font-size: .8125rem; font-weight: 600; color: var(--st-accent); white-space: nowrap; }
