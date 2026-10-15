@@ -2,15 +2,21 @@
     import { onMount } from 'svelte';
     import { fly } from 'svelte/transition';
     import { api, type User } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     import OutlineIcon from '$lib/components/OutlineIcon.svelte';
 
     let user = $state<User | null>(null);
     type Enquiry = { id: string; course_interested: string; preferred_intake?: string | null; status: string; created_at: number; updated_at: number };
     let enquiries = $state<Enquiry[]>([]), loadError = $state('');
-    onMount(async () => {
-        try { user = await api('/auth/me'); enquiries = await api('/student/enquiries'); }
-        catch (e) { loadError = (e as Error).message; }
-    });
+    async function refreshDashboard() {
+        try {
+            const [currentUser, currentEnquiries] = await Promise.all([api('/auth/me'), api('/student/enquiries')]);
+            user = currentUser;
+            enquiries = currentEnquiries;
+            loadError = '';
+        } catch (e) { loadError = (e as Error).message; }
+    }
+    onMount(() => { void refreshDashboard(); return startLiveSync(refreshDashboard); });
     const date = (value: number) => new Date(value * 1000).toLocaleDateString();
     const enquiryRows = $derived(enquiries.map((item) => ({ program: item.course_interested, date: date(item.created_at), status: item.status, updated: date(item.updated_at) })));
     const latest = $derived(enquiries[0] ?? null);

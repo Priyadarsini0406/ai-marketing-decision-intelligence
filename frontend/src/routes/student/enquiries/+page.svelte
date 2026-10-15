@@ -1,11 +1,13 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { api } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     type Enquiry = { id: string; course_interested: string; status: string; created_at: number; updated_at: number };
     let items = $state<Enquiry[]>([]), query = $state(''), status = $state('All'), error = $state(''), loading = $state(true);
     let filtered = $derived(items.filter((item) => (status === 'All' || item.status === status) && `${item.course_interested} ${item.status}`.toLowerCase().includes(query.toLowerCase())));
     const date = (value: number) => new Date(value * 1000).toLocaleDateString();
-    onMount(async () => { try { items = await api('/student/enquiries'); } catch (e) { error = (e as Error).message; } finally { loading = false; } });
+    async function load() { try { items = await api('/student/enquiries'); } catch (e) { error = (e as Error).message; } finally { loading = false; } }
+    onMount(() => { void load(); return startLiveSync(load); });
 </script>
 <svelte:head><title>My Enquiries | DecisionIntel</title></svelte:head>
 <div class="space-y-6"><div class="flex flex-col sm:flex-row justify-between gap-4"><div><h1 class="text-3xl font-bold text-white">My Enquiries</h1><p class="text-text-secondary mt-2">View the enquiries you have submitted and their latest status.</p></div><a href="/student/enquiries/new" class="px-5 py-3 rounded-xl bg-cta text-white font-bold text-sm text-center">New Enquiry</a></div>

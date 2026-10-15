@@ -1,11 +1,13 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { api } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     type Enquiry = { id: string; course_interested: string; status: string; created_at: number; updated_at: number; remarks?: string | null };
     let enquiry = $state<Enquiry | null>(null), loading = $state(true), error = $state('');
     const steps = ['Submitted', 'Under Review', 'Counselling', 'Application', 'Admitted'];
     const activeIndex = $derived(Math.max(0, steps.indexOf(enquiry?.status ?? 'Submitted')));
-    onMount(async () => { try { const items: Enquiry[] = await api('/student/enquiries'); enquiry = items[0] ?? null; } catch (e) { error = (e as Error).message; } finally { loading = false; } });
+    async function load() { try { const items: Enquiry[] = await api('/student/enquiries'); enquiry = items[0] ?? null; } catch (e) { error = (e as Error).message; } finally { loading = false; } }
+    onMount(() => { void load(); return startLiveSync(load); });
     const date = (value: number) => new Date(value * 1000).toLocaleDateString();
 </script>
 <div class="max-w-3xl space-y-6"><div><h1 class="text-3xl font-bold text-white">Enquiry Status</h1><p class="text-text-secondary mt-2">Track the latest admission enquiry saved to your account.</p></div>

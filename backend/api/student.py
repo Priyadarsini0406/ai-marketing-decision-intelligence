@@ -70,6 +70,20 @@ def create_enquiry(data: EnquiryInput, user: User = Depends(current_user), db: S
                              status="Submitted", created_at=now, updated_at=now,
                              **data.model_dump())
     db.add(enquiry)
+    # Keep current admission-interest fields in the account profile so manager
+    # and admin directories, which share this record, reflect the latest student submission.
+    profile = dict(user.profile or {})
+    for profile_key, enquiry_key in {
+        "course_interested": "course_interested",
+        "qualification": "qualification",
+        "institution": "institution",
+        "mobile": "phone",
+        "city": "location",
+    }.items():
+        value = getattr(enquiry, enquiry_key)
+        if value is not None:
+            profile[profile_key] = value
+    user.profile = profile
     db.commit()
     db.refresh(enquiry)
     return enquiry_record(enquiry)

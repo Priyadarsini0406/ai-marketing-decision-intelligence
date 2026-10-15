@@ -2,10 +2,11 @@
     import RecordChart from '$lib/components/RecordChart.svelte';
     import { onMount } from 'svelte';
     import { api } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     type Report = {generated_at: number; configuration: {organization_name: string; currency: string}; summary: Record<string, number>; channels: Record<string, unknown>[]; simulations: Record<string, unknown>[]; predictions: Record<string, unknown>[]; leads: Record<string, unknown>[]; students: Record<string, unknown>[]; student_enquiries: Record<string, unknown>[]; datasets: Record<string, unknown>[]};
     let report = $state<Report | null>(null), error = $state(''), busy = $state(false);
-    async function load() { busy = true; error = ''; try { report = await api('/admin/reports'); } catch(e) { error = (e as Error).message; } finally { busy = false; } }
-    onMount(load);
+    async function load(showBusy = true) { if (showBusy) busy = true; error = ''; try { report = await api('/admin/reports'); } catch(e) { error = (e as Error).message; } finally { if (showBusy) busy = false; } }
+    onMount(() => { void load(); return startLiveSync(() => load(false)); });
     function download() { if (!report) return; const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], {type:'application/json'})); const a = document.createElement('a'); a.href = url; a.download = 'admission-report.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
     function display(value: unknown) { return value === null ? '—' : typeof value === 'object' ? JSON.stringify(value) : String(value); }
 </script>

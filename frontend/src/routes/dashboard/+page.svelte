@@ -3,6 +3,7 @@
   import { api, type User } from '$lib/api';
   import { managerCampaigns, managerFunnelStages, managerRecommendations, managerChannels } from '$lib/manager-demo';
   import { asPercent, workspaceOverview, type PredictionPreview, type WorkspaceOverview } from '$lib/ml-api';
+  import { startLiveSync } from '$lib/live-sync';
 
   let user = $state<User | null>(null);
   let firstName = $derived(user?.name.trim().split(/\s+/)[0] ?? '');
@@ -29,15 +30,16 @@
       : []
   );
 
-  async function loadOverview() {
-    busy = true;
+  async function loadOverview(showBusy = true) {
+    if (showBusy) busy = true;
     overviewError = '';
-    try { overview = await workspaceOverview(); } catch (error) { overviewError = (error as Error).message; } finally { busy = false; }
+    try { overview = await workspaceOverview(); overviewError = ''; } catch (error) { overviewError = (error as Error).message; } finally { if (showBusy) busy = false; }
   }
 
-  onMount(async () => {
-    try { user = await api('/auth/me'); } catch { user = null; }
-    await loadOverview();
+  onMount(() => {
+    const refreshUser = async () => { try { user = await api('/auth/me'); } catch { user = null; } };
+    void (async () => { await refreshUser(); await loadOverview(); })();
+    return startLiveSync(async () => { await refreshUser(); await loadOverview(false); });
   });
 </script>
 

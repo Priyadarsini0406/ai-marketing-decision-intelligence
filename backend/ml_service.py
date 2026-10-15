@@ -498,7 +498,7 @@ def frame_for_lead(lead, contract: dict | None = None) -> tuple[pd.DataFrame, st
     categorical = contract["categorical_features"]
 
     customer_id = getattr(lead, "customer_id", None)
-    if customer_id:
+    if customer_id and DATASET_PATH.exists():
         record = source_rows_cached().get(str(customer_id))
         if record is not None:
             return feature_frame(pd.DataFrame([record]), numeric, categorical), "dataset"

@@ -2,12 +2,14 @@
     import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
     import { onMount } from 'svelte';
     import { api, type User } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     let summary = $state<Record<string, number> | null>(null);
     let user = $state<User | null>(null);
     let firstName = $derived(user?.name.trim().split(/\s+/)[0] ?? '');
-    onMount(async () => {
-        try { user = await api('/auth/me'); } catch { user = null; }
-        try { summary = (await api('/admin/reports')).summary; } catch { summary = { students: 0, managers: 0, datasets: 0, leads: 0, student_enquiries: 0 }; }
+    async function loadSummary() { try { summary = (await api('/admin/reports')).summary; } catch { /* Keep the last successful summary during a transient error. */ } }
+    onMount(() => {
+        void (async () => { try { user = await api('/auth/me'); } catch { user = null; } await loadSummary(); })();
+        return startLiveSync(loadSummary);
     });
     const labels = [['Student Accounts', 'students'], ['Manager Accounts', 'managers'], ['Stored Datasets', 'datasets'], ['Student Enquiries', 'student_enquiries']];
 </script>

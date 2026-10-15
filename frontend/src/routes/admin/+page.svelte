@@ -1,8 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { api } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     let summary = $state<Record<string, number> | null>(null), error = $state('');
-    onMount(async () => { try { summary = (await api('/admin/reports')).summary; } catch(e) { error = (e as Error).message; } });
+    async function load() { try { summary = (await api('/admin/reports')).summary; error = ''; } catch(e) { error = (e as Error).message; } }
+    onMount(() => { void load(); return startLiveSync(load); });
 </script>
 <svelte:head><title>Admin overview | DecisionIntel</title></svelte:head>
 <h1>Administration</h1><p>Your team, data, and system in one place.</p>

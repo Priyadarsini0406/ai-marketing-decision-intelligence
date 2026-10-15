@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount, tick } from 'svelte';
     import { api, type User } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     let users = $state<User[]>([]), editing = $state(''), name = $state(''), email = $state(''), password = $state(''), role = $state('student'), active = $state(true), error = $state(''), message = $state(''), busy = $state(false), loading = $state(true);
     let editor: HTMLDivElement;
     let nameInput: HTMLInputElement;
@@ -9,7 +10,10 @@
     const filteredUsers = $derived(users.filter(user => (roleFilter === 'all' || user.role === roleFilter) && (statusFilter === 'all' || user.active === (statusFilter === 'active')) && `${user.name} ${user.email}`.toLowerCase().includes(search.toLowerCase())));
     async function refresh() { loading = true; error = ''; try { await load(); } catch(e) { error = (e as Error).message; } finally { loading = false; } }
     async function load() { users = await api('/admin/users'); }
-    onMount(async () => { try { await load(); } catch(e) { error = (e as Error).message; } finally { loading = false; } });
+    onMount(() => {
+        void (async () => { try { await load(); } catch(e) { error = (e as Error).message; } finally { loading = false; } })();
+        return startLiveSync(load);
+    });
     function reset() { editing = ''; name = ''; email = ''; password = ''; role = 'student'; active = true; }
     async function edit(user: User) {
         if (busy) return;

@@ -12,6 +12,7 @@ from api.auth import current_user
 from database.connection import get_db
 from database.models import Lead, ChannelMetric, BudgetSimulation, MLPrediction, StudentEnquiry
 from database.models import UserPreference
+from database.models import User
 from api.student_records import student_directory
 from typing import Literal
 
@@ -22,6 +23,37 @@ def students(user=Depends(current_user), db: Session = Depends(get_db)):
     if user.role not in ("admin", "admission_manager", "marketing_manager"):
         raise HTTPException(403, "Manager access required")
     return student_directory(db)
+
+@router.get("/student-intelligence")
+def student_intelligence(user=Depends(current_user), db: Session = Depends(get_db)):
+    """Return student-account details with model output only when a scored lead is linked."""
+    if user.role not in ("admin", "admission_manager", "marketing_manager"):
+        raise HTTPException(403, "Manager access required")
+    records = []
+    for account in db.query(User).filter(User.role == "student").order_by(User.name, User.email).all():
+        profile = account.profile or {}
+        enquiries = (db.query(StudentEnquiry)
+                     .filter(StudentEnquiry.student_user_id == account.id)
+                     .order_by(StudentEnquiry.created_at.desc()).all())
+        latest = enquiries[0] if enquiries else None
+        lead = db.query(Lead).filter(Lead.student_id == account.id).first()
+        prediction = db.query(MLPrediction).filter(MLPrediction.lead_id == lead.id).first() if lead else None
+        records.append({
+            "id": account.id,
+            "name": account.name,
+            "course_interested": profile.get("course_interested") if "course_interested" in profile else (latest.course_interested if latest else None),
+            "qualification": profile.get("qualification") if "qualification" in profile else (latest.qualification if latest else None),
+            "location": profile.get("city") if "city" in profile else (latest.location if latest else None),
+            "academic_score": latest.academic_score if latest else None,
+            "status": latest.status if latest else "Registered",
+            "enquiry_count": len(enquiries),
+            "lead_id": lead.id if lead else None,
+            "probability": prediction.conversion_probability if prediction else None,
+            "score": prediction.lead_score if prediction else None,
+            "segment": prediction.segment_name if prediction else None,
+            "is_sample": bool(lead and (lead.customer_id or "").startswith("SAMPLE-ACCOUNT-")),
+        })
+    return records
 
 class StudentEnquiryUpdate(BaseModel):
     status: Literal["Submitted", "Under Review", "Counselling", "Application", "Admitted", "Not Converted"]
@@ -114,9 +146,11 @@ def overview(db: Session = Depends(get_db)):
                                 'evidence': f'{len(members)} leads across {len(set(l.campaign_type for l in members))} campaign types',
                                 'qualification': 'Use the cohort breakdown to compare outcomes; small cohorts are uncertain.'})
     prediction_rows = db.query(MLPrediction, Lead).join(Lead, MLPrediction.lead_id == Lead.id).order_by(Lead.customer_id).limit(50).all()
-    prediction_preview = [{'lead_id': l.id, 'customer_id': l.customer_id, 'source': l.enquiry_source,
+    prediction_preview = [{'lead_id': l.id, 'customer_id': l.customer_id, 'student_name': l.student_name,
+                           'source': l.enquiry_source,
                            'probability': p.conversion_probability, 'score': p.lead_score,
                            'segment': p.segment_name,
+                           'is_sample': bool((l.customer_id or "").startswith("SAMPLE-ACCOUNT-")),
                            'observed_conversion': l.conversion} for p, l in prediction_rows]
     # Aggregates over every stored score, so the UI never has to infer totals from the 50-row preview.
     scored = db.query(MLPrediction.conversion_probability, MLPrediction.lead_score).all()
@@ -161,12 +195,14 @@ def model_and_frame(lead):
         raise HTTPException(409, str(error))
     return pipeline, contract, frame, frame_source
 
-def live_segment(pipeline, frame):
+def live_segment(pipeline, frame, is_sample=False):
     """The lead's real cluster, from the same fitted segmentation the import used."""
     import ml_service as svc
     try:
         artifact = load_segments(svc.SEGMENT_PATH.stat().st_mtime_ns)
         cluster, name = svc.assign_segments(artifact, pipeline, frame)
+        if is_sample:
+            name = [artifact.get("names", {}).get(int(cluster[0]), name[0])]
         return cluster[0], name[0]
     except (svc.PipelineError, FileNotFoundError):
         return None, None
@@ -178,14 +214,19 @@ def prediction(lead_id: str, explain: bool = False, db: Session = Depends(get_db
     import ml_service as svc
     pipeline, contract, frame, frame_source = model_and_frame(lead)
     probability = float(pipeline.predict_proba(frame)[0, 1])
-    cluster, segment = live_segment(pipeline, frame)
-    result = {"customer_id": lead.customer_id, "probability": probability,
+    is_sample = bool((lead.customer_id or "").startswith("SAMPLE-ACCOUNT-"))
+    cluster, segment = live_segment(pipeline, frame, is_sample)
+    result = {"customer_id": lead.customer_id, "student_name": lead.student_name,
+              "probability": probability,
               "score": svc.score_band(probability),
               "segment_cluster": cluster, "segment": segment,
               "model": contract.get("model", "lead_conversion_xgboost"),
               "feature_source": frame_source,
-              "note": "Live XGBoost inference. The model is refit on all dataset rows, "
-                      "so this is not an independent evaluation of the lead."}
+              "is_sample": is_sample,
+              "note": ("This account score uses synthetic website activity and imputed model fields. "
+                       "It is not a real admission decision." if is_sample else
+                       "Live XGBoost inference. The model is refit on all dataset rows, "
+                       "so this is not an independent evaluation of the lead.")}
     if explain:
         factor = svc.explain_frame(
             pipeline, frame, contract["numeric_features"], contract["categorical_features"], top_n=5
@@ -208,13 +249,13 @@ def segments(db: Session = Depends(get_db)):
     rows = db.query(MLPrediction.segment_cluster, MLPrediction.segment_name,
                     MLPrediction.conversion_probability, MLPrediction.lead_score,
                     Lead.website_visits, Lead.pages_per_visit, Lead.time_on_site,
-                    Lead.conversion).join(Lead, MLPrediction.lead_id == Lead.id).all()
+                    Lead.conversion, Lead.customer_id).join(Lead, MLPrediction.lead_id == Lead.id).all()
     if not rows: return []
 
     buckets = defaultdict(lambda: {"leads": 0, "probability": [], "high": 0,
                                    "visits": [], "pages": [], "time": [],
-                                   "conversions": 0, "known": 0})
-    for cluster, name, probability, score, visits, pages, time_on_site, conversion in rows:
+                                   "conversions": 0, "known": 0, "sample_leads": 0})
+    for cluster, name, probability, score, visits, pages, time_on_site, conversion, customer_id in rows:
         if cluster is None or not name: continue
         bucket = buckets[cluster]
         bucket["segment"] = name
@@ -226,6 +267,7 @@ def segments(db: Session = Depends(get_db)):
         bucket["time"].append(float(time_on_site or 0.0))
         bucket["known"] += int(conversion is not None)
         bucket["conversions"] += int(conversion is True)
+        bucket["sample_leads"] += int(str(customer_id or "").startswith("SAMPLE-ACCOUNT-"))
 
     def mean(values): return round(sum(values) / len(values), 4) if values else None
 
@@ -236,6 +278,7 @@ def segments(db: Session = Depends(get_db)):
              "average_pages_per_visit": mean(bucket["pages"]),
              "average_time_on_site": mean(bucket["time"]),
              "known_outcomes": bucket["known"], "conversions": bucket["conversions"],
+             "sample_leads": bucket["sample_leads"],
              "conversion_rate": round(bucket["conversions"] / bucket["known"], 4) if bucket["known"] else None}
             for cluster, bucket in sorted(buckets.items())]
 

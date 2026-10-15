@@ -111,6 +111,16 @@ The admin browser tests use installed Google Chrome and start a separate fronten
 
 Run `npm run python -- backend/train_model.py` from the project root. This trains and evaluates the conversion model, saves the model and metrics under `backend/artifacts`, and imports the 8,000 supplied leads with out-of-fold predictions into the existing pages. See [data/README.md](data/README.md) for inputs, repeat runs, and limitations.
 
+## Illustrative student account samples
+
+To add two clearly marked sample leads for existing student accounts, run:
+
+```powershell
+npm run python -- backend/seed_student_samples.py --email-one first@example.com --email-two second@example.com
+```
+
+The script uses each account's saved profile and enquiry details, adds synthetic website activity inputs, and generates XGBoost scores, SHAP explanations, and model segments. Sample rows are marked in the manager views and are not real admissions decisions or observed outcomes. Re-running the command updates the same two sample records.
+
 ## User dataset uploads
 
 All signed-in users can open **Upload datasets** in the dashboard (`/dashboard/datasets`). CSV uploads use the authenticated `POST /datasets` endpoint with the same 5 MB, 10,000-row, and 100-column validation as admin uploads. Uploaded files appear in the admin dataset inventory for review. Listing, previewing, renaming, and deleting stored datasets remain admin-only. Uploading does not automatically train a model or replace leads.

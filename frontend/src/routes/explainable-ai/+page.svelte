@@ -5,15 +5,19 @@
     factorLabel,
     factorValue,
     listLeads,
+    listStudentIntelligence,
     predictLead,
     storedPrediction,
     type LeadOption,
     type LeadPrediction,
-    type ShapFactor
+    type ShapFactor,
+    type StudentIntelligence
   } from '$lib/ml-api';
   import { onMount } from 'svelte';
+  import { startLiveSync } from '$lib/live-sync';
 
   let leads = $state<LeadOption[]>([]);
+  let students = $state<StudentIntelligence[]>([]);
   let selectedId = $state('');
   let result = $state<LeadPrediction | null>(null);
   let topPositive = $state<ShapFactor[]>([]);
@@ -52,14 +56,19 @@
     finally { busy = false; }
   }
 
-  onMount(async () => {
-    busy = true;
+  async function load(showBusy = false) {
+    if (showBusy) busy = true;
     try {
-      leads = await listLeads(100);
-      if (leads.length) { selectedId = leads[0].id; await explain(selectedId); }
+      const [leadResult, studentResult] = await Promise.allSettled([listLeads(100), listStudentIntelligence()]);
+      if (leadResult.status === 'fulfilled') leads = leadResult.value;
+      else throw leadResult.reason;
+      if (studentResult.status === 'fulfilled') students = studentResult.value;
+      else throw studentResult.reason;
+      if (!selectedId && leads.length) { selectedId = leads[0].id; await explain(selectedId); }
     } catch (e) { error = (e as Error).message; }
-    finally { busy = false; loaded = true; }
-  });
+    finally { if (showBusy) busy = false; loaded = true; }
+  }
+  onMount(() => { void load(true); return startLiveSync(() => load()); });
 </script>
 
 <svelte:head>
@@ -72,23 +81,32 @@
     <p class="mt-2 text-text-secondary">Understand the factors influencing admission conversion predictions.</p>
   </div>
 {#if error}<p role="alert" class="text-sm text-red-300">{error}</p>{/if}
-<AnalyticsChart title="SHAP feature contributions" categories={factors.map(factorLabel)} series={[{ name: 'Contribution', values: factors.map(item => item.shap_value) }]} description={result ? `TreeSHAP values from ${result.explanation_method ?? 'shap.TreeExplainer'} for lead ${result.customer_id ?? 'selected'}. Positive values raise the model's log-odds of conversion; negative values lower them.` : 'Select a lead to compute its SHAP explanation.'} unit="Contribution" />
+<AnalyticsChart title="SHAP feature contributions" categories={factors.map(factorLabel)} series={[{ name: 'Contribution', values: factors.map(item => item.shap_value) }]} description={result ? `TreeSHAP values from ${result.explanation_method ?? 'shap.TreeExplainer'} for ${result.student_name ?? result.customer_id ?? 'selected'}. Positive values raise the model's log-odds of conversion; negative values lower them.` : 'Select a lead to compute its SHAP explanation.'} unit="Contribution" />
 
 
   <div class="rounded-2xl border border-white/10 bg-card p-5">
     <label for="student-lead-select" class="block text-sm font-medium text-text-secondary">Student lead</label>
     <select id="student-lead-select" bind:value={selectedId} onchange={() => explain(selectedId)} disabled={busy || !leads.length} class="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 text-white md:max-w-xs">
       {#each leads as lead}
-        <option value={lead.id}>{lead.customer_id ?? lead.id}</option>
+        <option value={lead.id}>{lead.student_name ?? lead.customer_id ?? lead.id}</option>
       {/each}
     </select>
   </div>
+
+  <section class="rounded-2xl border border-white/10 bg-card p-5">
+    <h2 class="text-xl font-bold text-white">Student Account Explainability</h2>
+    <p class="mt-1 mb-4 text-sm text-text-secondary">Account profiles appear here; SHAP explanations are available only after a student is linked to a scored lead.</p>
+    <div class="overflow-x-auto"><table class="min-w-full text-left text-sm">
+      <thead class="border-b border-white/10 text-xs uppercase tracking-[0.15em] text-text-secondary"><tr><th class="px-3 py-3">Student</th><th class="px-3 py-3">Course</th><th class="px-3 py-3">Qualification</th><th class="px-3 py-3">Current status</th><th class="px-3 py-3">Explanation</th></tr></thead>
+      <tbody>{#each students as student}<tr class="border-b border-white/5 text-white"><td class="px-3 py-3">{student.name}</td><td class="px-3 py-3">{student.course_interested ?? '—'}</td><td class="px-3 py-3">{student.qualification ?? '—'}</td><td class="px-3 py-3">{student.status}</td><td class="px-3 py-3">{#if student.lead_id}<button class="text-accent hover:underline" onclick={() => { selectedId = student.lead_id!; explain(selectedId); }}>Explain linked lead</button>{:else}<span class="text-text-secondary">Unavailable — no linked lead data</span>{/if}</td></tr>{:else}<tr><td colspan="5" class="px-3 py-5 text-text-secondary">{loaded ? 'No student accounts found.' : 'Loading student accounts…'}</td></tr>{/each}</tbody>
+    </table></div>
+  </section>
 
   <div class="grid gap-6 xl:grid-cols-[1.1fr_1.4fr]">
     <div class="rounded-2xl border border-white/10 bg-card p-5">
       <h2 class="text-xl font-bold text-white">Prediction Summary</h2>
       <div class="mt-4 space-y-3 text-sm text-text-secondary">
-        <p><span class="text-white">Lead:</span> {result?.customer_id ?? '—'}</p>
+        <p><span class="text-white">Lead:</span> {result?.student_name ?? result?.customer_id ?? '—'}</p>
         <p><span class="text-white">Probability:</span> <span class="font-bold text-accent">{asPercent(result?.probability)}</span></p>
         <p><span class="text-white">Category:</span> {result ? `${result.score} Potential` : '—'}</p>
         <p><span class="text-white">Segment:</span> {result?.segment ?? '—'}</p>

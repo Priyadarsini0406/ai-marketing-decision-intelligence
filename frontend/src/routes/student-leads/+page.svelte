@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { api } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
 
     type Lead = {
         id: string; enquiry_id?: string | null; student_name: string; email?: string; phone?: string;
@@ -14,14 +15,14 @@
             .toLowerCase().includes(query.toLowerCase())
     ));
 
-    async function load() {
-        loading = true;
+    async function load(showLoading = true) {
+        if (showLoading) loading = true;
         error = '';
         try { leads = await api('/workspace/students'); }
         catch (e) { error = (e as Error).message; }
-        finally { loading = false; }
+        finally { if (showLoading) loading = false; }
     }
-    onMount(() => { void load(); });
+    onMount(() => { void load(); return startLiveSync(() => load(false)); });
 
     async function add(event: SubmitEvent) {
         event.preventDefault();

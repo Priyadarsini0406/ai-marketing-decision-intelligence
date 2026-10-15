@@ -3,6 +3,7 @@
     import { api, type User } from '$lib/api';
     import DataTable from '$lib/DataTable.svelte';
     import OutlineIcon from '$lib/components/OutlineIcon.svelte';
+    import { startLiveSync } from '$lib/live-sync';
 
     let { view }: { view: 'students' | 'managers' } = $props();
     const MANAGER_ROLES = ['admission_manager', 'marketing_manager'];
@@ -38,6 +39,7 @@
     $effect(() => {
         void view;
         void loadAccounts();
+        return startLiveSync(loadAccounts);
     });
 
     const managerAccounts = $derived(
@@ -63,8 +65,8 @@
         const currentStatus = enquiry?.status ?? 'Registered';
         const profile = item.profile ?? {};
         return (status === 'All statuses' || currentStatus === status) &&
-            [item.name, item.email, enquiry?.course_interested, enquiry?.qualification ?? profile.qualification,
-             enquiry?.location ?? profile.city, enquiry?.institution ?? profile.institution]
+            [item.name, item.email, profile.course_interested ?? enquiry?.course_interested, profile.qualification ?? enquiry?.qualification,
+             profile.city ?? enquiry?.location, profile.institution ?? enquiry?.institution]
                 .some((value) => String(value ?? '').toLowerCase().includes(search.trim().toLowerCase()));
     }));
 
@@ -237,7 +239,7 @@
         {:else}
             <p class="note">Student registrations and enquiry details are loaded from the shared database. Enquiry details are saved from the student portal.</p>
             <p class="note">Showing {students.length} of {studentRecords.length} student accounts and saved lead records</p>
-            <DataTable rows={students.map((item) => ({ Student: item.name, Email: item.email, Phone: item.profile.mobile ?? '—', Program: item.latest_enquiry?.course_interested ?? item.profile.course_interested ?? '—', Intake: item.latest_enquiry?.preferred_intake ?? '—', Location: item.latest_enquiry?.location ?? item.profile.city ?? '—', Qualification: item.latest_enquiry?.qualification ?? item.profile.qualification ?? '—', 'Academic score (%)': item.latest_enquiry?.academic_score ?? '—', Status: item.latest_enquiry?.status ?? 'Registered', Enquiries: item.enquiry_count, Account: item.active ? 'Active' : 'Inactive' }))} empty="No student accounts match these filters." />
+            <DataTable rows={students.map((item) => ({ Student: item.name, Email: item.email, Phone: item.profile.mobile ?? '—', Program: item.profile.course_interested ?? item.latest_enquiry?.course_interested ?? '—', Intake: item.latest_enquiry?.preferred_intake ?? '—', Location: item.profile.city ?? item.latest_enquiry?.location ?? '—', Qualification: item.profile.qualification ?? item.latest_enquiry?.qualification ?? '—', 'Academic score (%)': item.latest_enquiry?.academic_score ?? '—', Status: item.latest_enquiry?.status ?? 'Registered', Enquiries: item.enquiry_count, Account: item.active ? 'Active' : 'Inactive' }))} empty="No student accounts match these filters." />
         {/if}
     </section>
 </div>

@@ -16,12 +16,14 @@ export type ShapFactor = {
 /** Live inference for one lead, plus SHAP factors when `explain` is set. */
 export type LeadPrediction = {
     customer_id: string | null;
+    student_name: string | null;
     probability: number;
     score: ScoreBand;
     segment_cluster: number | null;
     segment: string | null;
     model: string;
     feature_source: string;
+    is_sample: boolean;
     note: string;
     factors?: ShapFactor[];
     top_positive?: ShapFactor[];
@@ -49,10 +51,12 @@ export type StoredPrediction = {
 export type PredictionPreview = {
     lead_id: string;
     customer_id: string | null;
+    student_name: string | null;
     source: string | null;
     probability: number;
     score: ScoreBand;
     segment: string | null;
+    is_sample: boolean;
     observed_conversion: boolean | null;
 };
 
@@ -69,6 +73,7 @@ export type SegmentSummary = {
     known_outcomes: number;
     conversions: number;
     conversion_rate: number | null;
+    sample_leads: number;
 };
 
 /** Counts over every stored score, not just the preview rows. */
@@ -81,6 +86,27 @@ export type PredictionSummary = {
     mean_probability: number | null;
 };
 
+/** A registered student and any model output backed by a linked scored lead. */
+export type StudentIntelligence = {
+    id: string;
+    name: string;
+    course_interested: string | null;
+    qualification: string | null;
+    location: string | null;
+    academic_score: number | null;
+    status: string;
+    enquiry_count: number;
+    lead_id: string | null;
+    probability: number | null;
+    score: ScoreBand | null;
+    segment: string | null;
+    is_sample: boolean;
+};
+
+export function listStudentIntelligence(): Promise<StudentIntelligence[]> {
+    return api('/workspace/student-intelligence') as Promise<StudentIntelligence[]>;
+}
+
 export type WorkspaceOverview = {
     summary: { leads: number; conversions: number; ad_spend: number };
     prediction_preview: PredictionPreview[];
@@ -90,6 +116,7 @@ export type WorkspaceOverview = {
 export type LeadOption = {
     id: string;
     customer_id: string | null;
+    student_name: string | null;
     enquiry_source: string | null;
 };
 
@@ -160,7 +187,7 @@ export async function loadModelSnapshot(): Promise<ModelSnapshot> {
     if (lead) {
         const live = await predictLead(lead.lead_id, true);
         explanation = {
-            lead: lead.customer_id ?? lead.lead_id,
+            lead: lead.student_name ?? lead.customer_id ?? lead.lead_id,
             method: live.explanation_method ?? null,
             baseValue: live.base_value ?? null,
             factors: live.factors ?? []

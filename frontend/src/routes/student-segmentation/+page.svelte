@@ -1,9 +1,11 @@
 <script lang="ts">
     import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
-  import { asPercent, listSegments, type SegmentSummary } from '$lib/ml-api';
+  import { asPercent, listSegments, listStudentIntelligence, type SegmentSummary, type StudentIntelligence } from '$lib/ml-api';
   import { onMount } from 'svelte';
+  import { startLiveSync } from '$lib/live-sync';
 
   let segments = $state<SegmentSummary[]>([]);
+  let students = $state<StudentIntelligence[]>([]);
   let error = $state('');
   let busy = $state(true);
 
@@ -18,11 +20,18 @@
   // Bars are scaled against the largest real segment, not a hardcoded divisor.
   const peak = $derived(Math.max(...segments.map((item) => item.leads), 1));
 
-  onMount(async () => {
-    busy = true;
-    try { segments = await listSegments(); } catch (e) { error = (e as Error).message; }
-    finally { busy = false; }
-  });
+  async function load(showBusy = false) {
+    if (showBusy) busy = true;
+    try {
+      const [segmentResult, studentResult] = await Promise.allSettled([listSegments(), listStudentIntelligence()]);
+      if (segmentResult.status === 'fulfilled') segments = segmentResult.value;
+      else error = (segmentResult.reason as Error).message;
+      if (studentResult.status === 'fulfilled') students = studentResult.value;
+      else error ||= (studentResult.reason as Error).message;
+    }
+    finally { if (showBusy) busy = false; }
+  }
+  onMount(() => { void load(true); return startLiveSync(() => load()); });
 </script>
 
 <svelte:head>
@@ -104,8 +113,18 @@
             {segment.average_pages_per_visit ?? 0} pages per visit and {Math.round(segment.average_time_on_site ?? 0)}s on site.
             {segment.conversions.toLocaleString()} of {segment.known_outcomes.toLocaleString()} leads with a known outcome converted.
           </p>
+          {#if segment.sample_leads}<p class="mt-2 text-xs text-amber-200">Includes {segment.sample_leads} accounts with synthetic website activity inputs.</p>{/if}
         </div>
       {/each}
     </div>
   </div>
+
+  <section class="rounded-2xl border border-white/10 bg-card p-5">
+    <h2 class="text-xl font-bold text-white">Student Accounts and Model Segments</h2>
+    <p class="mt-1 mb-4 text-sm text-text-secondary">Segments are shown only for accounts linked to scored leads. Account details alone do not determine a model cluster.</p>
+    <div class="overflow-x-auto"><table class="min-w-full text-left text-sm">
+      <thead class="border-b border-white/10 text-xs uppercase tracking-[0.15em] text-text-secondary"><tr><th class="px-3 py-3">Student</th><th class="px-3 py-3">Course</th><th class="px-3 py-3">Qualification</th><th class="px-3 py-3">Admission status</th><th class="px-3 py-3">Model segment</th></tr></thead>
+      <tbody>{#each students as student}<tr class="border-b border-white/5 text-white"><td class="px-3 py-3">{student.name}</td><td class="px-3 py-3">{student.course_interested ?? '—'}</td><td class="px-3 py-3">{student.qualification ?? '—'}</td><td class="px-3 py-3">{student.status}</td><td class="px-3 py-3">{student.segment ?? 'Not assigned — no linked scored lead'}</td></tr>{:else}<tr><td colspan="5" class="px-3 py-5 text-text-secondary">{busy ? 'Loading student accounts…' : 'No student accounts found.'}</td></tr>{/each}</tbody>
+    </table></div>
+  </section>
 </div>

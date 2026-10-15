@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { api, type User } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     let user = $state<User | null>(null), editing = $state(false), saved = $state(false), busy = $state(false), error = $state('');
     let profile = $state<Record<string, string>>({});
     const fields = [
@@ -8,9 +9,18 @@
         ['completion_year', 'Completion Year'], ['course_interested', 'Interested Course'],
         ['city', 'City'], ['district', 'District'], ['state', 'State'], ['pincode', 'PIN Code']
     ];
-    onMount(async () => {
+    async function refreshProfile() {
+        if (editing) return;
+        try { user = await api('/auth/me'); profile = Object.fromEntries(fields.map(([key]) => [key, String(user?.profile?.[key] ?? '')])); }
+        catch { /* Keep the current form visible during transient network errors. */ }
+    }
+    onMount(() => {
+        const stopSync = startLiveSync(refreshProfile);
+        void (async () => {
         try { user = await api('/auth/me'); profile = Object.fromEntries(fields.map(([key]) => [key, String(user?.profile?.[key] ?? '')])); }
         catch { window.location.assign('/login'); }
+        })();
+        return stopSync;
     });
     async function save() {
         if (!user) return;

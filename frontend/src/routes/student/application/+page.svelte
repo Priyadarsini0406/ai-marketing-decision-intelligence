@@ -1,12 +1,14 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { api } from '$lib/api';
+    import { startLiveSync } from '$lib/live-sync';
     type Enquiry = { id: string; course_interested: string; preferred_intake?: string | null; status: string; created_at: number; updated_at: number };
     const steps = ['Submitted', 'Under Review', 'Counselling', 'Application', 'Admitted'];
     let enquiry = $state<Enquiry | null>(null), error = $state(''), loading = $state(true);
     let activeIndex = $derived(Math.max(0, steps.indexOf(enquiry?.status ?? 'Submitted')));
     const date = (value: number) => new Date(value * 1000).toLocaleDateString();
-    onMount(async () => { try { const rows: Enquiry[] = await api('/student/enquiries'); enquiry = rows[0] ?? null; } catch (e) { error = (e as Error).message; } finally { loading = false; } });
+    async function load() { try { const rows: Enquiry[] = await api('/student/enquiries'); enquiry = rows[0] ?? null; } catch (e) { error = (e as Error).message; } finally { loading = false; } }
+    onMount(() => { void load(); return startLiveSync(load); });
 </script>
 <div class="max-w-3xl space-y-6"><div><h1 class="text-3xl font-bold text-white">Application Status</h1><p class="text-text-secondary mt-2">Review the latest status and next step for your enquiry.</p></div>
     {#if error}<p role="alert" class="text-red-400">{error}</p>{/if}

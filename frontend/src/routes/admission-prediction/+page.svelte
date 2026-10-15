@@ -1,9 +1,11 @@
 <script lang="ts">
     import AnalyticsChart from '$lib/components/AnalyticsChart.svelte';
-  import { asPercent, bandClasses, workspaceOverview, type PredictionPreview } from '$lib/ml-api';
+  import { asPercent, bandClasses, listStudentIntelligence, workspaceOverview, type PredictionPreview, type StudentIntelligence } from '$lib/ml-api';
   import { onMount } from 'svelte';
+  import { startLiveSync } from '$lib/live-sync';
 
   let rows = $state<PredictionPreview[]>([]);
+  let students = $state<StudentIntelligence[]>([]);
   let error = $state('');
   let busy = $state(true);
   let search = $state('');
@@ -16,11 +18,18 @@
     { label: 'Low Probability', value: rows.filter((row) => row.score === 'Low').length }
   ]);
 
-  onMount(async () => {
-    busy = true;
-    try { rows = (await workspaceOverview()).prediction_preview; } catch (e) { error = (e as Error).message; }
-    finally { busy = false; }
-  });
+  async function load(showBusy = false) {
+    if (showBusy) busy = true;
+    try {
+      const [overviewResult, studentsResult] = await Promise.allSettled([workspaceOverview(), listStudentIntelligence()]);
+      if (overviewResult.status === 'fulfilled') rows = overviewResult.value.prediction_preview;
+      else error = (overviewResult.reason as Error).message;
+      if (studentsResult.status === 'fulfilled') students = studentsResult.value;
+      else error ||= (studentsResult.reason as Error).message;
+    }
+    finally { if (showBusy) busy = false; }
+  }
+  onMount(() => { void load(true); return startLiveSync(() => load()); });
 </script>
 
 <svelte:head>
@@ -33,11 +42,11 @@
       <h1 class="mt-2 text-3xl font-bold text-white">Admission Prediction</h1>
     </div>
     <div class="rounded-xl border border-white/10 bg-card px-3 py-2 text-sm text-text-secondary">
-      {busy ? 'Loading model output…' : 'XGBoost out-of-fold scores · stored in ml_predictions'}
+      {busy ? 'Loading model output…' : 'Stored XGBoost scores'}
     </div>
   </div>
 {#if error}<p role="alert" class="text-sm text-red-300">{error}</p>{/if}
-<AnalyticsChart title="Admission probability by lead" categories={visible.map(item => String(item.customer_id ?? item.lead_id))} series={[{ name: 'Predicted probability', values: visible.map(item => Number(item.probability) * 100) }]} description="Out-of-fold conversion probability from the trained XGBoost model, in percent." unit="%" />
+<AnalyticsChart title="Admission probability by lead" categories={visible.map(item => String(item.student_name ?? item.customer_id ?? item.lead_id))} series={[{ name: 'Predicted probability', values: visible.map(item => Number(item.probability) * 100) }]} description="Stored XGBoost conversion probabilities. Account scores use synthetic website activity inputs; imported rows use out-of-fold scores." unit="%" />
 
 
   <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -48,6 +57,23 @@
       </div>
     {/each}
   </div>
+
+  <section class="rounded-2xl border border-white/10 bg-card p-5">
+    <div class="mb-4">
+      <h2 class="text-xl font-bold text-white">Student Accounts</h2>
+      <p class="mt-1 text-sm text-text-secondary">Registered student details and their linked model predictions, when available.</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-left text-sm">
+        <thead class="border-b border-white/10 text-xs uppercase tracking-[0.15em] text-text-secondary"><tr><th class="px-3 py-3">Student</th><th class="px-3 py-3">Course</th><th class="px-3 py-3">Qualification</th><th class="px-3 py-3">Academic score</th><th class="px-3 py-3">Account status</th><th class="px-3 py-3">Model prediction</th></tr></thead>
+        <tbody>
+          {#each students as student}
+            <tr class="border-b border-white/5 text-white"><td class="px-3 py-3">{student.name}</td><td class="px-3 py-3">{student.course_interested ?? '—'}</td><td class="px-3 py-3">{student.qualification ?? '—'}</td><td class="px-3 py-3">{student.academic_score ?? '—'}</td><td class="px-3 py-3">{student.status}</td><td class="px-3 py-3">{student.probability !== null ? `${asPercent(student.probability)} · ${student.score}` : 'Not scored — no linked lead data'}</td></tr>
+          {:else}<tr><td colspan="6" class="px-3 py-5 text-text-secondary">{busy ? 'Loading student accounts…' : 'No student accounts found.'}</td></tr>{/each}
+        </tbody>
+      </table>
+    </div>
+  </section>
 
   <div class="rounded-2xl border border-white/10 bg-card p-5">
     <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -76,7 +102,7 @@
         <tbody>
           {#each visible as lead}
             <tr class="border-b border-white/5 text-white">
-              <td class="px-4 py-3">{lead.customer_id ?? lead.lead_id}</td>
+              <td class="px-4 py-3">{lead.student_name ?? lead.customer_id ?? lead.lead_id}</td>
               <td class="px-4 py-3">{lead.source ?? '—'}</td>
               <td class="px-4 py-3 font-semibold text-accent">{asPercent(lead.probability)}</td>
               <td class="px-4 py-3">

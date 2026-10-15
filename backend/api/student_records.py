@@ -6,6 +6,7 @@ def student_directory(db):
     users = db.query(User).filter(User.role == "student").order_by(User.name, User.email).all()
     records = []
     for user in users:
+        profile = user.profile or {}
         enquiries = (db.query(StudentEnquiry)
                      .filter(StudentEnquiry.student_user_id == user.id)
                      .order_by(StudentEnquiry.created_at.desc()).all())
@@ -16,13 +17,13 @@ def student_directory(db):
             "student_name": user.name,
             "email": user.email,
             "active": user.active,
-            "profile": user.profile or {},
+            "profile": profile,
             "enquiry_count": len(enquiries),
             "enquiry_id": latest.id if latest else None,
-            "course_interested": (latest.course_interested if latest else None) or (user.profile or {}).get("course_interested"),
-            "qualification": (latest.qualification if latest else None) or (user.profile or {}).get("qualification"),
-            "phone": (latest.phone if latest else None) or (user.profile or {}).get("mobile"),
-            "location": (latest.location if latest else None) or (user.profile or {}).get("city"),
+            "course_interested": profile.get("course_interested") if "course_interested" in profile else (latest.course_interested if latest else None),
+            "qualification": profile.get("qualification") if "qualification" in profile else (latest.qualification if latest else None),
+            "phone": profile.get("mobile") if "mobile" in profile else (latest.phone if latest else None),
+            "location": profile.get("city") if "city" in profile else (latest.location if latest else None),
             "lead_status": latest.status if latest else "Registered",
             "enquiry_source": "Student Portal" if latest else "Registration",
             "enquiry_date": latest.created_at if latest else None,
