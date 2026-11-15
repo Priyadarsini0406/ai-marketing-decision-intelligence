@@ -13,3 +13,41 @@
 <section class="panel"><h2>System settings</h2><div class="grid"><label>Organization name<input bind:value={config.organization_name} required maxlength="100" /></label><label>Report currency<select bind:value={config.currency}>{#each ['USD', 'INR', 'EUR', 'GBP'] as currency}<option>{currency}</option>{/each}</select></label><label>High probability threshold<input type="number" bind:value={config.conversion_threshold} min="0" max="1" step="0.01" required /></label></div><p>The threshold controls the high probability lead count in reports. Currency changes display formatting only.</p></section>
 <section class="panel"><h2>Model parameters</h2><p>Saved for future training integration. This project does not currently include a training service; saving these parameters does not retrain models or change stored predictions.</p><div class="grid"><label>Preferred model<select bind:value={config.model}><option value="xgboost">XGBoost</option><option value="random_forest">Random forest</option><option value="logistic_regression">Logistic regression</option></select></label><label>Test set fraction<input type="number" bind:value={config.test_size} min="0.1" max="0.4" step="0.01" required /></label><label>Random seed<input type="number" bind:value={config.random_seed} min="0" max="2147483647" step="1" required /></label></div></section>
 <div><button disabled={busy}>{busy ? 'Saving…' : 'Save configuration'}</button></div></form>{:else if !error}<p>Loading settings…</p>{/if}
+
+<style>
+    h1 { font-size: 30px; font-weight: 700; margin: 8px 0; color: var(--di-text); }
+    h2 { font-size: 18px; font-weight: 650; margin: 0 0 16px; color: var(--di-text); }
+    p { font-size: 14px; color: var(--di-muted); line-height: 1.6; margin: 8px 0; }
+    .panel {
+        background: var(--di-surface);
+        border: 1px solid var(--di-border);
+        border-radius: 16px;
+        padding: 24px;
+        margin: 20px 0;
+        box-shadow: var(--di-shadow);
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin: 16px 0; }
+    label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: var(--di-muted); }
+    input, select {
+        width: 100%;
+        min-width: 0;
+        background: var(--di-surface);
+        border: 1px solid var(--di-border-strong);
+        border-radius: 8px;
+        padding: 11px 13px;
+        color: var(--di-text);
+        font: inherit;
+    }
+    button {
+        padding: 11px 18px;
+        border-radius: 8px;
+        background: var(--di-accent);
+        color: #FFFFFF;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+    }
+    button:disabled { opacity: .5; cursor: default; }
+    [role=alert] { color: var(--di-red-ink); }
+    [role=status] { color: var(--di-green-ink); }
+</style>

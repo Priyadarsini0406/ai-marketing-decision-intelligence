@@ -262,3 +262,6 @@ __marimo__/
 .streamlit/secrets.toml
 
 node_modules/
+catboost_info/
+~$*
+docs/paper/Decision_Intel_IEEE_Paper.docx

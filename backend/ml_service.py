@@ -43,9 +43,23 @@ NUMERIC_FEATURES = [
     "TotalVisits",
     "Total Time Spent on Website",
     "Page Views Per Visit",
+]
+
+# Columns the sales team fills in during or after follow-up. They do not exist
+# when an enquiry first arrives, and Tags in particular often spells out the
+# outcome ("Closed by Horizzon" converts 99.4% of the time). Training on them
+# inflated held-out ROC-AUC from about 0.886 to 0.980, so the served model
+# excludes them. See docs/paper and ml/scripts/ablation_threshold.py.
+POST_CONTACT_COLUMNS = [
+    "Tags",
+    "Lead Quality",
+    "Lead Profile",
+    "Asymmetrique Activity Index",
+    "Asymmetrique Profile Index",
     "Asymmetrique Activity Score",
     "Asymmetrique Profile Score",
 ]
+POST_CONTACT_NUMERIC = ["Asymmetrique Activity Score", "Asymmetrique Profile Score"]
 
 RANDOM_STATE = 42
 
@@ -97,25 +111,28 @@ def read_dataset(path: str | os.PathLike = DATASET_PATH) -> pd.DataFrame:
             f"{TARGET_COLUMN} needs at least {MIN_CLASS_COUNT} rows per class to stratify"
         )
 
-    for column in NUMERIC_FEATURES:
-        frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    for column in [*NUMERIC_FEATURES, *POST_CONTACT_NUMERIC]:
+        if column in frame.columns:
+            frame[column] = pd.to_numeric(frame[column], errors="coerce")
 
     frame[KEY_COLUMN] = frame[KEY_COLUMN].astype(str)
     return frame
 
 
-def resolve_features(frame: pd.DataFrame) -> tuple[list[str], list[str], list[str]]:
+def resolve_features(
+    frame: pd.DataFrame, include_post_contact: bool = False
+) -> tuple[list[str], list[str], list[str]]:
     """Split the usable columns into numeric and categorical feature lists.
 
     Identifier columns, the target and any column with a single distinct value
     are dropped: a constant column cannot inform a split, and keeping it only
-    adds encoding noise.
+    adds encoding noise. Post-contact columns are dropped too unless
+    include_post_contact is set, which only the leakage experiments use.
     """
-    candidates = [
-        column
-        for column in frame.columns
-        if column not in IDENTIFIER_COLUMNS and column != TARGET_COLUMN
-    ]
+    excluded = set(IDENTIFIER_COLUMNS) | {TARGET_COLUMN}
+    if not include_post_contact:
+        excluded |= set(POST_CONTACT_COLUMNS)
+    candidates = [column for column in frame.columns if column not in excluded]
     constant = [column for column in candidates if frame[column].nunique(dropna=False) <= 1]
     usable = [column for column in candidates if column not in constant]
 
@@ -123,7 +140,9 @@ def resolve_features(frame: pd.DataFrame) -> tuple[list[str], list[str], list[st
     if missing_numeric:
         raise PipelineError(f"Numeric features are unusable or constant: {missing_numeric}")
 
-    numeric = [column for column in NUMERIC_FEATURES]
+    numeric = list(NUMERIC_FEATURES)
+    if include_post_contact:
+        numeric += [column for column in POST_CONTACT_NUMERIC if column in usable]
     categorical = [column for column in usable if column not in numeric]
     return numeric, categorical, constant
 
@@ -333,6 +352,16 @@ def segment_features(pipeline: Pipeline, frame: pd.DataFrame) -> tuple[np.ndarra
     return values, columns
 
 
+def segment_space(values: np.ndarray) -> np.ndarray:
+    """Map raw engagement counts onto the space K-Means clusters in.
+
+    Visits, seconds on site and page views are heavily right-skewed (a handful
+    of leads have 100+ visits). Without log1p those few outliers claim a
+    cluster of their own and the remaining leads are squeezed into three.
+    """
+    return np.log1p(np.clip(values, 0, None))
+
+
 def _ladder_for(count: int) -> list[str]:
     """Stretch the label ladder so any cluster count still gets ordered names."""
     if count <= 0:
@@ -347,12 +376,9 @@ def _ladder_for(count: int) -> list[str]:
 def fit_segments(pipeline: Pipeline, frame: pd.DataFrame, k: int = SEGMENT_COUNT) -> dict:
     """Cluster the real engagement features and name each cluster from the data.
 
-    The clusters themselves are unsupervised: K-Means on the standardised
-    engagement features the model was fitted on. Only the *labels* come from the
-    model, because "High Intent" is a claim about conversion and the validated
-    pipeline is the honest thing to rank on. Ranking on a hand-picked feature
-    spread is unreliable here: three clusters can sit within 0.02 of each other
-    on a mean-of-z-scores index while differing completely in behaviour.
+    The clusters are unsupervised: K-Means on the log-scaled, standardised
+    engagement features the model was fitted on, named in order of their mean
+    engagement index.
     """
     from sklearn.cluster import KMeans
     from sklearn.preprocessing import StandardScaler
@@ -361,15 +387,20 @@ def fit_segments(pipeline: Pipeline, frame: pd.DataFrame, k: int = SEGMENT_COUNT
     if len(values) < k:
         raise PipelineError(f"Need at least {k} rows to build {k} segments, got {len(values)}")
 
-    scaler = StandardScaler().fit(values)
-    scaled = scaler.transform(values)
+    scaler = StandardScaler().fit(segment_space(values))
+    scaled = scaler.transform(segment_space(values))
     # n_init with a fixed random_state keeps the segmentation reproducible.
     kmeans = KMeans(n_clusters=k, random_state=RANDOM_STATE, n_init=10).fit(scaled)
     labels = kmeans.labels_
 
     engagement = scaled.mean(axis=1)
     priority = np.asarray(pipeline.predict_proba(frame)[:, 1], dtype=float)
-    ranking = sorted(range(k), key=lambda cluster: float(priority[labels == cluster].mean()))
+    # Names follow measured engagement in the log-scaled space. Ranking on the
+    # leakage-free model's mean probability put zero-visit referral leads at
+    # "High Intent" because the four clusters sit within 0.1 of each other on
+    # probability; engagement separates them cleanly. Probability is still
+    # reported per segment so the dashboard can show conversion alongside.
+    ranking = sorted(range(k), key=lambda cluster: float(engagement[labels == cluster].mean()))
     ladder = _ladder_for(len(ranking))
     names = {cluster: ladder[position] for position, cluster in enumerate(ranking)}
 
@@ -416,7 +447,7 @@ def segment_label(artifact: dict, cluster: int) -> str:
 def assign_segments(artifact: dict, pipeline: Pipeline, frame: pd.DataFrame) -> tuple[list[int], list[str]]:
     """Assign every row its real cluster index and segment name."""
     values, _ = segment_features(pipeline, frame)
-    labels = artifact["kmeans"].predict(artifact["scaler"].transform(values))
+    labels = artifact["kmeans"].predict(artifact["scaler"].transform(segment_space(values)))
     clusters = [int(label) for label in labels]
     return clusters, [segment_label(artifact, cluster) for cluster in clusters]
 

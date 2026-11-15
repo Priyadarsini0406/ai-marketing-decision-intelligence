@@ -63,8 +63,25 @@ class ServiceContractTests(unittest.TestCase):
         for identifier in svc.IDENTIFIER_COLUMNS:
             self.assertNotIn(identifier, approved)
         self.assertIn("Magazine", constant)  # single-valued, cannot inform a split
-        self.assertEqual(len(approved) + len(constant), len(frame.columns) - len(svc.IDENTIFIER_COLUMNS) - 1)
+        post_contact = [c for c in svc.POST_CONTACT_COLUMNS if c in frame.columns]
+        self.assertEqual(
+            len(approved) + len(constant) + len(post_contact),
+            len(frame.columns) - len(svc.IDENTIFIER_COLUMNS) - 1,
+        )
         self.assertTrue(set(numeric).issubset(approved))
+
+    def test_post_contact_columns_never_reach_the_served_model(self):
+        frame = frame_fixture()
+        numeric, categorical, _ = svc.resolve_features(frame)
+        approved = set(numeric) | set(categorical)
+        for column in svc.POST_CONTACT_COLUMNS:
+            self.assertNotIn(column, approved)
+
+        # The leakage experiments can still opt back in for comparison.
+        numeric, categorical, _ = svc.resolve_features(frame, include_post_contact=True)
+        approved = set(numeric) | set(categorical)
+        self.assertIn("Tags", approved)
+        self.assertIn("Asymmetrique Activity Score", numeric)
 
     def test_unseen_category_still_scores(self):
         frame = frame_fixture()

@@ -18,8 +18,12 @@ database_url = os.environ.get("DATABASE_URL") or "sqlite:///" + str(Path(__file_
 SQLALCHEMY_DATABASE_URL = database_url
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
-    # check_same_thread=False is needed only for SQLite
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite")
+    # Fail fast with a readable error instead of hanging for a minute when the
+    # remote Postgres pooler is unreachable (this broke app startup entirely).
+    else {"connect_timeout": 5},
+    pool_pre_ping=True,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

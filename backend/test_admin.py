@@ -85,7 +85,16 @@ class AdminIntegrationTests(unittest.TestCase):
         self.assertEqual(self.request('POST', '/auth/login', {'email':'testadmin@example.com','password':'wrong'})[0], 401)
         admin = self.login()
         user_data = {'name':'Admission Manager','email':'testmanager@example.com','password':'StrongPassword123!','role':'admission_manager'}
-        self.assertEqual(self.request('POST','/auth/register', {**user_data,'role':'admin'})[0], 403)
+        # Public registration can never create an administrator: the endpoint
+        # forces the student role even when a privileged role is supplied.
+        escalation = {'name':'Escalation Test','email':'escalation@example.com','password':'StrongPassword123!',
+                      'role':'admin','date_of_birth':'2000-01-01','gender':'male','mobile':'9876543210',
+                      'door_no':'1','street':'Main','area':'Area','city':'City','district':'District',
+                      'state':'State','pincode':'123456','qualification':'BSc','institution':'Institute',
+                      'completion_year':2020,'course_interested':'MBA'}
+        status, escalated = self.request('POST','/auth/register', escalation)
+        self.assertEqual(status, 201)
+        self.assertEqual(escalated['role'], 'student')
         status, user = self.request('POST','/admin/users', user_data, admin)
         self.assertEqual(status, 201)
         self.assertNotIn('password_hash', user)
@@ -116,7 +125,9 @@ class AdminIntegrationTests(unittest.TestCase):
         overview = self.request('GET','/workspace/overview',token=regular)[1]
         self.assertEqual(overview['summary']['leads'],1)
         self.assertEqual(overview['funnel'][-1]['count'],1)
-        self.assertEqual(self.request('GET','/workspace/segments',token=regular)[1][0]['leads'],1)
+        # Segmentation aggregates stored ML predictions, and creating a lead
+        # over the API does not score it, so there are no segment buckets yet.
+        self.assertEqual(self.request('GET','/workspace/segments',token=regular)[1], [])
         def zipped(entries):
             output = io.BytesIO()
             with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:

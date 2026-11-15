@@ -19,9 +19,7 @@
   "numeric_features": [
     "TotalVisits",
     "Total Time Spent on Website",
-    "Page Views Per Visit",
-    "Asymmetrique Activity Score",
-    "Asymmetrique Profile Score"
+    "Page Views Per Visit"
   ],
   "categorical_features": [
     "Lead Origin",
@@ -40,12 +38,7 @@
     "Newspaper",
     "Digital Advertisement",
     "Through Recommendations",
-    "Tags",
-    "Lead Quality",
-    "Lead Profile",
     "City",
-    "Asymmetrique Activity Index",
-    "Asymmetrique Profile Index",
     "A free copy of Mastering The Interview",
     "Last Notable Activity"
   ],
@@ -53,8 +46,6 @@
     "TotalVisits",
     "Total Time Spent on Website",
     "Page Views Per Visit",
-    "Asymmetrique Activity Score",
-    "Asymmetrique Profile Score",
     "Lead Origin",
     "Lead Source",
     "Do Not Email",
@@ -71,12 +62,7 @@
     "Newspaper",
     "Digital Advertisement",
     "Through Recommendations",
-    "Tags",
-    "Lead Quality",
-    "Lead Profile",
     "City",
-    "Asymmetrique Activity Index",
-    "Asymmetrique Profile Index",
     "A free copy of Mastering The Interview",
     "Last Notable Activity"
   ],
@@ -94,97 +80,97 @@
   "majority_baseline_accuracy": 0.6147186147186147,
   "held_out_metrics": {
     "model": "XGBoost",
-    "accuracy": 0.9318181818181818,
-    "balanced_accuracy": 0.9290779791106187,
-    "precision": 0.9069444444444444,
-    "recall": 0.9171348314606742,
-    "f1": 0.9120111731843575,
-    "roc_auc": 0.9791718181278684,
+    "accuracy": 0.8181818181818182,
+    "balanced_accuracy": 0.8057198528248141,
+    "precision": 0.770893371757925,
+    "recall": 0.7514044943820225,
+    "f1": 0.7610241820768137,
+    "roc_auc": 0.8845229911774015,
     "confusion_matrix": [
       [
-        1069,
-        67
+        977,
+        159
       ],
       [
-        59,
-        653
+        177,
+        535
       ]
     ]
   },
   "model_comparison": [
     {
       "model": "XGBoost",
-      "accuracy": 0.9318181818181818,
-      "balanced_accuracy": 0.9290779791106187,
-      "precision": 0.9069444444444444,
-      "recall": 0.9171348314606742,
-      "f1": 0.9120111731843575,
-      "roc_auc": 0.9791718181278684,
+      "accuracy": 0.8181818181818182,
+      "balanced_accuracy": 0.8057198528248141,
+      "precision": 0.770893371757925,
+      "recall": 0.7514044943820225,
+      "f1": 0.7610241820768137,
+      "roc_auc": 0.8845229911774015,
       "confusion_matrix": [
         [
-          1069,
-          67
+          977,
+          159
         ],
         [
-          59,
-          653
+          177,
+          535
         ]
       ]
     },
     {
       "model": "Logistic Regression",
-      "accuracy": 0.9231601731601732,
-      "balanced_accuracy": 0.9178420240544389,
-      "precision": 0.9048295454545454,
-      "recall": 0.8946629213483146,
-      "f1": 0.8997175141242938,
-      "roc_auc": 0.9711652110697895,
+      "accuracy": 0.7992424242424242,
+      "balanced_accuracy": 0.7806169884475391,
+      "precision": 0.7603053435114504,
+      "recall": 0.699438202247191,
+      "f1": 0.7286027798098025,
+      "roc_auc": 0.8698437994540276,
       "confusion_matrix": [
         [
-          1069,
-          67
+          979,
+          157
         ],
         [
-          75,
-          637
+          214,
+          498
         ]
       ]
     },
     {
       "model": "Random Forest",
-      "accuracy": 0.9291125541125541,
-      "balanced_accuracy": 0.925042530463681,
-      "precision": 0.9085794655414908,
-      "recall": 0.9073033707865169,
-      "f1": 0.9079409697821503,
-      "roc_auc": 0.9731736627630955,
+      "accuracy": 0.8041125541125541,
+      "balanced_accuracy": 0.7866751068206994,
+      "precision": 0.7643504531722054,
+      "recall": 0.7106741573033708,
+      "f1": 0.7365356622998545,
+      "roc_auc": 0.8745610955056181,
       "confusion_matrix": [
         [
-          1071,
-          65
+          980,
+          156
         ],
         [
-          66,
-          646
+          206,
+          506
         ]
       ]
     },
     {
       "model": "Gradient Boosting",
-      "accuracy": 0.9318181818181818,
-      "balanced_accuracy": 0.9303885108403228,
-      "precision": 0.9013698630136986,
-      "recall": 0.9241573033707865,
-      "f1": 0.912621359223301,
-      "roc_auc": 0.978379317336604,
+      "accuracy": 0.8198051948051948,
+      "balanced_accuracy": 0.8091371261275517,
+      "precision": 0.768033946251768,
+      "recall": 0.7626404494382022,
+      "f1": 0.7653276955602537,
+      "roc_auc": 0.8832075140449437,
       "confusion_matrix": [
         [
-          1064,
-          72
+          972,
+          164
         ],
         [
-          54,
-          658
+          169,
+          543
         ]
       ]
     }

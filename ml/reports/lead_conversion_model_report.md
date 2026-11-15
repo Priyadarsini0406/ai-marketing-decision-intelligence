@@ -8,24 +8,24 @@ Estimator: `xgboost.XGBClassifier`
 
 Model | Accuracy | Balanced | Precision | Recall | F1 | ROC-AUC
 --- | --- | --- | --- | --- | --- | ---
-XGBoost | 0.9318 | 0.9291 | 0.9069 | 0.9171 | 0.9120 | 0.9792
-Logistic Regression | 0.9232 | 0.9178 | 0.9048 | 0.8947 | 0.8997 | 0.9712
-Random Forest | 0.9291 | 0.9250 | 0.9086 | 0.9073 | 0.9079 | 0.9732
-Gradient Boosting | 0.9318 | 0.9304 | 0.9014 | 0.9242 | 0.9126 | 0.9784
+XGBoost | 0.8182 | 0.8057 | 0.7709 | 0.7514 | 0.7610 | 0.8845
+Logistic Regression | 0.7992 | 0.7806 | 0.7603 | 0.6994 | 0.7286 | 0.8698
+Random Forest | 0.8041 | 0.7867 | 0.7644 | 0.7107 | 0.7365 | 0.8746
+Gradient Boosting | 0.8198 | 0.8091 | 0.7680 | 0.7626 | 0.7653 | 0.8832
 
 Majority-class baseline accuracy: 0.6147
 
 ## Confusion matrix (XGBoost)
 
 ```
-[[1069, 67], [59, 653]]
+[[977, 159], [177, 535]]
 ```
 
 ## Features
 
-Numeric (5): `TotalVisits`, `Total Time Spent on Website`, `Page Views Per Visit`, `Asymmetrique Activity Score`, `Asymmetrique Profile Score`
+Numeric (3): `TotalVisits`, `Total Time Spent on Website`, `Page Views Per Visit`
 
-Categorical (24): `Lead Origin`, `Lead Source`, `Do Not Email`, `Do Not Call`, `Last Activity`, `Country`, `Specialization`, `How did you hear about X Education`, `What is your current occupation`, `What matters most to you in choosing a course`, `Search`, `Newspaper Article`, `X Education Forums`, `Newspaper`, `Digital Advertisement`, `Through Recommendations`, `Tags`, `Lead Quality`, `Lead Profile`, `City`, `Asymmetrique Activity Index`, `Asymmetrique Profile Index`, `A free copy of Mastering The Interview`, `Last Notable Activity`
+Categorical (19): `Lead Origin`, `Lead Source`, `Do Not Email`, `Do Not Call`, `Last Activity`, `Country`, `Specialization`, `How did you hear about X Education`, `What is your current occupation`, `What matters most to you in choosing a course`, `Search`, `Newspaper Article`, `X Education Forums`, `Newspaper`, `Digital Advertisement`, `Through Recommendations`, `City`, `A free copy of Mastering The Interview`, `Last Notable Activity`
 
 Excluded identifiers: `Prospect ID`, `Lead Number`
 
