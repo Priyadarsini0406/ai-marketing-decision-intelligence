@@ -18,12 +18,18 @@ async function download(page: Page, format: string) {
 test('complete analytics exports include all sections despite an empty preview', async ({ page }) => {
     await page.addInitScript(() => sessionStorage.setItem('session', 'report-test'));
     await page.route('**/api/auth/me', route => route.fulfill({ json: { id: 'report-test', name: 'Report Manager', role: 'admission_manager', email: 'reports@example.com', active: true } }));
+    // "Empty preview": the model endpoints return no predictions or segments.
+    // Without these mocks the fake session reaches the real API, gets 401 and is sent to /login.
+    await page.route('**/api/workspace/overview', route => route.fulfill({ json: { prediction_preview: [] } }));
+    await page.route('**/api/workspace/segments', route => route.fulfill({ json: [] }));
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto('/reports');
     await expect(page.getByRole('heading', { name: 'Reports & Analytics', level: 1 })).toBeVisible();
     await page.getByLabel('Search report').fill('no matching report record');
-    await expect(page.locator('tbody tr')).toHaveCount(0);
+    // Charts now carry collapsed "View chart data" tables, so check the preview itself.
+    await expect(page.getByText('Showing 0 of 6 records', { exact: false })).toBeVisible();
+    await expect(page.getByText('No records match your search.', { exact: false })).toBeVisible();
     const json = JSON.parse(new TextDecoder().decode(await download(page, 'JSON')));
     expect(Object.keys(json.reports)).toHaveLength(6);
     expect(json.reports.lead).toHaveLength(6);

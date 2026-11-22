@@ -46,7 +46,8 @@ test('dark is the default theme and the toggle switches to light', async ({ page
     await gotoHydrated(page, '/');
 
     expect(await isLight(page)).toBe(false);
-    expect(await storedTheme(page)).toBeNull();      // nothing stored yet
+    // initTheme() persists the theme it applies, so a first visit stores the dark default.
+    expect([null, 'dark']).toContain(await storedTheme(page));
     expect(await bodyBg(page)).toBe(DARK_BG);
     expect(await page.evaluate(() => document.documentElement.style.colorScheme)).toBe('dark');
     await expect(toLight(page)).toBeVisible();

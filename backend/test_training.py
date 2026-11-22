@@ -1,4 +1,5 @@
 """Tests for the XGBoost lead-conversion pipeline and its database import."""
+import test_support  # must come first: points the app at a temporary database
 import tempfile
 import unittest
 from pathlib import Path

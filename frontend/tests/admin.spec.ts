@@ -1,9 +1,15 @@
 import { test, expect, type Page } from '@playwright/test';
 
-async function login(page: Page) {
-    await page.getByLabel('Work Email', { exact: true }).fill('admin@example.com');
-    await page.getByLabel('Password', { exact: true }).fill('BrowserTestPassword123!');
-    await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+// The login page holds both the sign-in form and student registration, so
+// fields are scoped to the sign-in section (as theme.spec.ts does).
+async function login(page: Page, password = 'BrowserTestPassword123!') {
+    // Wait for hydration: submitting before Svelte attaches its handlers does a
+    // native form submit and silently loses the result (see theme.spec.ts).
+    await page.waitForFunction(() => '__SVELTEKIT_CLIENT_ROUTING__' in window);
+    const signIn = page.locator('section[aria-label="Sign in"]');
+    await signIn.getByLabel('Email address').fill('admin@example.com');
+    await signIn.getByLabel('Password', { exact: true }).fill(password);
+    await signIn.getByRole('button', { name: 'Sign in', exact: true }).click();
 }
 
 test('admin login connects every page and persistent management workflow', async ({ page }) => {
@@ -71,11 +77,10 @@ test('admin login connects every page and persistent management workflow', async
 
 test('login rejects wrong credentials and ignores external redirect targets', async ({ page }) => {
     await page.goto('/login?next=https://example.com');
-    await page.getByLabel('Work Email', {exact:true}).fill('admin@example.com');
-    await page.getByLabel('Password', {exact:true}).fill('incorrect-password');
-    await page.getByRole('button', {name:'Sign In', exact:true}).click();
+    await login(page, 'incorrect-password');
     await expect(page.getByRole('alert')).toContainText('Invalid email or password');
     await login(page);
-    await expect(page).toHaveURL('/admin');
-    await expect(page.getByRole('heading', { name: 'Administration', exact: true })).toBeVisible();
+    // The external ?next= target is ignored; admins land on their dashboard.
+    await expect(page).toHaveURL('/admin/dashboard');
+    await expect(page.getByRole('navigation', { name: 'Role navigation' })).toBeVisible();
 });

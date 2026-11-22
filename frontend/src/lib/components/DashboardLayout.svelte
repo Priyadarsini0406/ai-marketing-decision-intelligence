@@ -4,6 +4,7 @@
     import { api, signOut, type User } from '$lib/api';
     import OutlineIcon from '$lib/components/OutlineIcon.svelte';
     import DashboardHeader from '$lib/components/DashboardHeader.svelte';
+    import AssistantWidget from '$lib/components/AssistantWidget.svelte';
     import type { ShellRole } from '$lib/dashboard-header';
 
     let { role, children }: { role: ShellRole; children: import('svelte').Snippet } = $props();
@@ -88,6 +89,7 @@
         </div>
     </main>
 </div>
+<AssistantWidget userName={user.name} />
 {:else}<p class="p-8 text-text-secondary" role="status">{error || 'Authenticating…'} {#if error}<a href="/login" class="text-accent ml-2 hover:underline">Sign in</a>{/if}</p>{/if}
 
 <style>

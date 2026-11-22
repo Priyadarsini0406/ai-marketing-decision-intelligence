@@ -12,3 +12,7 @@ stable-baselines3
 python-multipart
 pydantic
 python-dotenv
+
+# Optional: Admission Assistant LLM writing layer (backend/services/assistant/llm.py).
+# Without an ANTHROPIC_API_KEY the assistant runs fully on grounded, rule-based answers.
+anthropic

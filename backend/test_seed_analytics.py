@@ -1,3 +1,4 @@
+import test_support  # must come first: points the app at a temporary database
 import unittest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session

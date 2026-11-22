@@ -141,3 +141,20 @@ class BudgetSimulation(Base):
     predicted_cpa = Column(Float)
 
     predicted_conversions = Column(Float)
+
+
+class AssistantMessage(Base):
+    """One message in a user's Admission Assistant conversation.
+
+    Kept in its own table so chatbot history never mixes with lead, enquiry or
+    prediction records. `payload` holds the structured parts of an assistant
+    reply (lead card, links, suggestions, notice, engine).
+    """
+    __tablename__ = "assistant_messages"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    role = Column(String, nullable=False)  # "user" or "assistant"
+    content = Column(String, nullable=False)
+    payload = Column(JSON, nullable=True)
+    created_at = Column(Float, nullable=False, index=True)

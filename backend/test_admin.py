@@ -1,6 +1,7 @@
 """Integration tests using a real HTTP server and an isolated SQLite database.
 Run with the project Python environment: python -m unittest test_admin -v
 """
+import test_support  # must come first: points the app at a temporary database
 import json
 import io
 import zipfile
@@ -18,14 +19,10 @@ from urllib.error import HTTPError
 class AdminIntegrationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp = tempfile.TemporaryDirectory()
-        cls.previous_url = os.environ.get('DATABASE_URL')
-        os.environ['DATABASE_URL'] = "sqlite:///" + str(Path(cls.temp.name) / "test.db")
-        from database.connection import Base, engine, SessionLocal
+        test_support.reset_database()
+        from database.connection import SessionLocal
         from api.auth import NewUser, create_user
         import uvicorn
-        cls.engine = engine
-        Base.metadata.create_all(engine)
         with SessionLocal() as db:
             create_user(NewUser(name='Admin', email='testadmin@example.com', password='TestPassword123!', role='admin'), db)
         with socket.socket() as sock:
@@ -48,12 +45,6 @@ class AdminIntegrationTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.server.should_exit = True
         cls.thread.join(timeout=10)
-        cls.engine.dispose()
-        cls.temp.cleanup()
-        if cls.previous_url is None:
-            os.environ.pop('DATABASE_URL', None)
-        else:
-            os.environ['DATABASE_URL'] = cls.previous_url
 
     def request(self, method, path, data=None, token=None, raw=None, filename='campaign.csv'):
         headers = {}

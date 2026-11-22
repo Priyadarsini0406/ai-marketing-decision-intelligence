@@ -128,3 +128,22 @@ Refresh admin **Analytics & reports** to see **Channel analytics** and **Budget 
 ## Application page coverage
 
 All requested public and marketing pages are linked through the shared login and dashboard. See [page coverage](docs/page-coverage.md) for routes, implemented behavior, model/data limitations, and verification.
+
+## Admission Assistant chatbot
+
+Every signed-in page (student, manager and admin) has a floating **Admission Assistant** button at the bottom right.
+
+- **Managers** can ask about any lead by its lead ID or Prospect ID, or open a lead and ask "Why did this lead get its score?". Answers reuse the stored XGBoost prediction and its SHAP factors (`/leads/{id}/prediction`), or the live prediction endpoint when none is stored. Follow-up suggestions are rule-based and labelled as such.
+- **Students** can check their own enquiry status, see the programme catalogue and learn how to enquire. Students and admins never see individual lead scores.
+- Fees, eligibility, deadlines and seats are not stored in Decision-Intel, so the assistant says so instead of guessing.
+
+The assistant works without any API key. To let Claude rewrite the grounded answers in a more conversational style, add to `backend/.env`:
+
+```
+ANTHROPIC_API_KEY=your-key
+# optional
+ASSISTANT_LLM=auto          # auto | on | off
+ASSISTANT_MODEL=claude-opus-5-5
+```
+
+The LLM layer only rephrases facts the system already produced; a rewrite that introduces a number not in those facts is discarded. Code: `backend/services/assistant/`, `backend/api/assistant.py`, `frontend/src/lib/components/AssistantWidget.svelte`. Tests: `cd backend && python -m unittest test_assistant -v`.

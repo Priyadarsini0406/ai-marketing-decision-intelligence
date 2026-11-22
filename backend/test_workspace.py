@@ -1,3 +1,4 @@
+import test_support  # must come first: points the app at a temporary database
 import unittest
 from fastapi import HTTPException
 from sqlalchemy import create_engine
