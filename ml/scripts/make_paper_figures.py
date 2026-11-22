@@ -54,11 +54,11 @@ def architecture():
     ax.set_ylim(-0.1, 10.4)
     ax.axis("off")
 
-    def box(x, y, w, h, title, sub, fc):
+    def box(x, y, w, h, title, sub, fc, size=7):
         ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.05,rounding_size=0.15",
                                     fc=fc, ec="#333333", lw=0.6))
-        ax.text(x + w / 2, y + h * 0.63, title, ha="center", va="center", fontsize=7, weight="bold")
-        ax.text(x + w / 2, y + h * 0.27, sub, ha="center", va="center", fontsize=5.6)
+        ax.text(x + w / 2, y + h * 0.63, title, ha="center", va="center", fontsize=size, weight="bold")
+        ax.text(x + w / 2, y + h * 0.27, sub, ha="center", va="center", fontsize=5.6 if size == 7 else 4.6)
 
     def arrow(x1, y1, x2, y2, label=""):
         ax.annotate("", (x2, y2), (x1, y1), arrowprops=dict(arrowstyle="-|>", lw=0.6, color="#333"))
@@ -68,18 +68,19 @@ def architecture():
     box(2.5, 9.2, 5, 1.0, "Admissions / Marketing Staff", "review leads, plan campaigns", "#ffffff")
     box(1.0, 7.5, 8, 1.0, "SvelteKit Frontend", "dashboards: scores, explanations, segments, scenarios", "#e8eefc")
     box(1.0, 5.8, 8, 1.0, "FastAPI Backend", "authentication, validation, REST services", "#e6f5ef")
-    box(0.0, 3.6, 3.2, 1.4, "Conversion Model", "leakage-aware pipeline\nXGBoost (served)", "#f1ecfb")
-    box(3.4, 3.6, 3.2, 1.4, "SHAP Explainer", "per-lead feature\nattributions", "#f1ecfb")
-    box(6.8, 3.6, 3.2, 1.4, "K-Means Segments", "four descriptive\nengagement groups", "#f1ecfb")
+    box(0.0, 3.6, 2.4, 1.4, "Conversion Model", "leakage-free\nXGBoost (served)", "#f1ecfb", 5.3)
+    box(2.55, 3.6, 2.4, 1.4, "SHAP Explainer", "per-lead feature\nattributions", "#f1ecfb", 5.3)
+    box(5.1, 3.6, 2.4, 1.4, "K-Means Segments", "four engagement\ngroups", "#f1ecfb", 5.3)
+    box(7.65, 3.6, 2.4, 1.4, "Admission Assistant", "grounded chatbot over\nscores and SHAP", "#fbeee6", 5.3)
     box(0.0, 1.6, 4.9, 1.2, "SQLite Store", "leads, predictions, datasets, scenarios", "#eef6e9")
     box(5.1, 1.6, 4.9, 1.2, "Channel Analytics & Scenarios", "constant-efficiency what-if planning", "#fdf5e3")
     box(1.5, 0.0, 7, 1.0, "Decision-Support Dashboard", "human review of all outputs", "#dfe3ea")
     arrow(5, 9.2, 5, 8.5, "HTTPS")
     arrow(5, 7.5, 5, 6.8, "REST")
-    for x in (1.6, 5.0, 8.4):
+    for x in (1.2, 3.75, 6.3, 8.85):
         arrow(5, 5.8, x, 5.0)
-    arrow(2.45, 3.6, 2.45, 2.8)
-    arrow(7.55, 3.6, 7.55, 2.8)
+    arrow(1.2, 3.6, 1.2, 2.8)
+    arrow(6.3, 3.6, 6.3, 2.8)
     arrow(5, 1.6, 5, 1.0)
     save(fig, "fig1_architecture.png")
 

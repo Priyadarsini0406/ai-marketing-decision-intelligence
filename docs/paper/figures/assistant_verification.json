@@ -1,0 +1,61 @@
+{
+ "_provenance": "Counts from verification runs executed on 20-22 Nov 2026: backend/test_assistant.py (unittest), a live script against the running API and the real database without any LLM API key, a labelled routing check, and a Playwright run in Microsoft Edge. Only executed checks are listed.",
+ "rows": [
+  {
+   "check": "Automated integration tests",
+   "passed": 22,
+   "total": 22,
+   "detail": "Automated integration tests"
+  },
+  {
+   "check": "Stored predictions reproduced exactly",
+   "passed": 25,
+   "total": 25,
+   "detail": "Stored predictions reproduced exactly (probability, band, segment, SHAP values)"
+  },
+  {
+   "check": "Unscored leads given the live model's score",
+   "passed": 2,
+   "total": 2,
+   "detail": "Leads without a stored prediction answered by the live model, matching the existing endpoint"
+  },
+  {
+   "check": "One-hot and missing-value SHAP cases",
+   "passed": 5,
+   "total": 5,
+   "detail": "One-hot and missing-value SHAP cases worded correctly"
+  },
+  {
+   "check": "Fee/deadline/admission questions, nothing invented",
+   "passed": 16,
+   "total": 16,
+   "detail": "Fee, eligibility, deadline and admission-chance questions answered without invented facts"
+  },
+  {
+   "check": "Lead requests from student/admin accounts refused",
+   "passed": 10,
+   "total": 10,
+   "detail": "Lead-level requests from student and administrator accounts refused"
+  },
+  {
+   "check": "Requests without a valid session rejected",
+   "passed": 8,
+   "total": 8,
+   "detail": "Requests without a valid session rejected"
+  },
+  {
+   "check": "Labelled questions routed correctly (dev. set)",
+   "passed": 37,
+   "total": 38,
+   "detail": "Labelled questions routed correctly (development set)"
+  },
+  {
+   "check": "Browser checks across the three roles",
+   "passed": 13,
+   "total": 13,
+   "detail": "Browser checks across the three roles"
+  }
+ ],
+ "routing_note": "The one remaining routing case is a misspelled question that receives a 'Did you mean' offer containing the correct topic.",
+ "llm_layer_note": "The optional language-model rewriting layer was tested only against a simulated API; all live answers above were produced without it."
+}
